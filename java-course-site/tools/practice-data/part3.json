@@ -1,0 +1,546 @@
+[
+  {
+    "id": "c6s1",
+    "slug": "class-object-student",
+    "goal": "理解类与对象的关系，会定义类、用 new 创建对象并通过点访问属性和成员方法。",
+    "steps": [
+      "运行初始程序，观察 Student.java 这张“图纸”造出的小明对象完成了自我介绍",
+      "在 main 中再 new 一个学生对象 s2，分别给它设置姓名和年龄并调用 study()",
+      "在 Student 类中新增 introduce() 方法，用成员变量拼出一句自我介绍",
+      "在 main 中让两个对象都调用 introduce()，确认它们各自打印自己的数据"
+    ],
+    "imports": [],
+    "starter": "Student s1 = new Student();\ns1.name = \"小明\";\ns1.age = 18;\ns1.study();",
+    "extra": [
+      {
+        "file": "Student.java",
+        "code": "public class Student {\n    String name;\n    int age;\n\n    public void study() {\n        System.out.println(name + \" 正在学习\");\n    }\n}"
+      }
+    ],
+    "todos": [
+      "在 main 中再 new 一个 Student 对象 s2，把 name 设为“小红”、age 设为 17，并调用 s2.study()",
+      "在 Student 类中新增方法 introduce()，打印“我叫 XX，今年 XX 岁”（XX 用成员变量 name、age 拼接）",
+      "在 main 中分别调用 s1.introduce() 和 s2.introduce()，确认每个对象打印的是自己的数据"
+    ],
+    "expected": "小明 正在学习\n小红 正在学习\n我叫 小明，今年 18 岁\n我叫 小红，今年 17 岁",
+    "hint": "成员方法前面不写 static；main 是 static，必须先 new 造出对象，再用“对象.属性 / 对象.方法()”访问，s1 和 s2 互不影响。"
+  },
+  {
+    "id": "c6s2",
+    "slug": "member-local-var",
+    "goal": "区分成员变量与局部变量，会写能直接使用成员变量的成员方法，并在 main 中通过对象调用。",
+    "steps": [
+      "运行初始程序，观察 deposit 方法直接使用成员变量 balance 完成存款",
+      "在 Account 中新增 withdraw 方法，用 if-else 判断余额是否够扣",
+      "在 main 中分别调用 acc.withdraw(200) 和 acc.withdraw(1000)，对比两次输出",
+      "验证在 main 里直接写 balance 会编译报错，改用 acc.balance 访问后再运行"
+    ],
+    "imports": [],
+    "starter": "Account acc = new Account();\nacc.owner = \"小明\";\nacc.deposit(500);\nSystem.out.println(\"余额：\" + acc.getBalance());",
+    "extra": [
+      {
+        "file": "Account.java",
+        "code": "public class Account {\n    String owner;\n    double balance;\n\n    public void deposit(double money) {\n        balance = balance + money;\n        System.out.println(owner + \" 存入 \" + money + \"，余额 \" + balance);\n    }\n\n    public double getBalance() {\n        return balance;\n    }\n}"
+      }
+    ],
+    "todos": [
+      "在 Account 中新增 withdraw(double money) 方法：余额够就扣减并打印“XX 取款 YY，余额 ZZ”，不够则打印“余额不足”",
+      "在 main 中依次调用 acc.withdraw(200) 和 acc.withdraw(1000)，观察两次输出的不同",
+      "验证：在 main 里直接写 System.out.println(balance); 为什么会编译报错？改成用 acc.balance 访问后再运行"
+    ],
+    "expected": "小明 存入 500.0，余额 500.0\n余额：500.0\n小明 取款 200.0，余额 300.0\n余额不足",
+    "hint": "成员变量写在类里方法外、有默认值、随对象存活；局部变量写在方法内、没有默认值必须先赋值，方法结束就销毁。"
+  },
+  {
+    "id": "c6s3",
+    "slug": "encapsulation-getset",
+    "goal": "掌握封装：用 private 藏起属性，通过公开的 get/set 方法访问，并在 setter 里做合法性校验。",
+    "steps": [
+      "运行初始程序，观察 setAge(-100) 与 setPrice(-5) 目前的输出情况",
+      "补全 Student.setAge，用 if 判断合法范围，非法值打印提示而不写进属性",
+      "补全 Student.setPrice，只允许大于等于 0 的价格通过校验",
+      "尝试在 main 中写 s.age = 20;，观察 private access 编译错误，改回用 setAge 赋值、getAge 读取"
+    ],
+    "imports": [],
+    "starter": "Student s = new Student();\ns.setName(\"小明\");\ns.setAge(-100);\ns.setAge(18);\nSystem.out.println(s.getName() + \"，\" + s.getAge());\ns.setPrice(-5);\nSystem.out.println(\"价格：\" + s.getPrice());",
+    "extra": [
+      {
+        "file": "Student.java",
+        "code": "public class Student {\n    private String name;\n    private int age;\n    private double price;\n\n    public void setName(String n) {\n        name = n;\n    }\n\n    public String getName() {\n        return name;\n    }\n\n    public void setAge(int a) {\n    }\n\n    public int getAge() {\n        return age;\n    }\n\n    public void setPrice(double p) {\n    }\n\n    public double getPrice() {\n        return price;\n    }\n}"
+      }
+    ],
+    "todos": [
+      "补全 Student.setAge(int a)：只有 0 到 150 之间才把 a 赋给 age，否则打印“年龄不合法：”加 a",
+      "补全 Student.setPrice(double p)：只有 p 大于等于 0 才赋值，否则打印“价格不合法”",
+      "尝试在 main 中写 s.age = 20; 观察 private access 编译错误，改回用 setAge 赋值、getAge 读取"
+    ],
+    "expected": "年龄不合法：-100\n小明，18\n价格不合法\n价格：0.0",
+    "hint": "属性私有（private）、方法公开（public），读用 get、写用 set，set 里做校验；私有属性在类外连读带写都不行，编译期就会报错。"
+  },
+  {
+    "id": "c6s4",
+    "slug": "constructor-this",
+    "goal": "学会定义构造方法，用 this 区分成员变量与参数，并用 this(...) 复用重载构造。",
+    "steps": [
+      "阅读 Student.java，找出构造方法的名字、有没有返回类型，以及 this.name = name 里两个 name 各指什么",
+      "在 main 中用无参构造创建 s1，观察它的默认姓名与年龄",
+      "用单参构造创建 s2，打印姓名和默认年龄",
+      "用全参构造创建 s3，一步完成初始化并打印",
+      "对比三种创建方式的输出，总结「有参构造写了，无参构造就要自己补」这条规则"
+    ],
+    "imports": [],
+    "starter": "System.out.println(\"===== 构造方法与 this 练习 =====\");\n// 下面这行用无参构造创建对象（默认值来自 Student() 里的 this(\"未命名\", 0)）\nStudent s1 = new Student();\nSystem.out.println(\"无参构造 -> \" + s1.getName() + \"，\" + s1.getAge() + \" 岁\");\n\n// TODO 1：用单参构造 new Student(\"小红\") 创建 s2，打印它的姓名和年龄\n// TODO 2：用全参构造 new Student(\"小刚\", 20) 创建 s3，打印它的姓名和年龄\n// TODO 3：用 setter 把 s1 的姓名改成\"小美\"、年龄改成 19，再打印一次 s1",
+    "extra": [
+      {
+        "file": "Student.java",
+        "code": "public class Student {\n    private String name;\n    private int age;\n\n    public Student() {\n        this(\"未命名\", 0);\n    }\n\n    public Student(String name) {\n        this(name, 18);\n    }\n\n    public Student(String name, int age) {\n        this.name = name;\n        this.age = age;\n    }\n\n    public String getName() { return name; }\n    public void setName(String name) { this.name = name; }\n    public int getAge() { return age; }\n    public void setAge(int age) { this.age = age; }\n}\n"
+      }
+    ],
+    "todos": [
+      "TODO 1 用单参构造 new Student(\"小红\") 创建 s2，打印它的姓名和年龄",
+      "TODO 2 用全参构造 new Student(\"小刚\", 20) 创建 s3，打印它的姓名和年龄",
+      "TODO 3 用 setter 修改 s1 的姓名和年龄，再打印一次验证修改成功"
+    ],
+    "expected": "===== 构造方法与 this 练习 =====\n无参构造 -> 未命名，0 岁\n单参构造 -> 小红，18 岁\n全参构造 -> 小刚，20 岁\n修改后 -> 小美，19 岁",
+    "hint": "一旦手写了有参构造，编译器就不再赠送无参构造，还想 new Student() 就必须自己补一个。"
+  },
+  {
+    "id": "c6s5",
+    "slug": "object-array",
+    "goal": "掌握对象数组的两步创建：先开格子再逐个 new 对象，并能遍历统计数组里的对象。",
+    "steps": [
+      "观察 Phone[] phones = new Phone[3]; 之后打印 phones[0]，理解格子里装的是 null 门牌",
+      "给三个格子分别放入 new 出来的 Phone 对象",
+      "用普通 for 循环遍历数组，调用每台手机的 show() 打印信息",
+      "用增强 for 循环再遍历一次，累加价格并输出总价与平均价格",
+      "确认遍历前每个格子都已 new，避免调用方法时出现空指针"
+    ],
+    "imports": [],
+    "starter": "System.out.println(\"===== 对象数组练习 =====\");\nPhone[] phones = new Phone[3];\nSystem.out.println(\"数组长度：\" + phones.length);\nSystem.out.println(\"还没放对象时 phones[0] = \" + phones[0]);\n\n// TODO 1：给 phones[0]、phones[1]、phones[2] 分别放入 new 出来的手机对象\n//         例如 phones[0] = new Phone(\"小米\", 1999.0);\n// TODO 2：用普通 for 循环遍历数组，对每个元素调用 show() 打印品牌和价格\n// TODO 3：用增强 for 循环累加价格，输出总价与平均价格（注意除以数组长度要得到小数）",
+    "extra": [
+      {
+        "file": "Phone.java",
+        "code": "public class Phone {\n    private String brand;\n    private double price;\n\n    public Phone() {\n        this(\"未知品牌\", 0);\n    }\n\n    public Phone(String brand, double price) {\n        this.brand = brand;\n        this.price = price;\n    }\n\n    public String getBrand() { return brand; }\n    public void setBrand(String brand) { this.brand = brand; }\n    public double getPrice() { return price; }\n    public void setPrice(double price) { this.price = price; }\n\n    public void show() {\n        System.out.println(brand + \" 价格：\" + price + \" 元\");\n    }\n}\n"
+      }
+    ],
+    "todos": [
+      "TODO 1 给 phones[0]、phones[1]、phones[2] 分别放入 new 出来的 Phone 对象",
+      "TODO 2 用普通 for 循环遍历数组，调用 show() 打印每台手机的信息",
+      "TODO 3 用增强 for 累加价格，输出总价和平均价格"
+    ],
+    "expected": "===== 对象数组练习 =====\n数组长度：3\n还没放对象时 phones[0] = null\n小米 价格：1999.0 元\n荣耀 价格：2499.0 元\n苹果 价格：5999.0 元\n总价：10497.0 元\n平均价格：3499.0 元",
+    "hint": "对象数组只 new 数组还不够，每个格子都要单独 new，否则调用方法时会抛 NullPointerException。"
+  },
+  {
+    "id": "c6s6",
+    "slug": "book-management",
+    "goal": "综合运用封装、构造方法与对象数组，完成图书管理 v1 的添加、查看与统计功能。",
+    "steps": [
+      "阅读 Book.java，确认私有属性、两个构造方法、getter/setter 以及 showInfo() 各自的职责",
+      "在 main 中准备好 Book[] books = new Book[100] 与 int count 记录实际本数",
+      "用 while(true) + switch 搭出菜单骨架，选 4 时打印再见并退出循环",
+      "完成添加功能：录入书名、作者、价格后 books[count] = new Book(...) 并让 count 加一",
+      "完成查看与统计功能：只遍历 0 到 count，输出图书列表、总价与平均价格"
+    ],
+    "imports": [
+      "java.util.Scanner"
+    ],
+    "starter": "Book[] books = new Book[100];\nint count = 0;\nScanner sc = new Scanner(System.in);\n\nSystem.out.println(\"====== 图书管理系统 v1 ======\");\nSystem.out.println(\"1.添加图书  2.查看所有图书  3.统计信息  4.退出\");\n\n// TODO 1：用 while (true) 包住菜单，每轮打印\"请选择：\"并用 sc.nextInt() 读入选项\n// TODO 2：分支 1 —— 依次读入书名、作者、价格，books[count] = new Book(title, author, price); count++；\n//         打印\"《书名》添加成功，当前共 X 本\"；count 已经到 100 时提示\"书架已满\"\n// TODO 3：分支 2 遍历 0~count 调用 showInfo()（count 为 0 时提示\"书架是空的\"）；\n//         分支 3 统计图书总数、总价、平均价格；分支 4 打印\"再见！\"并 break\n\nSystem.out.println(\"（提示：请按上面 TODO 补全菜单循环后再运行）\");",
+    "extra": [
+      {
+        "file": "Book.java",
+        "code": "public class Book {\n    private String title;\n    private String author;\n    private double price;\n\n    public Book() {\n        this(\"未命名\", \"佚名\", 0);\n    }\n\n    public Book(String title, String author, double price) {\n        this.title = title;\n        this.author = author;\n        setPrice(price);\n    }\n\n    public String getTitle() { return title; }\n    public void setTitle(String title) { this.title = title; }\n    public String getAuthor() { return author; }\n    public void setAuthor(String author) { this.author = author; }\n    public double getPrice() { return price; }\n\n    public void setPrice(double price) {\n        if (price >= 0) {\n            this.price = price;\n        } else {\n            System.out.println(\"价格不能为负数，已按 0 处理\");\n            this.price = 0;\n        }\n    }\n\n    public void showInfo() {\n        System.out.println(\"《\" + title + \"》 作者：\" + author + \" 价格：\" + price + \" 元\");\n    }\n}\n"
+      }
+    ],
+    "todos": [
+      "TODO 1 用 while(true) + switch 搭好菜单循环，选 4 时打印再见并退出",
+      "TODO 2 完成添加分支：录入三项后用 books[count] = new Book(...) 存书并让 count 加一",
+      "TODO 3 完成查看与统计分支：只遍历 0 到 count 输出列表，并算出总价和平均价格"
+    ],
+    "expected": "====== 图书管理系统 v1 ======\n1.添加图书  2.查看所有图书  3.统计信息  4.退出\n请选择：1\n请输入书名：Java入门\n请输入作者：老张\n请输入价格：69.9\n《Java入门》添加成功，当前共 1 本\n请选择：2\n-------- 图书列表 --------\n1.《Java入门》 作者：老张 价格：69.9 元\n--------------------------\n请选择：3\n图书总数：1 本\n图书总价：69.9 元\n平均价格：69.9 元\n请选择：4\n再见！",
+    "hint": "查看列表时一定要遍历 0 到 count，不能遍历整个 100 长度，否则会碰到没 new 过的 null 格子。"
+  },
+  {
+    "id": "c7s1",
+    "slug": "extends-employee",
+    "goal": "理解继承的含义与语法，掌握 extends、protected 以及 super(...) 在子类初始化中的作用。",
+    "steps": [
+      "阅读 Employee.java，找出 protected 属性、构造方法与 clockIn() 方法",
+      "阅读 FullTimeEmployee.java，确认它只写了 extends 就拥有了父类的属性与方法",
+      "在 main 中用无参构造创建全职员工，用 setter 赋值后调用 clockIn() 打卡",
+      "用三参构造创建第二位员工，注意子类构造内部通过 super(name, id) 初始化父类",
+      "打印两位员工的姓名、工号、月薪，确认姓名工号在子类里一次都没有重复定义"
+    ],
+    "imports": [],
+    "starter": "FullTimeEmployee f = new FullTimeEmployee();\nf.setName(\"小明\");\nf.setId(\"E001\");\nf.clockIn();\nSystem.out.println(\"姓名：\" + f.getName() + \"，工号：\" + f.getId());\n\n// TODO 1：用 new FullTimeEmployee(\"小红\", \"E002\", 9000) 创建第二位全职员工，赋给变量 f2\n// TODO 2：调用 f2.clockIn()（这是从父类继承来的方法），再打印它的姓名、工号和月薪\n// TODO 3：调用 f.setMonthlySalary(12000) 修改小明的月薪，打印新的月薪",
+    "extra": [
+      {
+        "file": "Employee.java",
+        "code": "public class Employee {\n    protected String name;\n    protected String id;\n\n    public Employee() {\n    }\n\n    public Employee(String name, String id) {\n        this.name = name;\n        this.id = id;\n    }\n\n    public String getName() { return name; }\n    public void setName(String name) { this.name = name; }\n    public String getId() { return id; }\n    public void setId(String id) { this.id = id; }\n\n    public void clockIn() {\n        System.out.println(name + \"(\" + id + \") 打卡成功\");\n    }\n}\n"
+      },
+      {
+        "file": "FullTimeEmployee.java",
+        "code": "public class FullTimeEmployee extends Employee {\n    private double monthlySalary;\n\n    public FullTimeEmployee() {\n    }\n\n    public FullTimeEmployee(String name, String id, double monthlySalary) {\n        super(name, id);\n        this.monthlySalary = monthlySalary;\n    }\n\n    public double getMonthlySalary() { return monthlySalary; }\n    public void setMonthlySalary(double monthlySalary) { this.monthlySalary = monthlySalary; }\n}\n"
+      }
+    ],
+    "todos": [
+      "TODO 1 用三参构造 new FullTimeEmployee(\"小红\", \"E002\", 9000) 创建第二位员工",
+      "TODO 2 调用继承来的 clockIn() 打卡，并打印姓名、工号、月薪",
+      "TODO 3 用 setMonthlySalary(12000) 修改小明月薪并打印验证"
+    ],
+    "expected": "小明(E001) 打卡成功\n姓名：小明，工号：E001\n小红(E002) 打卡成功\n姓名：小红，工号：E002，月薪：9000.0 元\n小明 的月薪改为：12000.0 元",
+    "hint": "子类构造默认先调 super()；父类只有有参构造时，必须在子类构造第一行显式写 super(name, id)，否则编译报错。"
+  },
+  {
+    "id": "c7s2",
+    "slug": "override-showpay",
+    "goal": "掌握方法重写的写法与 @Override 的作用，会在子类里改写继承来的方法并复用 super。",
+    "steps": [
+      "阅读 Employee.java 里 showPay() 的通用版本，记住它的方法名和参数列表",
+      "阅读两个子类的 showPay()，对比方法名、参数是否与父类完全一致，@Override 有没有加上",
+      "在 main 中创建全职员工并调用 showPay()，确认执行的是子类版本",
+      "创建兼职员工并调用 showPay()，确认工资按时薪乘工时计算",
+      "观察 PartTimeEmployee 里 super.showPay() 的效果，说明什么是先复用父类再追加内容"
+    ],
+    "imports": [],
+    "starter": "Employee e = new Employee();\ne.setName(\"普通员工\");\ne.showPay();\n\n// TODO 1：new 一个 FullTimeEmployee，setName(\"小明\")、setMonthlySalary(8000.0) 后调用 showPay()\n//         观察执行的是父类版本还是子类重写版本\n// TODO 2：new 一个 PartTimeEmployee，setName(\"小红\")、setHourSalary(50.0)、setHours(20)，\n//         调用 showPay()，确认工资按 时薪 × 工时 计算\n// TODO 3：把全职员工的月薪改成 12000.0 后再调用一次 showPay()，体会同名方法在不同类里表现不同",
+    "extra": [
+      {
+        "file": "Employee.java",
+        "code": "public class Employee {\n    protected String name;\n\n    public Employee() {\n    }\n\n    public Employee(String name) {\n        this.name = name;\n    }\n\n    public String getName() { return name; }\n    public void setName(String name) { this.name = name; }\n\n    public void showPay() {\n        System.out.println(name + \" 的工资按通用规则计算\");\n    }\n}\n"
+      },
+      {
+        "file": "FullTimeEmployee.java",
+        "code": "public class FullTimeEmployee extends Employee {\n    private double monthlySalary;\n\n    public FullTimeEmployee() {\n    }\n\n    public FullTimeEmployee(String name, double monthlySalary) {\n        super(name);\n        this.monthlySalary = monthlySalary;\n    }\n\n    public double getMonthlySalary() { return monthlySalary; }\n    public void setMonthlySalary(double monthlySalary) { this.monthlySalary = monthlySalary; }\n\n    @Override\n    public void showPay() {\n        System.out.println(name + \"（全职）月薪：\" + monthlySalary + \" 元\");\n    }\n}\n"
+      },
+      {
+        "file": "PartTimeEmployee.java",
+        "code": "public class PartTimeEmployee extends Employee {\n    private double hourSalary;\n    private int hours;\n\n    public PartTimeEmployee() {\n    }\n\n    public PartTimeEmployee(String name, double hourSalary, int hours) {\n        super(name);\n        this.hourSalary = hourSalary;\n        this.hours = hours;\n    }\n\n    public double getHourSalary() { return hourSalary; }\n    public void setHourSalary(double hourSalary) { this.hourSalary = hourSalary; }\n    public int getHours() { return hours; }\n    public void setHours(int hours) { this.hours = hours; }\n\n    @Override\n    public void showPay() {\n        super.showPay();\n        System.out.println(name + \"（兼职）时薪 \" + hourSalary + \" 元，本月 \" + hours + \" 小时，合计 \" + (hourSalary * hours) + \" 元\");\n    }\n}\n"
+      }
+    ],
+    "todos": [
+      "TODO 1 创建全职员工（姓名、月薪）并调用 showPay()，确认执行子类重写版本",
+      "TODO 2 创建兼职员工（姓名、时薪、工时）并调用 showPay()，确认工资 = 时薪 × 工时",
+      "TODO 3 修改全职员工月薪后再次调用 showPay()，观察同一方法名在不同类里的不同表现"
+    ],
+    "expected": "普通员工 的工资按通用规则计算\n小明（全职）月薪：8000.0 元\n小红 的工资按通用规则计算\n小红（兼职）时薪 50.0 元，本月 20 小时，合计 1000.0 元\n小明（全职）月薪：12000.0 元",
+    "hint": "重写必须方法名和参数列表与父类完全一致；@Override 能让编译器帮你抓住名字或参数打错的情况。"
+  },
+  {
+    "id": "c7s3",
+    "slug": "polymorphism-pay",
+    "goal": "理解向上转型与多态：父类引用指向子类对象，调用被重写的方法时按真实对象执行。",
+    "steps": [
+      "声明 Employee[] staff = new Employee[2]，把全职员工对象放进第 0 个格子",
+      "把兼职员工对象放进第 1 个格子，体会左边父类引用、右边子类对象",
+      "用增强 for 遍历数组，对每个元素调用 showPay()，观察输出随真实对象变化",
+      "用静态初始化 Employee[] staff2 = { new ..., new ... }; 再写一遍并遍历",
+      "用 instanceof 判断元素的真实类型，向下转型后调用子类特有方法"
+    ],
+    "imports": [],
+    "starter": "Employee[] staff = new Employee[2];\nstaff[0] = new FullTimeEmployee(\"小明\", 8000);\nstaff[0].showPay();\nSystem.out.println(\"数组长度：\" + staff.length);\n\n// TODO 1：往 staff[1] 放入兼职员工对象：new PartTimeEmployee(\"小红\", 50, 20)\n// TODO 2：用增强 for 遍历 staff，对每个元素调用 showPay()，体会\"同一句指令、不同反应\"\n// TODO 3：用 if (staff[1] instanceof PartTimeEmployee) 判断后向下转型为 PartTimeEmployee，\n//         打印这位兼职员工的月工时 getHours()",
+    "extra": [
+      {
+        "file": "Employee.java",
+        "code": "public class Employee {\n    protected String name;\n\n    public Employee() {\n    }\n\n    public Employee(String name) {\n        this.name = name;\n    }\n\n    public String getName() { return name; }\n    public void setName(String name) { this.name = name; }\n\n    public void showPay() {\n        System.out.println(name + \" 的工资按通用规则计算\");\n    }\n}\n"
+      },
+      {
+        "file": "FullTimeEmployee.java",
+        "code": "public class FullTimeEmployee extends Employee {\n    private double monthlySalary;\n\n    public FullTimeEmployee() {\n    }\n\n    public FullTimeEmployee(String name, double monthlySalary) {\n        super(name);\n        this.monthlySalary = monthlySalary;\n    }\n\n    public double getMonthlySalary() { return monthlySalary; }\n    public void setMonthlySalary(double monthlySalary) { this.monthlySalary = monthlySalary; }\n\n    @Override\n    public void showPay() {\n        System.out.println(name + \"（全职）月薪：\" + monthlySalary + \" 元\");\n    }\n}\n"
+      },
+      {
+        "file": "PartTimeEmployee.java",
+        "code": "public class PartTimeEmployee extends Employee {\n    private double hourSalary;\n    private int hours;\n\n    public PartTimeEmployee() {\n    }\n\n    public PartTimeEmployee(String name, double hourSalary, int hours) {\n        super(name);\n        this.hourSalary = hourSalary;\n        this.hours = hours;\n    }\n\n    public double getHourSalary() { return hourSalary; }\n    public void setHourSalary(double hourSalary) { this.hourSalary = hourSalary; }\n    public int getHours() { return hours; }\n    public void setHours(int hours) { this.hours = hours; }\n\n    @Override\n    public void showPay() {\n        System.out.println(name + \"（兼职）时薪 \" + hourSalary + \" 元，本月 \" + hours + \" 小时，合计 \" + (hourSalary * hours) + \" 元\");\n    }\n}\n"
+      }
+    ],
+    "todos": [
+      "TODO 1 用父类引用把兼职员工放进 staff[1]",
+      "TODO 2 用增强 for 遍历数组并调用 showPay()，观察多态效果",
+      "TODO 3 用 instanceof 判断真实类型，向下转型后打印兼职员工的月工时"
+    ],
+    "expected": "小明（全职）月薪：8000.0 元\n数组长度：2\n小明（全职）月薪：8000.0 元\n小红（兼职）时薪 50.0 元，本月 20 小时，合计 1000.0 元\n小红的月工时：20 小时",
+    "hint": "成员方法编译看左边、运行看右边；向上转型后不能直接调用子类特有方法，要先 instanceof 判断再向下转型。"
+  },
+  {
+    "id": "c7s4",
+    "slug": "abstract-employee",
+    "goal": "掌握抽象类与抽象方法的规则，理解父类定规矩、子类兑现的设计，并用多态数组做统计。",
+    "steps": [
+      "阅读抽象类 Employee.java，找出 abstract 类声明和没有方法体的 calcSalary()",
+      "阅读两个子类，确认它们都用 @Override 重写了 calcSalary()",
+      "在 main 中用抽象父类数组装入全职与兼职两种员工对象",
+      "遍历数组打印姓名与工资，并累加 calcSalary() 的返回值",
+      "在数组里加入第三位员工，重新统计工资合计与平均工资"
+    ],
+    "imports": [],
+    "starter": "Employee[] staff = new Employee[3];\nstaff[0] = new FullTimeEmployee(\"小明\", \"E001\", 8000);\nstaff[1] = new PartTimeEmployee(\"小红\", \"E002\", 50, 20);\nSystem.out.println(\"第 1 位：\" + staff[0].getName() + \"，工资 \" + staff[0].calcSalary() + \" 元\");\n\n// TODO 1：给 staff[2] 再放一位兼职员工，例如 new PartTimeEmployee(\"小刚\", \"E003\", 40, 30)\n// TODO 2：用增强 for 遍历数组，调用 showInfo() 打印姓名工号，并把 calcSalary() 累加到 total\n// TODO 3：输出工资合计与平均工资（合计除以 staff.length，结果是小数）",
+    "extra": [
+      {
+        "file": "Employee.java",
+        "code": "public abstract class Employee {\n    protected String name;\n    protected String id;\n\n    public Employee() {\n    }\n\n    public Employee(String name, String id) {\n        this.name = name;\n        this.id = id;\n    }\n\n    public String getName() { return name; }\n    public void setName(String name) { this.name = name; }\n    public String getId() { return id; }\n    public void setId(String id) { this.id = id; }\n\n    public void showInfo() {\n        System.out.println(\"姓名：\" + name + \"，工号：\" + id);\n    }\n\n    public abstract double calcSalary();\n}\n"
+      },
+      {
+        "file": "FullTimeEmployee.java",
+        "code": "public class FullTimeEmployee extends Employee {\n    private double monthlySalary;\n\n    public FullTimeEmployee() {\n    }\n\n    public FullTimeEmployee(String name, String id, double monthlySalary) {\n        super(name, id);\n        this.monthlySalary = monthlySalary;\n    }\n\n    public double getMonthlySalary() { return monthlySalary; }\n    public void setMonthlySalary(double monthlySalary) { this.monthlySalary = monthlySalary; }\n\n    @Override\n    public double calcSalary() {\n        return monthlySalary;\n    }\n}\n"
+      },
+      {
+        "file": "PartTimeEmployee.java",
+        "code": "public class PartTimeEmployee extends Employee {\n    private double hourSalary;\n    private int hours;\n\n    public PartTimeEmployee() {\n    }\n\n    public PartTimeEmployee(String name, String id, double hourSalary, int hours) {\n        super(name, id);\n        this.hourSalary = hourSalary;\n        this.hours = hours;\n    }\n\n    public double getHourSalary() { return hourSalary; }\n    public void setHourSalary(double hourSalary) { this.hourSalary = hourSalary; }\n    public int getHours() { return hours; }\n    public void setHours(int hours) { this.hours = hours; }\n\n    @Override\n    public double calcSalary() {\n        return hourSalary * hours;\n    }\n}\n"
+      }
+    ],
+    "todos": [
+      "TODO 1 往 staff[2] 再放入一位兼职员工对象",
+      "TODO 2 用增强 for 遍历数组，调用 showInfo() 并累加 calcSalary()",
+      "TODO 3 输出工资合计与平均工资（注意平均工资是小数）"
+    ],
+    "expected": "第 1 位：小明，工资 8000.0 元\n姓名：小明，工号：E001\n姓名：小红，工号：E002\n姓名：小刚，工号：E003\n工资合计：10200.0 元\n平均工资：3400.0 元",
+    "hint": "抽象类不能 new；子类必须重写父类所有抽象方法，否则该子类自己也要声明为 abstract，否则编译不通过。"
+  },
+  {
+    "id": "c7s5",
+    "slug": "interface-payable",
+    "goal": "掌握接口的定义与 implements 实现，理解接口引用多态以及一个类可实现多个接口。",
+    "steps": [
+      "阅读 Payable.java 和 Meeting.java，确认接口方法只有声明、没有方法体",
+      "阅读 Manager.java，确认它用逗号同时实现了两个接口",
+      "在 main 中把 FullTimeEmployee 对象赋给 Payable 变量并调用 calcSalary()",
+      "用 Payable[] 数组装入不同实现类的对象，遍历统一调用 calcSalary()",
+      "把同一个 Manager 对象分别赋给 Payable 与 Meeting 变量，调用不同接口的方法"
+    ],
+    "imports": [],
+    "starter": "Payable p = new FullTimeEmployee(\"小明\", 8000);\nSystem.out.println(\"接口引用调用的工资：\" + p.calcSalary() + \" 元\");\n\n// TODO 1：创建经理对象：new Manager(\"老张\", 15000)\n// TODO 2：用 Payable[] 数组装入全职员工和经理两个对象，遍历调用 calcSalary() 并逐一打印\n// TODO 3：把经理对象赋给 Meeting 类型的变量，调用 meeting() 打印会议通知",
+    "extra": [
+      {
+        "file": "Payable.java",
+        "code": "public interface Payable {\n    double calcSalary();\n}\n"
+      },
+      {
+        "file": "Meeting.java",
+        "code": "public interface Meeting {\n    void meeting();\n}\n"
+      },
+      {
+        "file": "FullTimeEmployee.java",
+        "code": "public class FullTimeEmployee implements Payable {\n    private String name;\n    private double monthlySalary;\n\n    public FullTimeEmployee() {\n    }\n\n    public FullTimeEmployee(String name, double monthlySalary) {\n        this.name = name;\n        this.monthlySalary = monthlySalary;\n    }\n\n    public String getName() { return name; }\n    public void setName(String name) { this.name = name; }\n    public double getMonthlySalary() { return monthlySalary; }\n    public void setMonthlySalary(double monthlySalary) { this.monthlySalary = monthlySalary; }\n\n    @Override\n    public double calcSalary() {\n        return monthlySalary;\n    }\n}\n"
+      },
+      {
+        "file": "Manager.java",
+        "code": "public class Manager implements Payable, Meeting {\n    private String name;\n    private double monthlySalary;\n\n    public Manager() {\n    }\n\n    public Manager(String name, double monthlySalary) {\n        this.name = name;\n        this.monthlySalary = monthlySalary;\n    }\n\n    public String getName() { return name; }\n    public void setName(String name) { this.name = name; }\n\n    @Override\n    public double calcSalary() {\n        return monthlySalary;\n    }\n\n    @Override\n    public void meeting() {\n        System.out.println(name + \" 通知：下午 3 点开部门会议\");\n    }\n}\n"
+      }
+    ],
+    "todos": [
+      "TODO 1 创建 Manager 对象",
+      "TODO 2 用 Payable[] 数组装入两个实现类对象，遍历调用 calcSalary()",
+      "TODO 3 把 Manager 对象赋给 Meeting 变量，调用 meeting()"
+    ],
+    "expected": "接口引用调用的工资：8000.0 元\n第一位工资：8000.0 元\n第二位工资：15000.0 元\n老张 通知：下午 3 点开部门会议",
+    "hint": "接口只是行为契约、不能 new；一个类可以实现多个接口（逗号分隔），正好弥补 Java 只能单继承的局限。"
+  },
+  {
+    "id": "c7s6",
+    "slug": "employee-salary-project",
+    "goal": "用抽象类、继承、方法重写和多态数组实现员工薪资系统，理解面向对象三大特性。",
+    "steps": [
+      "读懂并确认抽象父类 Employee：protected 属性 name/id、构造方法、getter、showInfo() 与抽象方法 calcSalary()",
+      "补全 FullTimeEmployee 和 PartTimeEmployee 的 calcSalary()：一个返回月薪，一个返回时薪 × 月工时",
+      "补全 Manager：继承 FullTimeEmployee，构造用 super(...) 链式调用，calcSalary 用 super.calcSalary() + bonus",
+      "在 main 中用父类数组 Employee[] 装 3 个不同员工，遍历时只写一套 showInfo() + calcSalary() 打印代码",
+      "累计 total 并打印公司本月总薪资和人数，确认输出与参考效果一致"
+    ],
+    "imports": [],
+    "starter": "Employee[] staff = new Employee[3];\nstaff[0] = new FullTimeEmployee(\"小明\", \"E001\", 8000);\nstaff[1] = new PartTimeEmployee(\"小红\", \"E002\", 50, 20);\nstaff[2] = new Manager(\"老张\", \"E003\", 11000, 2000);\n\nSystem.out.println(\"====== 本月薪资表 ======\");\ndouble total = 0;\nfor (Employee e : staff) {\n    e.showInfo();\n    // TODO 2：把下一行换成 System.out.println(\"工资：\" + e.calcSalary());\n    System.out.println(\"（工资待计算）\");\n    total += e.calcSalary();\n}\nSystem.out.println(\"------------------------\");\n// TODO 3：打印 公司本月总薪资：total 元，共 staff.length 人\nSystem.out.println(\"薪资统计待完成，请补全 TODO 1~3 后重新运行\");",
+    "extra": [
+      {
+        "file": "Employee.java",
+        "code": "// 抽象父类：只定规矩，不算具体工资\npublic abstract class Employee {\n    protected String name;\n    protected String id;\n    protected String type;   // 员工类型，由子类通过 super(...) 传入\n\n    public Employee(String name, String id, String type) {\n        this.name = name;\n        this.id = id;\n        this.type = type;\n    }\n\n    public String getName() { return name; }\n    public String getId() { return id; }\n\n    public void showInfo() {\n        System.out.print(name + \"(\" + id + \") \" + type + \"  \");\n    }\n\n    // 抽象方法：子类必须各自实现\n    public abstract double calcSalary();\n}"
+      },
+      {
+        "file": "FullTimeEmployee.java",
+        "code": "// 全职员工：拿固定月薪\npublic class FullTimeEmployee extends Employee {\n    protected double monthlySalary;\n\n    public FullTimeEmployee(String name, String id, double monthlySalary) {\n        super(name, id, \"全职员工\");\n        this.monthlySalary = monthlySalary;\n    }\n\n    @Override\n    public double calcSalary() {\n        // TODO 1：全职员工直接返回月薪 monthlySalary\n        return 0.0;\n    }\n}"
+      },
+      {
+        "file": "PartTimeEmployee.java",
+        "code": "// 兼职员工：按小时结算\npublic class PartTimeEmployee extends Employee {\n    protected double hourSalary;\n    protected int hours;\n\n    public PartTimeEmployee(String name, String id, double hourSalary, int hours) {\n        super(name, id, \"兼职员工\");\n        this.hourSalary = hourSalary;\n        this.hours = hours;\n    }\n\n    @Override\n    public double calcSalary() {\n        // TODO 1：时薪 × 月工时\n        return 0.0;\n    }\n}"
+      },
+      {
+        "file": "Manager.java",
+        "code": "// 经理也是全职员工：月薪 + 奖金\npublic class Manager extends FullTimeEmployee {\n    private double bonus;\n\n    public Manager(String name, String id, double monthlySalary, double bonus) {\n        super(name, id, monthlySalary);   // 先让爸爸把全职员工那部分初始化好\n        this.bonus = bonus;\n        this.type = \"经理\";               // 覆盖父类构造里设的类型\n    }\n\n    @Override\n    public double calcSalary() {\n        // TODO 1：先用 super.calcSalary() 拿到月薪，再加上 bonus\n        return 0.0;\n    }\n}"
+      }
+    ],
+    "todos": [
+      "TODO 1：补全三个子类的 calcSalary()——FullTimeEmployee 返回 monthlySalary，PartTimeEmployee 返回 hourSalary * hours，Manager 返回 super.calcSalary() + bonus",
+      "TODO 2：在 main 的 for 循环里把占位行换成 System.out.println(\"工资：\" + e.calcSalary())，不要写 instanceof 分支",
+      "TODO 3：循环结束后打印 公司本月总薪资：total 元，共 staff.length 人"
+    ],
+    "expected": "直接运行 Main → 控制台输出：\n====== 本月薪资表 ======\n小明(E001) 全职员工  工资：8000.0\n小红(E002) 兼职员工  工资：1000.0\n老张(E003) 经理  工资：13000.0\n------------------------\n公司本月总薪资：22000.0 元，共 3 人",
+    "hint": "只用一套打印代码的关键：把数组声明成 Employee[]，循环里不写任何类型判断，calcSalary 靠重写自动选对算法；Manager 别忘了 super(...) 和 super.calcSalary()。"
+  },
+  {
+    "id": "c8s1",
+    "slug": "string-toolbox",
+    "goal": "熟练使用 String 的查找、截取、替换、分割等常用方法，牢记内容比较必须用 equals。",
+    "steps": [
+      "先运行 starter，确认 s.length() 的返回值是 18（首尾空格也算长度）",
+      "用 trim() 去掉首尾空格后重新赋值给 s，对比长度从 18 变成 16",
+      "用 indexOf(\"Java\") 找到起始下标，再用 substring(6,10) 截取出 Java，体会含头不含尾",
+      "用 split(\",\") 把 \"小明,18,广州\" 拆成字符串数组，打印第一段并用 Integer.parseInt 把年龄转成 int 后打印 age + 1"
+    ],
+    "imports": [],
+    "starter": "String s = \" Hello Java World \";\nSystem.out.println(\"原字符串：[\" + s + \"] 长度：\" + s.length());\n\n// TODO 1：用 trim() 去掉首尾空格后赋值回 s，打印 s 和它的 length()\n\n// TODO 2：用 indexOf(\"Java\") 找起始下标，再用 substring(下标, 下标+4) 截取出 Java 打印\n\nString line = \"小明,18,广州\";\n// TODO 3：用 split(\",\") 把 line 拆成数组并打印第一段；把第二段用 Integer.parseInt 转成 int 后打印 age + 1\n\nSystem.out.println(\"字符串练习未完成，请补全 TODO 1~3 后重新运行\");",
+    "extra": [],
+    "todos": [
+      "TODO 1：用 trim() 去掉 s 首尾空格并打印新内容和长度，验证 18 → 16",
+      "TODO 2：用 indexOf + substring 从 s 里截取出 Java 并打印",
+      "TODO 3：用 split(\",\") 拆分 line，打印第一段，并用 Integer.parseInt 把年龄转成 int 后打印 age + 1"
+    ],
+    "expected": "直接运行 → 参考输出：\n原字符串：[ Hello Java World ] 长度：18\ntrim 后：[Hello Java World] 长度：16\n截取出：Java\n拆分得到 3 段，第一段：小明\nage + 1 = 19",
+    "hint": "比较内容永远用 s1.equals(s2) 而不是 ==；substring 含头不含尾，下标算不清就先在纸上点一遍；parseInt 常配 trim() 防止意外空格。"
+  },
+  {
+    "id": "c8s2",
+    "slug": "arraylist-basics",
+    "goal": "会创建 ArrayList 集合并用 add、get、size 与增强 for 存取和遍历一组对象。",
+    "steps": [
+      "创建 ArrayList<String>，add 三个名字，直接打印集合本身并打印 size() 看长度",
+      "再创建 ArrayList<Book>，add 两本 Book 对象，用 size() 和 get(i) 验证元素位置",
+      "分别用普通 for + get(i) 和增强 for 遍历 books，都调用 showInfo() 输出每本书信息"
+    ],
+    "imports": [
+      "import java.util.ArrayList;"
+    ],
+    "starter": "ArrayList<String> names = new ArrayList<>();\nnames.add(\"小明\");\nnames.add(\"小红\");\nnames.add(\"小刚\");\nSystem.out.println(names);\nSystem.out.println(\"人数：\" + names.size());\n\nArrayList<Book> books = new ArrayList<>();\nbooks.add(new Book(\"Java入门\", 69.9));\n// TODO 1：再 add 一本 new Book(\"数据结构\", 59.0)，然后打印 books 和 books.size()\n\n// TODO 2：用增强 for（for (Book b : books)）遍历调用 showInfo()\n\n// TODO 3：用普通 for 循环 + get(i) 打印每本书的书名\n\nSystem.out.println(\"ArrayList 练习未完成，请补全 TODO 1~3 后重新运行\");",
+    "extra": [
+      {
+        "file": "Book.java",
+        "code": "public class Book {\n    private String name;\n    private double price;\n\n    public Book(String name, double price) {\n        this.name = name;\n        this.price = price;\n    }\n\n    public String getName() { return name; }\n    public double getPrice() { return price; }\n\n    public void showInfo() {\n        System.out.println(\"书名：\" + name + \"  价格：\" + price);\n    }\n}"
+      }
+    ],
+    "todos": [
+      "TODO 1：再 add 一本 new Book(\"数据结构\", 59.0)，并打印集合内容和 books.size()",
+      "TODO 2：用增强 for（for (Book b : books)）遍历调用 showInfo()",
+      "TODO 3：用普通 for + get(i) 打印每本书的书名"
+    ],
+    "expected": "直接运行 → 参考输出：\n[小明, 小红, 小刚]\n人数：3\nbooks.size() = 2\n书名：Java入门  价格：69.9\n书名：数据结构  价格：59.0",
+    "hint": "取长度是 size()（有括号）、取元素是 get(i)（不能写 []）；泛型里只能放引用类型，装整数要写 ArrayList<Integer>。"
+  },
+  {
+    "id": "c8s3",
+    "slug": "collection-crud",
+    "goal": "掌握 ArrayList 的增删改查（add/get/set/remove/contains/indexOf）并安全地按内容删除元素。",
+    "steps": [
+      "创建 ArrayList<String> 并 add A、B、C，打印初始内容确认顺序",
+      "用 add(0, \"插队的\") 在头部插入，再用 set(1, \"新名字\") 改一个元素，打印观察下标变化",
+      "用 indexOf(\"B\") 找到下标后 remove(idx) 删除（找不到打印“查无此人”），再用 contains(\"C\") 验证是否还在"
+    ],
+    "imports": [
+      "import java.util.ArrayList;"
+    ],
+    "starter": "ArrayList<String> list = new ArrayList<>();\nlist.add(\"A\");\nlist.add(\"B\");\nlist.add(\"C\");\nSystem.out.println(\"初始：\" + list);\n\n// TODO 1：用 add(0, \"插队的\") 插到最前面，再用 set(1, \"新名字\") 改一个元素，打印 list\n\n// TODO 2：用 indexOf(\"B\") 找下标后 remove(idx) 删除 B（找不到打印 \"查无此人\"），再打印 list\n\n// TODO 3：用 contains(\"C\") 判断 C 是否还在，打印判断结果\n\nSystem.out.println(\"CRUD 练习未完成，请补全 TODO 1~3 后重新运行\");",
+    "extra": [],
+    "todos": [
+      "TODO 1：用 add(0, \"插队的\") 指定位置插入，再用 set(index, 值) 修改一个元素并打印",
+      "TODO 2：用 indexOf(\"B\") 找到下标后 remove(idx) 删除，找不到就打印“查无此人”",
+      "TODO 3：用 contains(\"C\") 判断 C 是否还在集合里，打印 true/false"
+    ],
+    "expected": "直接运行 → 参考输出：\n初始：[A, B, C]\n插入并修改后：[插队的, 新名字, B, C]\n删除 B 后：[插队的, 新名字, C]\ncontains(\"C\") = true",
+    "hint": "删除后后面的元素会自动前移、下标整体变化；不要正向边遍历边删，改成 indexOf 找下标后 remove 并立刻 break。"
+  },
+  {
+    "id": "c8s4",
+    "slug": "exception-basics",
+    "goal": "认识常见运行时异常与红色堆栈信息，会用 if 防御避免除零和下标越界导致崩溃。",
+    "steps": [
+      "运行 starter 看两处防御式 if 如何拦住除零和越界，程序全程不崩溃",
+      "临时取消注释制造一次 ArithmeticException，读第一行异常类型、信息和出错行号，再注释回去",
+      "确认除零和越界两种情况都改成了“先判断再执行”，输出与预期一致"
+    ],
+    "imports": [],
+    "starter": "int a = 10;\nint b = 0;\n// TODO 1：用 if (b != 0) 做防御：能算就打印 a / b，否则打印 \"除数不能为 0\"\n\nint[] arr = {1, 2, 3};\nint index = 5;\n// TODO 2：用 if (index >= 0 && index < arr.length) 判断下标合法后再取值打印，非法打印 \"下标越界\"\n\n// TODO 3（观察用）：临时取消下面这行的注释运行一次，看红色报错的第一行类型、信息和行号，看完再注释回去\n// System.out.println(a / b);\n\nSystem.out.println(\"异常练习未完成，请补全 TODO 1~3 后重新运行\");",
+    "extra": [],
+    "todos": [
+      "TODO 1：用 if (b != 0) 做除零防御，分别打印结果或“除数不能为 0”",
+      "TODO 2：用 index >= 0 && index < arr.length 判断下标合法后再取值，非法打印“下标越界”",
+      "TODO 3：临时制造一次 ArithmeticException，记录报错类型、信息和自己代码的行号，然后恢复注释"
+    ],
+    "expected": "运行后应看到：\n除数不能为 0\n下标越界\n异常练习未完成，请补全 TODO 1~3 后重新运行\n（取消注释那行时会看到 Exception in thread \"main\" java.lang.ArithmeticException: / by zero）",
+    "hint": "能靠 if 预防的就先 if（除零、下标范围、空对象）；读红色报错先看第一行的异常类型和信息，再找堆栈里自己写的类名和行号。"
+  },
+  {
+    "id": "c8s5",
+    "slug": "try-catch-finally",
+    "goal": "掌握 try-catch-finally 语法、多个 catch 子类在前的顺序，以及 finally 必定执行的特点。",
+    "steps": [
+      "用 try-catch 包住 arr[5] 的访问，catch 里打印 e.getMessage()，观察具体越界信息",
+      "再补一个 catch (ArithmeticException e) 处理 100 / 0，体会谁先匹配谁处理",
+      "给其中一个 try 加 finally 块打印提示，分别让 try 出错和不换参数两种情况各跑一次，验证 finally 都输出"
+    ],
+    "imports": [],
+    "starter": "int[] arr = {1, 2, 3};\n// TODO 1：用 try 包住 System.out.println(arr[5]);，catch (ArrayIndexOutOfBoundsException e) 打印 \"下标越界了：\" + e.getMessage()\n\nint n = 0;\n// TODO 2：用 try-catch 包住 System.out.println(100 / n);，catch (ArithmeticException e) 打印 \"不能输入 0！\"\n\n// TODO 3：给上面的 try 加一个 finally 块，打印 \"finally 一定执行\"，观察出错与不出错都会输出\n\nSystem.out.println(\"try-catch 练习未完成，请补全 TODO 1~3 后重新运行\");",
+    "extra": [],
+    "todos": [
+      "TODO 1：用 try-catch 接住 arr[5] 的 ArrayIndexOutOfBoundsException，并打印 e.getMessage()",
+      "TODO 2：再写一个 try-catch 接住 100 / 0 的 ArithmeticException，打印“不能输入 0！”",
+      "TODO 3：给其中一个 try 加 finally 块打印“finally 一定执行”，验证无论是否出错都会输出"
+    ],
+    "expected": "运行后应看到（程序全程不崩溃）：\n下标越界了：Index 5 out of bounds for length 3\n不能输入 0！\nfinally 一定执行\ntry-catch 练习未完成，请补全 TODO 1~3 后重新运行",
+    "hint": "多个 catch 必须子类异常在前、Exception 兜底在后；catch 块里至少打印一条提示，空 catch 会把错误悄悄吞掉，最难查。"
+  },
+  {
+    "id": "c8s6",
+    "slug": "robust-input",
+    "goal": "用 while 循环加 try-catch 封装 inputInt/inputChoice，让菜单输入怎么输错都不崩溃。",
+    "steps": [
+      "补全 InputHelper.inputInt：while(true) 里 try 直接 return sc.nextInt()，catch 里提示并 sc.next()",
+      "补全 InputHelper.inputChoice：循环调用 inputInt，数字落在 min~max 之间才 return，否则提示重输",
+      "把 main 里写死的 choice 换成 inputChoice(sc, 1, 4)，运行后分别输入字母、9、4 验证效果"
+    ],
+    "imports": [
+      "import java.util.Scanner;",
+      "import java.util.InputMismatchException;"
+    ],
+    "starter": "Scanner sc = new Scanner(System.in);\nwhile (true) {\n    System.out.println(\"1.添加 2.查看 3.删除 4.退出\");\n    // TODO 3：把下面这行换成 int choice = InputHelper.inputChoice(sc, 1, 4);\n    int choice = 4;\n    switch (choice) {\n        case 1:\n            System.out.println(\"执行 添加\");\n            break;\n        case 2:\n            System.out.println(\"执行 查看\");\n            break;\n        case 3:\n            System.out.println(\"执行 删除\");\n            break;\n        case 4:\n            System.out.println(\"再见\");\n            return;\n        default:\n            System.out.println(\"没有这个选项，请重新输入\");\n    }\n}",
+    "extra": [
+      {
+        "file": "InputHelper.java",
+        "code": "import java.util.Scanner;\nimport java.util.InputMismatchException;\n\npublic class InputHelper {\n\n    // 保证得到一个合法整数：不拿到就不出方法\n    public static int inputInt(Scanner sc, String tip) {\n        System.out.print(tip);\n        // TODO 1：改成 while (true) + try-catch：\n        //   try { return sc.nextInt(); }\n        //   catch (InputMismatchException e) { 打印 \"输入无效，请输入整数！\"; sc.next(); }\n        return 0;\n    }\n\n    // 保证得到一个 min~max 之间的菜单选项\n    public static int inputChoice(Scanner sc, int min, int max) {\n        // TODO 2：循环调用 inputInt，n 在 [min, max] 内才 return，\n        //   否则打印 \"没有这个选项，请重新输入\"\n        return max;\n    }\n}"
+      }
+    ],
+    "todos": [
+      "TODO 1：补全 InputHelper.inputInt——while(true) 里 try { return sc.nextInt(); }，catch (InputMismatchException e) 里提示后必须 sc.next()",
+      "TODO 2：补全 InputHelper.inputChoice——循环调用 inputInt，数字在 min~max 之间才 return，否则提示重输",
+      "TODO 3：把 main 里写死的 choice 换成 InputHelper.inputChoice(sc, 1, 4)，并故意输入字母和 9 测试"
+    ],
+    "expected": "输入 1 → 输出“执行 添加”；输入 9 → 提示“没有这个选项，请重新输入”并重新显示菜单；输入 abc → 提示“输入无效，请输入整数！”后重新选择；输入 4 → 输出“再见”并退出，全程不崩溃",
+    "hint": "catch 里那一行 sc.next() 千万别漏：非法输入留在缓冲区里，不消费掉下一轮 nextInt 读到的还是它，会无限重复报错。"
+  },
+  {
+    "id": "c8s7",
+    "slug": "contact-book",
+    "goal": "综合封装类、ArrayList 增删改查、String 模糊搜索和 try-catch 容错，独立完成通讯录 v1。",
+    "steps": [
+      "先单独 new 一个 Contact 对象并调用 showInfo()，确认 JavaBean 的无参/全参构造、getter/setter 和打印都正常",
+      "在 main 里创建 ArrayList<Contact>，把菜单循环 + 添加 + 查看先跑通（暂不做输入容错）",
+      "加搜索：输入关键字后用 getName().contains(keyword) 模糊匹配打印所有命中项，一个都没有则提示“无匹配结果”",
+      "加修改和删除：遍历找同名下标的对象，用 set 更新信息 / remove 删除并立即 break，找不到提示“查无此人”",
+      "最后把菜单输入改成 while(true)+try-catch 的健壮写法，故意输入字母和 9，测到“怎么输都不崩”"
+    ],
+    "imports": [
+      "import java.util.ArrayList;",
+      "import java.util.Scanner;",
+      "import java.util.InputMismatchException;"
+    ],
+    "starter": "Scanner sc = new Scanner(System.in);\nArrayList<Contact> book = new ArrayList<>();\nbook.add(new Contact(\"张三\", \"13800001111\", \"zs@xx.com\"));   // 预置一条方便演示\n\nwhile (true) {\n    System.out.println(\"====== 我的通讯录 ======\");\n    System.out.println(\"1.添加联系人  2.查看全部  3.搜索  4.修改  5.删除  6.退出\");\n    // TODO 1：把下面这行换成 while(true)+try-catch 的健壮输入：\n    //   类型错误（InputMismatchException）提示 \"输入无效，请输入整数！\" 并 sc.next() 后重试；\n    //   数字不在 1~6 之间也提示重试，合法了才赋值给 choice\n    int choice = 6;\n\n    if (choice == 6) {\n        System.out.println(\"再见！\");\n        break;\n    }\n\n    switch (choice) {\n        case 1:\n            // TODO 2：录入 姓名/电话/邮箱（电话号码用 sc.next() 读成 String），\n            //   姓名已存在（equals 判断）就提示 \"已存在\"，否则 add 并打印 \"添加成功！\"\n            System.out.println(\"【添加】功能待实现\");\n            break;\n        case 2:\n            // TODO 2：带序号遍历打印（i+1 + \".\" + showInfo()）；book.isEmpty() 时提示 \"还没有联系人\"\n            System.out.println(\"【查看】功能待实现\");\n            break;\n        case 3:\n            // TODO 3：输入关键字，用 c.getName().contains(keyword) 模糊匹配并打印所有命中项，无命中提示 \"无匹配结果\"\n            System.out.println(\"【搜索】功能待实现\");\n            break;\n        case 4:\n            // TODO 3：遍历找同名下标的联系人，找到用 setPhone/setEmail 更新并提示成功，找不到提示 \"查无此人\"\n            System.out.println(\"【修改】功能待实现\");\n            break;\n        case 5:\n            // TODO 3：遍历找到同名下标的联系人后 book.remove(i) 并打印 \"删除成功\"，然后立刻 break；找不到提示 \"查无此人\"\n            System.out.println(\"【删除】功能待实现\");\n            break;\n        default:\n            System.out.println(\"没有这个选项，请重新输入\");\n    }\n}",
+    "extra": [
+      {
+        "file": "Contact.java",
+        "code": "// 标准 JavaBean：私有属性 + 无参/全参构造 + getter/setter + showInfo\npublic class Contact {\n    private String name;\n    private String phone;\n    private String email;\n\n    public Contact() { }\n\n    public Contact(String name, String phone, String email) {\n        this.name = name;\n        this.phone = phone;\n        this.email = email;\n    }\n\n    public String getName() { return name; }\n    public void setName(String name) { this.name = name; }\n\n    public String getPhone() { return phone; }\n    public void setPhone(String phone) { this.phone = phone; }\n\n    public String getEmail() { return email; }\n    public void setEmail(String email) { this.email = email; }\n\n    public void showInfo() {\n        System.out.println(name + \"  电话：\" + phone + \"  邮箱：\" + email);\n    }\n}"
+      }
+    ],
+    "todos": [
+      "TODO 1：把菜单选择换成 while(true)+try-catch 的健壮输入（catch InputMismatchException 时提示并 sc.next()），并校验数字在 1~6 之间",
+      "TODO 2：实现 1 添加（姓名重复用 equals 判断提示“已存在”）和 2 查看（带序号遍历，空通讯录提示“还没有联系人”）",
+      "TODO 3：实现 3 搜索（getName().contains(keyword) 模糊匹配，无命中提示“无匹配结果”）、4 修改（找下标后 set）、5 删除（找下标后 remove 并立刻 break，找不到提示“查无此人”）"
+    ],
+    "expected": "输入 1 → 依次录入 张三 / 13800001111 / zs@xx.com，输出“添加成功！”；再次输入同名 → 输出“已存在”；输入 3 再输入关键字“张”→ 输出“-------- 搜索结果 --------” 和 “张三  电话：13800001111  邮箱：zs@xx.com”；输入 5 输入“李四”→ 输出“查无此人”；输入菜单时敲字母 → 提示“输入无效，请输入整数！”并重新显示菜单（不崩溃）；输入 6 → 输出“再见！”",
+    "hint": "ArrayList 的 contains/remove(对象) 默认靠 equals 判断，自定义对象现阶段一律“遍历找下标再操作”；删完记得 break，输入容错的关键是 catch 里的 sc.next()。"
+  }
+]

@@ -1,0 +1,308 @@
+[
+  {
+    "id": "c3s5",
+    "slug": "for-break-continue",
+    "goal": "掌握 for 循环的三要素写法，并会用 break 提前结束、用 continue 跳过本轮。",
+    "steps": [
+      "用 for 循环把 1~10 依次打印出来，确认循环体执行了 10 次",
+      "在循环体开头加 if (i == 5) { continue; }，观察 5 不再被打印",
+      "再加 if (i > 8) { break; }，观察循环打印完 8 就提前结束",
+      "另写一个 for 循环，用 if (i % 2 == 0) 累加出 1~100 的偶数和并打印"
+    ],
+    "imports": [],
+    "starter": "// 循环 1：把 1~10 依次打印出来\nfor (int i = 1; i <= 10; i++) {\n    System.out.println(i);\n}\n\n// 循环 2：求 1~100 的偶数和\nint sum = 0;\nfor (int i = 1; i <= 100; i++) {\n    // 在这里把偶数累加进 sum\n}\nSystem.out.println(\"1~100 偶数和 = \" + sum);",
+    "extra": [],
+    "todos": [
+      "在循环 1 里加 if (i == 5) { continue; }，让 5 不被打印",
+      "在循环 1 里加 if (i > 8) { break; }，让循环打印完 8 就提前结束",
+      "在循环 2 里写 if (i % 2 == 0) { sum += i; }，算出偶数和 2550"
+    ],
+    "expected": "1\n2\n3\n4\n6\n7\n8\n1~100 偶数和 = 2550",
+    "hint": "continue 只跳过本轮、break 立即结束整个循环；for 里执行 continue 后仍会走 i++，不用怕死循环。"
+  },
+  {
+    "id": "c3s6",
+    "slug": "atm-project",
+    "goal": "综合使用 if/else、switch、while 和 Scanner，做出能反复存取款、可退出的迷你 ATM。",
+    "steps": [
+      "先写菜单和 switch，四个选项里各放一句打印，选 4 能退出程序",
+      "用 while (true) 把菜单包起来，让每次操作完都能回到菜单",
+      "加一个余额变量（初始 1000.0），依次实现查询余额、存款和取款，取款前先判断够不够",
+      "在最前面加密码 while 循环，输对 123456 才进入菜单",
+      "跑一遍完整流程，修掉 bug 并补上至少 4 条注释"
+    ],
+    "imports": [
+      "java.util.Scanner"
+    ],
+    "starter": "Scanner sc = new Scanner(System.in);\ndouble balance = 1000.0;   // 初始余额\n\n// 登录：只判断一次，还没循环\nSystem.out.print(\"请输入密码：\");\nint pwd = sc.nextInt();\nif (pwd == 123456) {\n    System.out.println(\"登录成功！\");\n} else {\n    System.out.println(\"密码错误，请重新输入\");\n}\n\n// 菜单：只显示一次，还没循环\nSystem.out.println(\"====== ATM 菜单 ======\");\nSystem.out.println(\"1.查询余额  2.存款  3.取款  4.退出\");\nSystem.out.print(\"请选择功能：\");\nint choice = sc.nextInt();\n\nif (choice == 1) {\n    System.out.println(\"当前余额：\" + balance + \" 元\");\n} else {\n    System.out.println(\"该功能待实现\");\n}",
+    "extra": [],
+    "todos": [
+      "用 while 循环包住密码输入，反复提示直到输入 123456；再加一个错误次数计数器，错 3 次直接结束程序",
+      "把 if (choice == 1) 改成 switch，依次实现查询余额、存款（余额 += 金额）、取款（先判断余额是否足够，不够就提示余额不足，取款失败）、退出",
+      "用 while (true) 把菜单包起来实现反复操作，选 4 时用 break 退出并打印感谢使用，再见！"
+    ],
+    "expected": "请输入密码：123\n密码错误，请重新输入\n请输入密码：123456\n登录成功！\n\n====== ATM 菜单 ======\n1.查询余额  2.存款  3.取款  4.退出\n请选择功能：1\n当前余额：1000.0 元\n\n请选择功能：2\n请输入存款金额：500\n存款成功，当前余额：1500.0 元\n\n请选择功能：3\n请输入取款金额：2000\n余额不足，取款失败\n\n请选择功能：4\n感谢使用，再见！",
+    "hint": "switch 每个 case 末尾别忘 break；取款一定要先 if 判断余额够不够，否则会把余额减成负数。"
+  },
+  {
+    "id": "c4s1",
+    "slug": "array-basics",
+    "goal": "掌握数组的静态初始化、动态初始化和下标从 0 开始取值赋值的规则。",
+    "steps": [
+      "用静态初始化创建 {88, 92, 56, 77, 100}，并打印第 1 个元素",
+      "用 new int[3] 动态创建数组，观察没赋值格子的默认值",
+      "依次给下标 0、1、2 赋值 10、20、30 并打印出来",
+      "用注释说清长度 5 的数组为什么不能访问 scores[5]"
+    ],
+    "imports": [],
+    "starter": "// 静态初始化：创建时就知道装什么\nint[] scores = {88, 92, 56, 77, 100};\nSystem.out.println(\"第 1 个成绩：\" + scores[0]);\n\n// 动态初始化：先开 3 个格子，之后一个一个放\nint[] arr = new int[3];\nSystem.out.println(\"arr[0] 的默认值：\" + arr[0]);",
+    "extra": [],
+    "todos": [
+      "打印 scores 第 3 个成绩（下标 2），并给 arr 的下标 0、1、2 分别赋值为 10、20、30",
+      "用 println 打印 arr 的三个元素，再用下标把 scores 的最后一个元素也打印出来",
+      "写一行注释说明：长度 5 的数组为什么不能访问 scores[5]"
+    ],
+    "expected": "第 1 个成绩：88\narr[0] 的默认值：0\n第 3 个成绩：56\narr：10 20 30\n最后一个成绩：100",
+    "hint": "下标从 0 开始，长度 5 的数组合法下标只有 0~4，写 scores[5] 会报 ArrayIndexOutOfBoundsException。"
+  },
+  {
+    "id": "c4s2",
+    "slug": "array-loop-length",
+    "goal": "学会用 for 配合 arr.length 遍历数组，并分得清普通 for 和增强 for 的用途。",
+    "steps": [
+      "用普通 for 配合 arr.length 打印数组的每个元素",
+      "打印 arr.length，确认长度是 5 而且没有小括号",
+      "在循环里把每个元素加 5，再遍历一次打印修改后的数组",
+      "用增强 for 再遍历一遍，体会它拿不到下标"
+    ],
+    "imports": [],
+    "starter": "int[] arr = {10, 20, 30, 40, 50};\n\n// 普通 for：靠下标遍历\nfor (int i = 0; i < arr.length; i++) {\n    System.out.println(arr[i]);\n}\n\nSystem.out.println(\"数组长度：\" + arr.length);",
+    "extra": [],
+    "todos": [
+      "在遍历循环里把每个元素加 5（arr[i] = arr[i] + 5），循环后再遍历一次打印新数组",
+      "用增强 for（for (int x : arr)）再打印一遍数组，观察它拿不到下标",
+      "写一行注释说明为什么条件是 i < arr.length 而不是 i <= arr.length"
+    ],
+    "expected": "10\n20\n30\n40\n50\n数组长度：5\n15\n25\n35\n45\n55\n15 25 35 45 55",
+    "hint": "数组长度是 arr.length（没有小括号）；想修改元素必须用带下标的普通 for，增强 for 改不动原数组。"
+  },
+  {
+    "id": "c4s3",
+    "slug": "array-stats",
+    "goal": "用记录变量的套路完成数组的求和、平均分、最大值和最小值统计。",
+    "steps": [
+      "用累加器 sum 遍历求出数组总分",
+      "用 (double) sum / arr.length 求出平均分并保留小数",
+      "用打擂台法（max 初值取 arr[0]）求出最高分并记录它的下标",
+      "把判断改成更小就替换，求出最低分"
+    ],
+    "imports": [],
+    "starter": "int[] arr = {88, 92, 56, 77, 100};\n\n// 求和：循环前准备累加器，循环中不断累加\nint sum = 0;\nfor (int i = 0; i < arr.length; i++) {\n    sum += arr[i];\n}\nSystem.out.println(\"总分：\" + sum);",
+    "extra": [],
+    "todos": [
+      "用 (double) sum / arr.length 计算并打印平均分，保留小数",
+      "用打擂台法求最高分（max 初值取 arr[0]），并记录最高分的下标，打印成最高分在第几位",
+      "用同样的擂台法求出最低分并打印"
+    ],
+    "expected": "总分：413\n平均分：82.6\n最高分：100，在第 5 位\n最低分：56",
+    "hint": "max/min 的初值要用 arr[0]，不要写 0；求平均别忘 (double) 强转，否则整数相除小数会丢掉。"
+  },
+  {
+    "id": "c4s4",
+    "slug": "search-bubble-sort",
+    "goal": "会用顺序查找定位元素下标，并能手写冒泡排序把数组升序排列。",
+    "steps": [
+      "用顺序查找找出 56 在数组中的下标，找到后用 break 提前收工",
+      "把 target 改成数组里没有的 66，体会用 -1 表示没找到",
+      "给数组 {5, 3, 8, 1} 手写冒泡排序，相邻比较后用 temp 交换",
+      "用普通 for 循环打印排序后的结果，确认是升序"
+    ],
+    "imports": [],
+    "starter": "int[] arr = {88, 92, 56, 77, 100};\nint target = 56;\nint index = -1;   // -1 表示没找到\n\nfor (int i = 0; i < arr.length; i++) {\n    if (arr[i] == target) {\n        index = i;\n        break;\n    }\n}\nSystem.out.println(\"下标：\" + index);",
+    "extra": [],
+    "todos": [
+      "把 target 改成 66，观察 index 仍然是 -1，并补上 if-else：找到打印找到了下标，没找到打印没找到",
+      "给数组 {5, 3, 8, 1} 手写冒泡排序，相邻两个比较、大的往右换，排成升序",
+      "用普通 for 循环把排序后的数组依次打印出来"
+    ],
+    "expected": "没找到（index = -1）\n排序后：1 3 5 8",
+    "hint": "交换两个变量必须借助第三个变量 temp；冒泡是 n-1 轮，内层比较次数要减去已经排好的 i。"
+  },
+  {
+    "id": "c4s5",
+    "slug": "score-analyzer",
+    "goal": "用数组把录入、遍历、求和、最值和分段统计串起来，输出一份成绩分析报告。",
+    "steps": [
+      "先用写死的数组 {88, 92, 56, 77, 100} 把总分和平均分算对",
+      "用打擂台法补上最高分和最低分，初值取数组第一个元素",
+      "用计数器统计及格和不及格人数，并用 if / else if 分四段统计优秀、良好、及格、不及格",
+      "把写死的数组改成 Scanner 录入：先输入人数 n，new int[n] 后循环录入 n 个成绩",
+      "选做：手写冒泡排序把成绩升序排列后再打印一行"
+    ],
+    "imports": [
+      "java.util.Scanner"
+    ],
+    "starter": "int[] scores = {88, 92, 56, 77, 100};\n\n// 求和\nint sum = 0;\nfor (int i = 0; i < scores.length; i++) {\n    sum += scores[i];\n}\n\nSystem.out.println(\"====== 成绩分析报告 ======\");\n// 遍历打印所有成绩\nSystem.out.print(\"所有成绩：\");\nfor (int i = 0; i < scores.length; i++) {\n    System.out.print(scores[i] + \" \");\n}\nSystem.out.println();\nSystem.out.println(\"总分：\" + sum);\nSystem.out.println(\"==========================\");",
+    "extra": [],
+    "todos": [
+      "计算并打印平均分、最高分、最低分（平均值用 (double) sum / scores.length，最值用打擂台法，初值取 scores[0]）",
+      "用计数器统计及格（>=60）和不及格人数，再用 if / else if 从高往低把成绩分成优秀(>=90)、良好(>=80)、及格(>=60)、不及格四段分别计数",
+      "把写死的数组改成 Scanner 录入：先输入学生人数 n，用 new int[n] 创建数组，再循环输入 n 个成绩"
+    ],
+    "expected": "请输入学生人数：5\n请依次输入 5 位同学的成绩：\n第 1 位成绩：88\n第 2 位成绩：92\n第 3 位成绩：56\n第 4 位成绩：77\n第 5 位成绩：100\n\n====== 成绩分析报告 ======\n所有成绩：88 92 56 77 100\n总分：413\n平均分：82.6\n最高分：100\n最低分：56\n及格人数：4，不及格人数：1\n各分数段：优秀(90-100):2  良好(80-89):1  及格(60-79):1  不及格(<60):1\n升序排列：56 77 88 92 100\n==========================",
+    "hint": "所有统计变量（sum、max、min、各计数器）必须在循环开始之前初始化；分段判断从高往低写（>=90 → >=80 → >=60 → else），顺序写反会全落进第一段。"
+  },
+  {
+    "id": "c5s1",
+    "slug": "method-intro",
+    "goal": "理解方法就是有名字的一段代码，能把重复代码抽成方法并反复调用。",
+    "steps": [
+      "观察 main 里重复粘贴的欢迎语，感受复制代码的麻烦",
+      "在类里面、main 外面定义 public static void printWelcome()",
+      "在 main 里调用 printWelcome() 两次，替换掉重复的六行",
+      "再定义 printLine() 打印一行分隔线，并在 main 里调用"
+    ],
+    "imports": [],
+    "starter": "System.out.println(\"欢迎光临！\");\nSystem.out.println(\"今天也要加油哦\");\nSystem.out.println(\"----------\");\n\nSystem.out.println(\"欢迎光临！\");\nSystem.out.println(\"今天也要加油哦\");\nSystem.out.println(\"----------\");",
+    "extra": [],
+    "todos": [
+      "把重复的两行欢迎语抽成方法：在类里面、main 外面写 public static void printWelcome() { ... }",
+      "在 main 里用 printWelcome(); 调用两次，把原来的六行 println 替换掉",
+      "再定义 printLine() 只负责打印一行分隔线，并在 main 里调用它"
+    ],
+    "expected": "欢迎光临！\n今天也要加油哦\n----------\n欢迎光临！\n今天也要加油哦\n----------",
+    "hint": "方法定义必须写在类里面、main 的外面（和 main 平级）；调用时别忘写小括号，现阶段自定义方法都要加 static。"
+  },
+  {
+    "id": "c5s2",
+    "slug": "method-define-call",
+    "goal": "掌握无参无返回值方法的定义与调用，用方法复用打印分割线，理解方法必须与 main 平级。",
+    "steps": [
+      "运行初始程序，观察 Tools.printLine() 打印出的分割线只有两个等号",
+      "把 Tools.java 里 printLine() 的方法体改成打印一行 20 个等号并运行",
+      "在 main 最前面补一句 Tools.printLine();，让标题上方也出现分割线",
+      "在 Tools 中新增 printHeader()（内部两次调用 printLine()），并在 main 中调用它",
+      "确认只改一处方法体、所有调用处输出都跟着变，体会方法的复用价值"
+    ],
+    "imports": [],
+    "starter": "System.out.println(\"成绩单标题\");\nTools.printLine();\nSystem.out.println(\"小明：90分\");",
+    "extra": [
+      {
+        "file": "Tools.java",
+        "code": "public class Tools {\n    public static void printLine() {\n        System.out.println(\"==\");\n    }\n}"
+      }
+    ],
+    "todos": [
+      "把 Tools.printLine() 的方法体改成打印一行 20 个等号（即 20 个 = 号）",
+      "在 main 最前面补一句 Tools.printLine();，让标题上方也有分割线",
+      "在 Tools 中新增 printHeader()：先调用 printLine()、再打印“学生管理系统”、再调用 printLine()，并在 main 中调用它"
+    ],
+    "expected": "====================\n成绩单标题\n====================\n小明：90分\n====================\n学生管理系统\n====================",
+    "hint": "方法定义要写在类里、与 main 平级（本练习放在 Tools 类里）；调用时别忘了小括号，要写 Tools.printLine(); 而不是 Tools.printLine。"
+  },
+  {
+    "id": "c5s3",
+    "slug": "params-return",
+    "goal": "掌握带参数与带返回值方法的定义和调用，会写形参、实参并用 return 把结果交回调用处。",
+    "steps": [
+      "运行初始程序，观察 printWelcome 用同一段逻辑换数据打印两组欢迎语",
+      "补全 Tools.add 的方法体，让它返回两个整数之和，并运行核对结果",
+      "补全 Tools.isAdult，让它按年龄返回 true 或 false，并在 main 中当布尔条件使用",
+      "在 main 中把 add 的返回值用 int 变量接住并打印，确认 return 的值能被赋值给变量"
+    ],
+    "imports": [],
+    "starter": "Tools.printWelcome(\"小明\", 3);\nTools.printWelcome(\"小红\", 1);\nSystem.out.println(Tools.add(3, 5));",
+    "extra": [
+      {
+        "file": "Tools.java",
+        "code": "public class Tools {\n    public static void printWelcome(String name, int count) {\n        for (int i = 0; i < count; i++) {\n            System.out.println(\"欢迎你，\" + name);\n        }\n    }\n\n    public static int add(int a, int b) {\n        return 0;\n    }\n\n    public static boolean isAdult(int age) {\n        return false;\n    }\n}"
+      }
+    ],
+    "todos": [
+      "补全 Tools.add(int a, int b) 的方法体，让它返回两个数的和（把 return 0 改成正确结果）",
+      "补全 Tools.isAdult(int age)：age 大于等于 18 返回 true，否则返回 false",
+      "在 main 中把 add 的返回值用 int 变量接住再打印，并加一句：当 Tools.isAdult(20) 成立时打印“可以进入”"
+    ],
+    "expected": "欢迎你，小明\n欢迎你，小明\n欢迎你，小明\n欢迎你，小红\n8\n可以进入",
+    "hint": "返回类型不是 void 的方法，所有分支都必须有 return，且返回值类型要和声明的返回类型匹配（声明 int 就不要返回带小数点的数）。"
+  },
+  {
+    "id": "c5s4",
+    "slug": "overload-add",
+    "goal": "理解方法重载：同名方法只要参数列表不同，调用时会由 Java 按实参自动选择对应版本。",
+    "steps": [
+      "运行初始程序，观察 add(1, 2) 自动匹配了 int 版本并输出 3",
+      "补全 add(double a, double b) 的方法体，看调用 add(1.5, 2.5) 选中的是哪一个版本",
+      "补全 add(int a, int b, int c) 的方法体，实现三数相加",
+      "在 main 中把三个 add 调用都打印出来，对照输出确认 Java 的选择结果"
+    ],
+    "imports": [],
+    "starter": "System.out.println(Tools.add(1, 2));",
+    "extra": [
+      {
+        "file": "Tools.java",
+        "code": "public class Tools {\n    public static int add(int a, int b) {\n        return a + b;\n    }\n\n    public static double add(double a, double b) {\n        return 0;\n    }\n\n    public static int add(int a, int b, int c) {\n        return 0;\n    }\n}"
+      }
+    ],
+    "todos": [
+      "补全 Tools.add(double a, double b)，返回两数之和（注意返回类型是 double）",
+      "补全 Tools.add(int a, int b, int c)，返回三个数之和",
+      "在 main 中依次打印 Tools.add(1.5, 2.5) 和 Tools.add(1, 2, 3)，观察 Java 分别自动选择了哪个版本"
+    ],
+    "expected": "3\n4.0\n6",
+    "hint": "重载只认“方法名相同 + 参数列表不同”；只改返回类型或只改参数名都不算重载，会报方法已定义的冲突错误。"
+  },
+  {
+    "id": "c5s5",
+    "slug": "array-param",
+    "goal": "掌握数组作为参数与返回值，理解方法内修改数组元素会改变外部传入的同一个原数组。",
+    "steps": [
+      "运行初始程序，观察 printArray 把整个数组交给方法后一次性打印",
+      "补全 Tools.addFive，用 for 循环给数组每个元素加 5",
+      "在 main 中调用 addFive(scores) 后再打印一次 scores，观察原数组有没有被改变",
+      "补全 Tools.makeArray，让它返回一个装着 1 到 n 的数组，并在 main 中打印该数组"
+    ],
+    "imports": [],
+    "starter": "int[] scores = {88, 92, 56};\nTools.printArray(scores);\nSystem.out.println(\"总分：\" + Tools.getSum(scores));",
+    "extra": [
+      {
+        "file": "Tools.java",
+        "code": "public class Tools {\n    public static void printArray(int[] arr) {\n        for (int i = 0; i < arr.length; i++) {\n            System.out.print(arr[i] + \" \");\n        }\n        System.out.println();\n    }\n\n    public static int getSum(int[] arr) {\n        int sum = 0;\n        for (int x : arr) {\n            sum += x;\n        }\n        return sum;\n    }\n\n    public static void addFive(int[] arr) {\n        // TODO: 用 for 循环给每个元素加 5，直接改 arr[i]\n    }\n\n    public static int[] makeArray(int n) {\n        // TODO: 新建长度为 n 的数组并填入 1 到 n 后返回\n        return new int[n];\n    }\n}"
+      }
+    ],
+    "todos": [
+      "补全 Tools.addFive(int[] arr)：用 for 循环给数组每个元素加 5（在方法内直接改 arr[i]，不要改方法签名）",
+      "补全 Tools.makeArray(int n)：新建长度为 n 的数组，填入 1 到 n 后返回（返回类型是 int[]）",
+      "在 main 中调用 Tools.addFive(scores) 后再次 Tools.printArray(scores)，观察原数组是否被改变；再打印 Tools.makeArray(5)"
+    ],
+    "expected": "88 92 56\n总分：236\n93 97 61\n1 2 3 4 5",
+    "hint": "调用时实参只写数组名，不加中括号；数组传给方法传的是同一组数据的位置，方法里改元素会改到外面的原数组。"
+  },
+  {
+    "id": "c5s6",
+    "slug": "score-analyzer-refactor",
+    "goal": "用方法把成绩分析器重构：录入、打印、求和、平均、最高分、分段统计各写一个方法各司其职。",
+    "steps": [
+      "运行初始程序，依次输入成绩个数 5 和成绩 90、85、77、59、100，观察当前输出",
+      "补全 ScoreTools.getSum 与 getAvg，让总分和平均分计算正确（平均分要用 double 计算）",
+      "补全 ScoreTools.getMax，用循环找出并返回数组中的最高分",
+      "补全 ScoreTools.printLevelCount，统计并打印四个分数段的人数",
+      "对照第 4 章的成绩分析器，确认每项结果一致，main 只负责按顺序调用各方法"
+    ],
+    "imports": [],
+    "starter": "int[] scores = ScoreTools.inputScores();\nSystem.out.print(\"所有成绩：\");\nScoreTools.printScores(scores);\nSystem.out.println(\"总分：\" + ScoreTools.getSum(scores));\nSystem.out.println(\"平均分：\" + ScoreTools.getAvg(scores));\nSystem.out.println(\"最高分：\" + ScoreTools.getMax(scores));\nScoreTools.printLevelCount(scores);",
+    "extra": [
+      {
+        "file": "ScoreTools.java",
+        "code": "import java.util.Scanner;\n\npublic class ScoreTools {\n    public static int[] inputScores() {\n        Scanner sc = new Scanner(System.in);\n        System.out.print(\"请输入成绩个数：\");\n        int n = sc.nextInt();\n        int[] arr = new int[n];\n        for (int i = 0; i < n; i++) {\n            System.out.print(\"请输入第 \" + (i + 1) + \" 个成绩：\");\n            arr[i] = sc.nextInt();\n        }\n        return arr;\n    }\n\n    public static void printScores(int[] arr) {\n        for (int i = 0; i < arr.length; i++) {\n            System.out.print(arr[i] + \" \");\n        }\n        System.out.println();\n    }\n\n    public static int getSum(int[] arr) {\n        return 0;\n    }\n\n    public static double getAvg(int[] arr) {\n        return 0;\n    }\n\n    public static int getMax(int[] arr) {\n        return 0;\n    }\n\n    public static void printLevelCount(int[] arr) {\n    }\n}"
+      }
+    ],
+    "todos": [
+      "补全 ScoreTools.getSum 与 getAvg，分别返回总分和平均分（平均分要用 double 计算，避免整数相除丢小数）",
+      "补全 ScoreTools.getMax，用循环遍历数组找出最大值并返回",
+      "补全 ScoreTools.printLevelCount，统计并打印 90 以上、80~89、60~79、60 以下四个分数段的人数"
+    ],
+    "expected": "所有成绩：90 85 77 59 100\n总分：411\n平均分：82.2\n最高分：100\n90 以上：2 人\n80~89：1 人\n60~79：1 人\n60 以下：1 人",
+    "hint": "每个方法只做一件事，main 只负责按顺序调用；注意 getAvg 的返回类型是 double，求和后除以长度时不要写成整数除法。"
+  }
+]

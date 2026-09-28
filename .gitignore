@@ -1,0 +1,12 @@
+﻿# IDE
+.trae/
+.vscode/
+*.swp
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# 临时文件
+*.tmp
+*~

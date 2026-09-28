@@ -1,0 +1,343 @@
+[
+  {
+    "id": "c1s1",
+    "slug": "java-what",
+    "goal": "认识 Java 是什么、能做什么，并亲手运行一段会打印文字的 Java 程序。",
+    "steps": [
+      "在 main 方法里用 System.out.println 输出一行 \"Hello,World!\"",
+      "把引号里的文字换成一句自我介绍（姓名 + 为什么学 Java），重新运行确认输出变了",
+      "再补一行 System.out.println，说出 Java 的一个真实用途，比如网站后台或安卓 App",
+      "用 // 注释在代码里写下「一次编写，到处运行，靠 JVM 跨平台」"
+    ],
+    "imports": [],
+    "starter": "System.out.println(\"Hello,World!\");\n// TODO 1：把上面这行的文字换成一句自我介绍（姓名 + 为什么学 Java）\n// TODO 2：再补一行 println，说出 Java 的一个真实用途\n// TODO 3：用 // 写一条注释，说明 Java 靠 JVM 实现跨平台",
+    "extra": [],
+    "todos": [
+      "TODO 1：把第一行 println 里的文字改成你的自我介绍",
+      "TODO 2：补一行 println，写出 Java 的一个真实用途",
+      "TODO 3：用 // 写一条注释，说明跨平台靠 JVM"
+    ],
+    "expected": "运行后屏幕上出现两行以上文字，例如：\nHello,World!\n我是小明，我想学 Java 做后台开发",
+    "hint": "双引号里写什么屏幕就显示什么，双引号本身不显示；句末的分号最容易漏。"
+  },
+  {
+    "id": "c1s2",
+    "slug": "jdk-jre-jvm",
+    "goal": "用打印输出讲清 JDK、JRE、JVM 的套娃包含关系，记住写代码要装 JDK。",
+    "steps": [
+      "在 main 里用三行 println 分别输出 JVM、JRE、JDK 的名字",
+      "把三行内容补全：JVM 负责运行程序、JRE 是运行环境、JDK 是开发工具包",
+      "再用一行 println 输出包含关系：JDK 包含 JRE，JRE 包含 JVM",
+      "用 // 注释写一句「写代码装 JDK，因为 javac 只在 JDK 里」"
+    ],
+    "imports": [],
+    "starter": "System.out.println(\"=== JDK / JRE / JVM 小卡片 ===\");\n// TODO 1：把下面三行冒号后面的内容补全，说清它们分别是什么\nSystem.out.println(\"JVM：\");\nSystem.out.println(\"JRE：\");\nSystem.out.println(\"JDK：\");\n// TODO 2：补一行 println，输出「JDK 包含 JRE，JRE 包含 JVM」",
+    "extra": [],
+    "todos": [
+      "TODO 1：把 JVM、JRE、JDK 三行冒号后面的解释补全",
+      "TODO 2：补一行 println，输出三者的包含关系",
+      "TODO 3：用 // 注释写一句「javac 来自 JDK，所以写代码必须装 JDK」"
+    ],
+    "expected": "=== JDK / JRE / JVM 小卡片 ===\nJVM：Java 虚拟机，真正运行程序的「虚拟电脑」\nJRE：运行环境，等于 JVM 加官方类库\nJDK：开发工具包，等于 JRE 加编译器 javac\nJDK 包含 JRE，JRE 包含 JVM",
+    "hint": "记不住就念口诀：大圈套小圈，JDK 大于 JRE 大于 JVM。"
+  },
+  {
+    "id": "c1s3",
+    "slug": "env-and-commands",
+    "goal": "亲手用 javac 编译、java 运行，弄清两个命令后面分别跟什么名字。",
+    "steps": [
+      "打开终端输入 java -version，记下显示的版本号",
+      "进入 JavaLearning 目录执行 javac HelloWorld.java，观察文件夹里新生成的 .class 文件",
+      "执行 java HelloWorld（后面只写类名）看到输出，再故意写一次 java HelloWorld.class 看报错",
+      "回到代码里，用 println 把这次用到的两条命令打印成一张小抄"
+    ],
+    "imports": [],
+    "starter": "System.out.println(\"=== 编译运行小抄 ===\");\n// TODO 1：用 println 输出编译命令（javac 后面要带 .java 文件名）\nSystem.out.println(\"javac \");\n// TODO 2：用 println 输出运行命令（java 后面只写类名，不带后缀）\nSystem.out.println(\"java \");",
+    "extra": [],
+    "todos": [
+      "TODO 1：把第一行 println 补成 javac HelloWorld.java",
+      "TODO 2：把第二行 println 补成 java HelloWorld，注意不带后缀",
+      "TODO 3：先在终端里真的敲一遍 java -version、javac HelloWorld.java、java HelloWorld"
+    ],
+    "expected": "终端里能看到 JDK 版本号和 Hello,World! 输出；程序运行后输出：\n=== 编译运行小抄 ===\njavac HelloWorld.java\njava HelloWorld",
+    "hint": "运行时 java 后面只写类名，多写 .class 或 .java 都会报「找不到或无法加载主类」。"
+  },
+  {
+    "id": "c1s4",
+    "slug": "hello-world-detail",
+    "goal": "逐行读懂 HelloWorld，能改输出内容并分清 print 与 println 的换行差别。",
+    "steps": [
+      "在 main 里用 println 输出 Hello,World!，再补一行输出 Hello,Java!",
+      "把其中一行改成 print，运行后观察它和下一行是否挤在同一行，再改回 println",
+      "用三行 println 分三行输出你的姓名、年龄、城市",
+      "用 // 注释说明某一行 println 输出的是什么，并检查代码里的大括号是否成对"
+    ],
+    "imports": [],
+    "starter": "System.out.println(\"Hello,World!\");\n// TODO 1：补一行 println，输出 Hello,Java!\n// TODO 2：把上面任意一行的 println 改成 print，观察是否与下一行挤在同一行\n// TODO 3：再补三行 println，分别输出你的姓名、年龄、城市",
+    "extra": [],
+    "todos": [
+      "TODO 1：补一行 println 输出 Hello,Java!",
+      "TODO 2：把其中一个 println 改成 print，对比输出有没有换行",
+      "TODO 3：补三行 println，分三行输出姓名、年龄、城市"
+    ],
+    "expected": "Hello,World!\nHello,Java!\n小明\n18\n广州\n（改成 print 后 Hello,World! 会和下一行挤在同一行）",
+    "hint": "println 里的 ln 就是 line（换行）；大小写敏感，System 写成 system 立刻报错。"
+  },
+  {
+    "id": "c1s5",
+    "slug": "run-and-errors",
+    "goal": "看懂 .java 到 .class 再到输出的流程，会按报错行号和关键词定位问题。",
+    "steps": [
+      "用四行 println 从上到下画出流程：HelloWorld.java、javac 编译、HelloWorld.class、java 启动 JVM 输出结果",
+      "故意删掉某一行 println 末尾的分号运行一次，抄下报错里的行号和关键词，再把分号补回来",
+      "把 System 写成 system 试一次，记下「找不到符号」这类报错关键词，再改回正确大小写",
+      "用 // 注释写下「改了 .java 必须重新 javac」和「报错先看行号，再看关键词」"
+    ],
+    "imports": [],
+    "starter": "System.out.println(\"HelloWorld.java\");\nSystem.out.println(\"   ↓ javac 编译\");\n// TODO 1：补一行 println，输出中间产物 HelloWorld.class\n// TODO 2：再补一行 println，输出程序运行后屏幕上显示的文字\n// 小实验：删掉上面某一行末尾的分号运行一次，记下报错的行号，再把分号补回来",
+    "extra": [],
+    "todos": [
+      "TODO 1：补一行 println 输出中间产物 HelloWorld.class",
+      "TODO 2：再补一行 println，输出程序运行后屏幕上的文字",
+      "TODO 3：用 // 注释写下「改了代码必须重新 javac」"
+    ],
+    "expected": "HelloWorld.java\n   ↓ javac 编译\nHelloWorld.class\n   ↓ java 启动 JVM\nHello,World!",
+    "hint": "报错先看「文件名:第几行」，再看「错误: 需要';'」这类关键词，别被整段红字吓到。"
+  },
+  {
+    "id": "c1s6",
+    "slug": "comments-style",
+    "goal": "会用单行和多行注释，按缩进与命名规范写出整洁易读的 Java 代码。",
+    "steps": [
+      "用 /* */ 多行注释在代码开头写上程序名和你的名字",
+      "在每一条 println 的上方用 // 写一句注释，说明这行输出什么",
+      "把其中一行 println 用 // 注释掉，运行确认输出少了一行，然后取消注释",
+      "检查缩进是否为 4 个空格一层，格式化后对比前后的可读性"
+    ],
+    "imports": [],
+    "starter": "System.out.println(\"=== 规范练习 ===\");\nSystem.out.println(\"姓名：小明\");\nSystem.out.println(\"城市：广州\");\n// TODO 1：在每行 println 上方用 // 写一句注释，说明这行输出什么\n// TODO 2：把「城市」那一行的 println 用 // 注释掉，运行看输出是否少一行，再取消注释\n// TODO 3：用 /* */ 在代码开头写一段多行注释，写上程序名和你的名字",
+    "extra": [],
+    "todos": [
+      "TODO 1：给每条 println 上方加一行 // 注释",
+      "TODO 2：把某一行 println 用 // 注释掉再取消注释，对比输出",
+      "TODO 3：用 /* */ 写一段多行注释，写上程序名和你的名字"
+    ],
+    "expected": "=== 规范练习 ===\n姓名：小明\n城市：广州\n（某行被注释掉时该行不再输出，取消注释后又出现）",
+    "hint": "注释会被编译器完全忽略；先成对打出 {}、()、\"\" 再往里面填内容，能少一半低级错误。"
+  },
+  {
+    "id": "c2s1",
+    "slug": "variables-intro",
+    "goal": "会声明 int 变量、赋值与重新赋值，并用 println 输出变量的值。",
+    "steps": [
+      "在 main 里声明 int 变量 age 并赋值 18，用 println 输出它",
+      "声明 int 变量 nextYearAge = age + 1，用 println 输出，确认结果是 19",
+      "把 age 重新赋值为 19（不要再写 int），再用 println 输出一次",
+      "声明 int 变量 count 并赋值 0，执行 count = count + 1 后用 println 输出"
+    ],
+    "imports": [],
+    "starter": "int age = 18;\nSystem.out.println(age);\n// TODO 1：声明 int 变量 nextYearAge = age + 1，并用 println 输出\n// TODO 2：把 age 重新赋值为 19（不要重复写 int），再输出一次\n// TODO 3：声明 int 变量 count 并赋值 0，执行 count = count + 1 后用 println 输出",
+    "extra": [],
+    "todos": [
+      "TODO 1：声明 int nextYearAge = age + 1 并用 println 输出",
+      "TODO 2：把 age 重新赋值为 19，再输出一次 age",
+      "TODO 3：声明 int count = 0，执行 count = count + 1 后输出它"
+    ],
+    "expected": "18\n19\n19\n1",
+    "hint": "重新赋值时不要再写 int；变量没赋值就使用会报「可能尚未初始化变量」。"
+  },
+  {
+    "id": "c2s2",
+    "slug": "eight-primitive-types",
+    "goal": "记住常用的四种基本类型，会按类型给变量赋值并分清单引号和双引号。",
+    "steps": [
+      "声明 int 变量 count 表示班级人数 45，用 println 输出它",
+      "声明 double 变量 price = 19.9 表示商品价格，用 println 输出它",
+      "声明 char 变量 level = 'A' 和 boolean 变量 isVip = true，分别用 println 输出",
+      "声明 int a = 10, b = 20，计算 sum = a + b 并用 println 输出 30"
+    ],
+    "imports": [],
+    "starter": "System.out.println(\"=== 基本类型练习 ===\");\n// TODO 1：声明 int 变量 count = 45（班级人数），用 println 输出\n// TODO 2：声明 double 变量 price = 19.9（商品价格），用 println 输出\n// TODO 3：声明 char 变量 level = 'A' 和 boolean 变量 isVip = true，分别用 println 输出\n// TODO 4：声明 int a = 10, b = 20，计算 sum = a + b 并用 println 输出",
+    "extra": [],
+    "todos": [
+      "TODO 1：声明 int count = 45 和 double price = 19.9，分别输出",
+      "TODO 2：声明 char level = 'A' 和 boolean isVip = true，分别输出",
+      "TODO 3：声明 int a = 10, b = 20，算出 sum = a + b 并输出"
+    ],
+    "expected": "=== 基本类型练习 ===\n45\n19.9\nA\ntrue\n30",
+    "hint": "char 用单引号且只能装一个字符，String 用双引号；小数默认就是 double，别写成 float。"
+  },
+  {
+    "id": "c2s3",
+    "slug": "operators",
+    "goal": "通过计算两个整数的和差积商余，掌握算术、赋值、自增与关系运算符的用法。",
+    "steps": [
+      "声明两个 int 变量 a、b 并赋初值，用加号拼接打印它们的和与差。",
+      "用乘号打印 a * b 的结果，再用除号求 a 除以 b 的商。",
+      "用取余符号 % 求 a 除以 b 的余数并打印，体会整数除法的截断。",
+      "用关系运算符打印 a > b、a == b 的 boolean 结果。"
+    ],
+    "imports": [],
+    "starter": "int a = 17;\nint b = 5;\n\nSystem.out.println(\"a + b = \" + (a + b));\nSystem.out.println(\"a - b = \" + (a - b));",
+    "extra": [],
+    "todos": [
+      "用 System.out.println 打印 a * b 的结果，再用 / 求 a 除以 b 的商并打印。",
+      "用 % 计算 a 除以 b 的余数并打印。",
+      "打印 a > b、a == b 的比较结果，再用 += 把 b 加 12 后重新比较一次。"
+    ],
+    "expected": "a + b = 22\na - b = 12\na * b = 85\na / b = 3\na % b = 2\na > b = true\na == b = false",
+    "hint": "整数相除会直接丢掉小数部分，17 / 5 得 3 而不是 3.4；想保留小数要让其中一个数写成 17.0。"
+  },
+  {
+    "id": "c2s4",
+    "slug": "type-cast",
+    "goal": "用自动转换和强制转换处理整数与小数的互转，学会求平均分不丢小数。",
+    "steps": [
+      "声明 int 与 double 变量并直接赋值，观察小盒子倒进大盒子的自动转换。",
+      "用 (int) 强制转换 double 变量，打印截断后（不是四舍五入）的整数。",
+      "用 (double) 转换被除数，求出带小数的平均分并打印。",
+      "打印 char 'A' 转成 int 的编码数字，了解字符与整数的关系。"
+    ],
+    "imports": [],
+    "starter": "double price = 39.9;\nint total = 100;\nint count = 3;\n\nSystem.out.println(\"原价取整：\" + (int) price);\nSystem.out.println(\"整数平均分：\" + (total / count));",
+    "extra": [],
+    "todos": [
+      "用 (int) 强制转换把 price 的小数部分截断，打印截断后的整数。",
+      "把 total 用 (double) 强转后再除以 count，打印带小数的平均分。",
+      "声明 char c = 'A'，用 int 变量接收它并打印编码值。"
+    ],
+    "expected": "原价取整：39\n平均分：33.333333333333336\n'A' 的编码 = 65",
+    "hint": "强制转换只是把小数点后面的部分砍掉，39.9 变成 39 而不是 40；求平均分要先转 double 再除。"
+  },
+  {
+    "id": "c2s5",
+    "slug": "scanner-input",
+    "goal": "学会 Scanner 的三步用法，用键盘输入整数、小数和文字并打印结果。",
+    "steps": [
+      "在文件最顶部导入 java.util.Scanner。",
+      "在 main 里用 new Scanner(System.in) 领取一个扫描器并起名 sc。",
+      "用 System.out.print 写提示语，用 sc.nextInt() 接收整数年龄并打印明年年龄。",
+      "用 sc.nextDouble() 接收身高、用 sc.next() 接收姓名，拼成一句话打印。"
+    ],
+    "imports": [
+      "java.util.Scanner"
+    ],
+    "starter": "Scanner sc = new Scanner(System.in);\n\n// 先把年龄写死，跑通后再改成输入\nint age = 18;\n\nSystem.out.print(\"请输入你的年龄：\");\nSystem.out.println(\"你明年 \" + (age + 1) + \" 岁\");",
+    "extra": [],
+    "todos": [
+      "把 age 的固定值 18 改成 sc.nextInt()，让程序停下来等用户输入年龄。",
+      "用 sc.nextDouble() 接收身高并存进 double 变量，打印“你的身高是…米”。",
+      "用 sc.next() 接收姓名并存进 String 变量，拼成自我介绍的句子打印。"
+    ],
+    "expected": "请输入你的年龄：18\n你明年 19 岁\n请输入你的身高：1.75\n你的身高是 1.75 米\n请输入你的姓名：小明\n你好，小明",
+    "hint": "import java.util.Scanner; 必须写在 class 外面、文件最顶部；要整数用 nextInt()，要小数用 nextDouble()，输入类型不匹配会报 InputMismatchException。"
+  },
+  {
+    "id": "c2s6",
+    "slug": "cashier-project",
+    "goal": "综合运用变量、类型、运算与 Scanner，写出一个能算账找零的收银台程序。",
+    "steps": [
+      "用 Scanner 依次接收商品名、单价、数量、折扣和付款金额五个输入。",
+      "计算原价合计 totalPrice = 单价 × 数量。",
+      "计算应付金额 payable = 原价合计 × 折扣，再算找零 change = 付款金额 − 应付金额。",
+      "按小票格式逐行打印商品、单价、数量、原价合计、折扣、应付金额、付款和找零。",
+      "给每一步计算补上注释，并检查变量名是否见名知意、缩进是否整齐。"
+    ],
+    "imports": [
+      "java.util.Scanner"
+    ],
+    "starter": "// 第一步：先用写死的值把计算跑通，再把它们逐个换成 Scanner 输入\nString name = \"矿泉水\";\ndouble price = 2.5;\nint count = 3;\ndouble discount = 0.8;\ndouble pay = 10.0;\n\n// 计算原价合计\ndouble totalPrice = price * count;\n\nSystem.out.println(\"====== 欢迎光临便利蜂 ======\");\nSystem.out.println(\"商品：\" + name);\nSystem.out.println(\"原价合计：\" + totalPrice + \" 元\");\nSystem.out.println(\"==========================\");",
+    "extra": [],
+    "todos": [
+      "补上应付金额 payable = totalPrice * discount 和找零 change = pay - payable 两行计算。",
+      "用 Scanner 接收商品名、单价、数量、折扣、付款金额，替换掉写死的五个值。",
+      "按小票格式补齐单价、数量、折扣、应付金额、付款、找零六行打印，并保证代码里至少有 3 条注释。"
+    ],
+    "expected": "输入 矿泉水、2.5、3、0.8、10 后，打印小票：原价合计 7.5 元、应付金额 6.0 元、找零 4.0 元。",
+    "hint": "金额一律用 double、数量用 int；做不出来时先让写死值的版本跑通，再把值逐个换成 sc.nextDouble()，测试时保证付款金额 ≥ 应付金额。"
+  },
+  {
+    "id": "c3s1",
+    "slug": "if-branch",
+    "goal": "用 if 和 if-else 让程序按条件二选一执行，理解判断流程与常见写法错误。",
+    "steps": [
+      "声明年龄变量，用 if 判断是否大于等于 18 并打印“成年”。",
+      "给 if 补上 else 分支，让条件不成立时打印“未成年”。",
+      "改小年龄变量的值重新运行，验证走的是 else 分支。",
+      "检查条件后面没有多写分号、判断相等用的是两个等号。"
+    ],
+    "imports": [],
+    "starter": "int age = 20;\n\nif (age >= 18) {\n    System.out.println(\"成年\");\n}\n\nSystem.out.println(\"程序结束\");",
+    "extra": [],
+    "todos": [
+      "为上面的 if 补上 else 分支，让 age 小于 18 时打印“未成年”。",
+      "再声明 int score = 55，用 if-else 判断是否及格（>= 60）并打印“及格”或“不及格”。",
+      "把 age 改成 15 重新运行一次，确认输出变成了“未成年”。"
+    ],
+    "expected": "age 为 20 时输出：成年 / 程序结束；age 改为 15 时输出：未成年 / 程序结束；score 为 55 时输出：不及格。",
+    "hint": "if 条件后面不能多写分号，if (age >= 18); 会让后面的大括号脱离条件控制；判断相等要写 == 而不是 =。"
+  },
+  {
+    "id": "c3s2",
+    "slug": "else-if-logic",
+    "goal": "掌握 else if 多分支与 &&、||、! 条件组合，并会用三元运算符取值。",
+    "steps": [
+      "用 if-else if-else 把成绩分成优秀、良好、及格、不及格四档并打印。",
+      "调换判断顺序（先写宽松条件）运行一次，观察命中结果的变化。",
+      "用 && 组合“温度在 18 到 26 度之间（含边界）”的条件并打印结果。",
+      "用三元运算符求出两个整数中的较大值并打印。"
+    ],
+    "imports": [],
+    "starter": "int score = 72;\n\nif (score >= 90) {\n    System.out.println(\"优秀\");\n} else {\n    System.out.println(\"其他\");\n}",
+    "extra": [],
+    "todos": [
+      "在 if 与 else 之间补上 else if (score >= 80) 打印“良好”、else if (score >= 60) 打印“及格”，凑齐四档判断。",
+      "声明 int temp = 22，用 && 判断温度是否在 18~26 度之间，成立时打印“舒适”。",
+      "声明两个整数 a、b，用三元运算符把较大的值赋给 max 并打印。"
+    ],
+    "expected": "score = 72 输出“及格”，score 改成 95 输出“优秀”，改成 45 输出“不及格”；temp = 22 输出“舒适”；max 为两个数中的较大值。",
+    "hint": "else if 的条件要从严格到宽松排列（先 >=90 再 >=60），顺序写反会让高分被宽松条件提前命中；&& 要求两边都真，|| 只要一边真。"
+  },
+  {
+    "id": "c3s3",
+    "slug": "switch-select",
+    "goal": "用 switch 按菜单编号做多路选择，并记住每个 case 都要写 break 防穿透。",
+    "steps": [
+      "用 switch 判断整型变量 choice，为每个 case 打印对应的操作名称。",
+      "在每个 case 结尾补上 break，保证只执行命中的那一个分支。",
+      "故意删掉一个 break 重新运行，观察 case 穿透现象后再补回去。",
+      "用 switch 判断星期几，让“周六”和“周日”共用同一段打印代码。"
+    ],
+    "imports": [],
+    "starter": "int choice = 2;\n\nswitch (choice) {\n    case 1:\n        System.out.println(\"查询余额\");\n        break;\n    default:\n        System.out.println(\"无效选项\");\n        break;\n}",
+    "extra": [],
+    "todos": [
+      "补上 case 2 打印“存款”、case 3 打印“取款”，每个 case 结尾都要写 break。",
+      "声明 String day = \"周六\"，用 switch 让“周六”“周日”都打印“睡个懒觉”，其余打印“早起上课”。",
+      "把 choice 改成 4 运行一次，确认输出“无效选项”（走 default）。"
+    ],
+    "expected": "choice = 2 输出“存款”，choice = 4 输出“无效选项”；day = \"周六\" 输出“睡个懒觉”，day = \"周三\" 输出“早起上课”。",
+    "hint": "每个 case 结尾都要写 break，漏写会发生 case 穿透，从命中的 case 一路执行到下一个 break；case 后面只能写固定值，范围判断要用 else if。"
+  },
+  {
+    "id": "c3s4",
+    "slug": "while-loop",
+    "goal": "用 while 循环重复执行代码，掌握起点、条件、变化三要素与 break 跳出。",
+    "steps": [
+      "用 while 打印第 1 到第 5 圈，体会起点、条件、变化三要素。",
+      "把循环变量的变化改成每次加 2，用 while 打印 2、4、6、8、10。",
+      "用累加器 sum 配合 while 计算 1+2+…+100 并在循环外打印结果。",
+      "用 while (true) 配合 if 与 break，只打印 1 到 3 后跳出循环。"
+    ],
+    "imports": [],
+    "starter": "int i = 1;\nwhile (i <= 5) {\n    System.out.println(\"第 \" + i + \" 圈\");\n    i++;\n}",
+    "extra": [],
+    "todos": [
+      "再用一个 while 打印 2、4、6、8、10（循环变量初值 2，每次加 2）。",
+      "声明 sum = 0，用 while 把 1 到 100 累加进 sum，循环外打印 sum。",
+      "用 while (true) 搭配 if (i > 3) { break; } 打印 1、2、3 后跳出循环。"
+    ],
+    "expected": "第 1 圈 … 第 5 圈\n2\n4\n6\n8\n10\n5050\n1\n2\n3",
+    "hint": "循环变量一定要在循环体里改变（如 i++），否则条件永远成立会死循环；程序停不下来时在控制台按 Ctrl + C 强制终止。"
+  }
+]

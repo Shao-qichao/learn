@@ -51,6 +51,13 @@ jobs:
         working-directory: desktop
         run: node node_modules/electron/install.js
 
+      - name: 配置 Electron 沙箱权限（仅 Linux）
+        if: matrix.os-name == 'linux'
+        working-directory: desktop
+        run: |
+          sudo chown root:root node_modules/electron/dist/chrome-sandbox
+          sudo chmod 4755 node_modules/electron/dist/chrome-sandbox
+
       - name: 路径替换自检
         working-directory: desktop
         run: npm run selfcheck

@@ -97,6 +97,41 @@ jobs:
           # 手动触发时没有 tag，用输入的版本号创建 tag；tag 推送时自动使用该 tag
           tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('v{0}', inputs.version) }}
           name: Java 学习中心 ${{ github.ref_type == 'tag' && github.ref_name || format('v{0}', inputs.version) }}
+          body: |
+            ## 📦 安装包说明
+
+            | 平台 | 文件 | 安装方式 |
+            |------|------|---------|
+            | Windows 10/11（64 位） | `JavaLearningCenter-Setup-*.exe` | 双击安装（SmartScreen 提示点「更多信息 → 仍要运行」） |
+            | macOS（M 系列芯片） | `JavaLearningCenter-*-arm64.dmg` | 拖入「应用程序」 |
+            | macOS（Intel 芯片） | `JavaLearningCenter-*-x64.dmg` | 拖入「应用程序」 |
+            | Linux（Debian/Ubuntu） | `JavaLearningCenter-*-amd64.deb` | `sudo dpkg -i 文件名` |
+            | Linux（通用） | `JavaLearningCenter-*-x86_64.AppImage` | `chmod +x` 后直接运行 |
+
+            > 安装包已内置全部课程与 55 个练习模板，首次启动会自动在「文档」目录创建你的代码工作区。
+            > 下载时浏览器若提示「通常不会下载此文件」，点「··· → 保留 → 仍然保留」即可（因未购买代码签名证书，详见仓库 [下载安装指南](https://github.com/Shao-qichao/learn/blob/main/docs/下载安装指南.md)）。
+
+            ## ☕ 写代码前还需安装
+
+            桌面软件自带课程内容，但**编译运行 Java 代码**还需要以下两样：
+
+            | 软件 | 是否必装 | 下载地址 | 安装要点 |
+            |------|---------|---------|---------|
+            | **JDK 11 / 17 / 21**（任选其一，推荐 11） | ✅ 必装 | https://adoptium.net/temurin/releases/?version=11 | Windows 选 `.msi`；安装时勾选 **Set JAVA_HOME** 和 **Add to PATH** |
+            | **VS Code** | 强烈推荐 | https://code.visualstudio.com/Download | 课程内「用 VS Code 打开」按钮需要它 |
+
+            - JDK 各版本对比与常见问题见 [新用户操作指南](https://github.com/Shao-qichao/learn/blob/main/java-course-site/新用户操作指南.md) 第 3.2 节
+            - 懒人一键装齐 Git + JDK + VS Code：克隆仓库后运行 `java-course-site/tools/setup-windows.ps1`（Windows）或 `setup-mac-linux.sh`（macOS/Linux）
+
+            ## 🗝️ 章节解锁口令
+
+            | 章 | 口令 | 章 | 口令 |
+            |----|------|----|------|
+            | 1→2 | COFFEE-02 | 6→7 | EXTEND-0707 |
+            | 2→3 | LOOP-0303 | 7→8 | FINAL-0808 |
+            | 3→4 | ARRAY-0404 | 8→9 | DSALGO-09 |
+            | 4→5 | METHOD-0505 | 9→10 | MUSIC-10 |
+            | 5→6 | OBJECT-0606 | | |
           generate_release_notes: true
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }}

@@ -177,6 +177,12 @@ function createWindow() {
   Menu.setApplicationMenu(menu);
 }
 
+// Linux 无显示器的 CI 环境（自检模式）关闭 Chromium 沙箱，否则无法启动
+// 仅影响 --selfcheck；用户安装版始终保留沙箱
+if (process.platform === 'linux' && process.argv.includes('--selfcheck')) {
+  app.commandLine.appendSwitch('no-sandbox');
+}
+
 // 单实例：再次启动时聚焦已有窗口
 if (!app.requestSingleInstanceLock()) {
   app.quit();

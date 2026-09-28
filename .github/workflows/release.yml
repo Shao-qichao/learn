@@ -23,13 +23,13 @@ jobs:
         include:
           - os: windows-latest
             os-name: windows
-            target: '--win nsis'
+            target: '--win nsis --x64'
           - os: macos-latest
             os-name: macos
-            target: '--mac dmg'
+            target: '--mac dmg --x64 --arm64'
           - os: ubuntu-latest
             os-name: linux
-            target: '--linux AppImage deb'
+            target: '--linux AppImage deb --x64'
 
     steps:
       - name: 检出代码

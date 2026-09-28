@@ -60,7 +60,8 @@ jobs:
 
       - name: 路径替换自检
         working-directory: desktop
-        run: npm run selfcheck
+        # Linux 无图形界面，用 xvfb 虚拟显示运行 Electron
+        run: ${{ matrix.os-name == 'linux' && 'xvfb-run -a npm run selfcheck' || 'npm run selfcheck' }}
 
       - name: 打包（${{ matrix.os-name }}）
         working-directory: desktop

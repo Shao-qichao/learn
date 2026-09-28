@@ -123,6 +123,19 @@ jobs:
             - JDK 各版本对比与常见问题见 [新用户操作指南](https://github.com/Shao-qichao/learn/blob/main/java-course-site/新用户操作指南.md) 第 3.2 节
             - 懒人一键装齐 Git + JDK + VS Code：克隆仓库后运行 `java-course-site/tools/setup-windows.ps1`（Windows）或 `setup-mac-linux.sh`（macOS/Linux）
 
+            ### JDK 环境变量配置
+
+            **Windows**（`.msi` 安装时勾选了 Set JAVA_HOME / Add to PATH 则自动配好，无需以下步骤）：
+
+            1. `Win + R` 输入 `sysdm.cpl` → **高级** → **环境变量**
+            2. 系统变量 **新建**：`JAVA_HOME` = JDK 安装目录（如 `C:\Program Files\Eclipse Adoptium\jdk-11.0.28+6`）
+            3. 编辑 `Path` → **新建** `%JAVA_HOME%\bin` → 确定
+            4. **重新打开**终端，`java -version` 有输出即成功
+
+            **macOS**：`.pkg` 自动配置；手动版在 `~/.zshrc` 加 `export JAVA_HOME=$(/usr/libexec/java_home)` 和 `export PATH=$JAVA_HOME/bin:$PATH`，再 `source ~/.zshrc`
+
+            **Linux**：包管理器安装自动配置；手动解压版在 `~/.bashrc` 加 `export JAVA_HOME=/opt/jdk-11` 和 `export PATH=$JAVA_HOME/bin:$PATH`，再 `source ~/.bashrc`
+
             ## 🗝️ 章节解锁口令
 
             | 章 | 口令 | 章 | 口令 |

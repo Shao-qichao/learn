@@ -10,7 +10,7 @@
 
 | Windows | macOS | Linux |
 |---------|-------|-------|
-| `Java学习中心-Setup-x.x.x.exe` | `.dmg`（Intel / Apple 芯片） | `.AppImage` / `.deb` |
+| `JavaLearningCenter-Setup-x.x.x.exe` | `JavaLearningCenter-x.x.x-{x64,arm64}.dmg` | `.AppImage` / `.deb` |
 
 安装步骤见 [下载安装指南](docs/下载安装指南.md)。
 

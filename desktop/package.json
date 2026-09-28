@@ -25,7 +25,6 @@
   "build": {
     "appId": "com.shaoqichao.javalearningcenter",
     "productName": "Java学习中心",
-    "electronDist": "node_modules/electron/dist",
     "directories": {
       "output": "dist"
     },
@@ -68,7 +67,7 @@
       "menuCategory": "Java学习中心",
       "shortcutName": "Java学习中心",
       "deleteAppDataOnUninstall": false,
-      "artifactName": "Java学习中心-Setup-${version}.${ext}"
+      "artifactName": "JavaLearningCenter-Setup-${version}.${ext}"
     },
     "mac": {
       "icon": "build/icon.png",
@@ -84,7 +83,7 @@
       ]
     },
     "dmg": {
-      "artifactName": "Java学习中心-${version}-${arch}.${ext}"
+      "artifactName": "JavaLearningCenter-${version}-${arch}.${ext}"
     },
     "linux": {
       "icon": "build/icon.png",
@@ -94,7 +93,7 @@
         "AppImage",
         "deb"
       ],
-      "artifactName": "Java学习中心-${version}-${arch}.${ext}"
+      "artifactName": "JavaLearningCenter-${version}-${arch}.${ext}"
     }
   }
 }

@@ -1,4 +1,4 @@
-﻿# IDE
+# IDE
 .trae/
 .vscode/
 *.swp
@@ -10,3 +10,7 @@ Desktop.ini
 # 临时文件
 *.tmp
 *~
+
+# 桌面应用构建产物
+desktop/node_modules/
+desktop/dist/

@@ -1,0 +1,98 @@
+name: 构建并发布桌面版
+
+# 推送 v 开头的 tag（如 v1.0.0）时，自动构建三平台安装包并发布到 GitHub Releases
+# 也支持在 Actions 页面手动触发（workflow_dispatch）
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '发布版本号（仅手动触发时使用，例如 1.0.0）'
+        required: true
+        default: '1.0.0'
+
+jobs:
+  build:
+    name: 构建 ${{ matrix.os-name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            os-name: windows
+            target: '--win nsis'
+            asset-glob: '*.exe'
+          - os: macos-latest
+            os-name: macos
+            target: '--mac dmg'
+            asset-glob: '*.dmg'
+          - os: ubuntu-latest
+            os-name: linux
+            target: '--linux AppImage deb'
+            asset-glob: '*.{AppImage,deb}'
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 安装依赖
+        working-directory: desktop
+        run: npm ci
+
+      - name: 确保 Electron 二进制就位
+        working-directory: desktop
+        run: node node_modules/electron/install.js
+
+      - name: 路径替换自检
+        working-directory: desktop
+        run: npm run selfcheck
+
+      - name: 打包（${{ matrix.os-name }}）
+        working-directory: desktop
+        run: npx electron-builder ${{ matrix.target }}
+
+      - name: 上传安装包产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-${{ matrix.os-name }}
+          path: desktop/dist/${{ matrix.asset-glob }}
+          if-no-files-found: error
+
+  release:
+    name: 发布 GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: 下载全部安装包
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: 列出待发布文件
+        run: ls -lhR artifacts
+
+      - name: 创建 Release 并上传安装包
+        uses: softprops/action-gh-release@v2
+        with:
+          # 手动触发时没有 tag，用输入的版本号创建 tag；tag 推送时自动使用该 tag
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('v{0}', inputs.version) }}
+          name: Java 学习中心 ${{ github.ref_type == 'tag' && github.ref_name || format('v{0}', inputs.version) }}
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          files: |
+            artifacts/*.exe
+            artifacts/*.dmg
+            artifacts/*.AppImage
+            artifacts/*.deb

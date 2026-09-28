@@ -1,0 +1,100 @@
+{
+  "name": "java-learning-center",
+  "productName": "Java学习中心",
+  "version": "1.0.0",
+  "description": "闯关式 Java 零基础学习桌面软件",
+  "main": "main.js",
+  "author": {
+    "name": "Shao-qichao",
+    "url": "https://github.com/Shao-qichao"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/Shao-qichao/learn",
+  "scripts": {
+    "start": "electron .",
+    "selfcheck": "electron . --selfcheck",
+    "dist:win": "electron-builder --win nsis",
+    "dist:mac": "electron-builder --mac dmg",
+    "dist:linux": "electron-builder --linux AppImage deb",
+    "dist:all": "electron-builder --win nsis --mac dmg --linux AppImage deb"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.shaoqichao.javalearningcenter",
+    "productName": "Java学习中心",
+    "electronDist": "node_modules/electron/dist",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../java-course-site",
+        "to": "site",
+        "filter": [
+          "**/*",
+          "!tools/**"
+        ]
+      },
+      {
+        "from": "../javacourse",
+        "to": "practice"
+      }
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "menuCategory": "Java学习中心",
+      "shortcutName": "Java学习中心",
+      "deleteAppDataOnUninstall": false,
+      "artifactName": "Java学习中心-Setup-${version}.${ext}"
+    },
+    "mac": {
+      "icon": "build/icon.png",
+      "category": "public.app-category.education",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ]
+    },
+    "dmg": {
+      "artifactName": "Java学习中心-${version}-${arch}.${ext}"
+    },
+    "linux": {
+      "icon": "build/icon.png",
+      "category": "Education",
+      "maintainer": "Shao-qichao",
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "artifactName": "Java学习中心-${version}-${arch}.${ext}"
+    }
+  }
+}

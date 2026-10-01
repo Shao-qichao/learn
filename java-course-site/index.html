@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -127,7 +127,147 @@
   .btn-ghost{background:#fff;border:1px solid var(--line);color:var(--ink-2);}
   .btn-ghost:hover{border-color:var(--primary);color:var(--primary);}
   .btn.done-state{background:#dcfce7;color:#15803d;}
+  .btn:disabled,.btn.is-disabled{opacity:.5;cursor:not-allowed;pointer-events:none;}
   .foot-nav{display:flex;justify-content:space-between;margin-top:40px;gap:14px;}
+
+  /* ===== 总览页动态进度按钮 ===== */
+  .prog-btn-wrap{margin-top:30px;}
+  .prog-btn{position:relative;display:flex;align-items:center;gap:14px;width:100%;max-width:480px;
+    padding:16px 24px;border:none;border-radius:14px;cursor:pointer;font-family:inherit;
+    font-size:16px;font-weight:800;color:#fff;transition:.3s;overflow:hidden;
+    background:linear-gradient(135deg,#94a3b8,#cbd5e1);}
+  .prog-btn.pct-low{background:linear-gradient(135deg,#3b82f6,#6366f1);}
+  .prog-btn.pct-mid{background:linear-gradient(135deg,#6366f1,#8b5cf6);}
+  .prog-btn.pct-high{background:linear-gradient(135deg,#8b5cf6,#a855f7);}
+  .prog-btn.pct-done{background:linear-gradient(135deg,#10b981,#059669);}
+  .prog-btn:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 6px 20px rgba(99,102,241,.3);}
+  .prog-ring{position:relative;width:46px;height:46px;flex-shrink:0;}
+  .prog-ring svg{transform:rotate(-90deg);}
+  .prog-ring .bg-ring{fill:none;stroke:rgba(255,255,255,.25);stroke-width:4;}
+  .prog-ring .fg-ring{fill:none;stroke:#fff;stroke-width:4;stroke-linecap:round;transition:stroke-dashoffset .5s ease;}
+  .prog-ring .pct-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:800;color:#fff;}
+  .prog-btn .prog-text{flex:1;text-align:left;line-height:1.4;}
+  .prog-btn .prog-sub{font-size:12px;font-weight:500;opacity:.85;margin-top:2px;}
+
+  /* ===== 代码检测编辑器 ===== */
+  .code-check{margin:14px 0 6px;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;}
+  .code-check-head{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#f8fafc;
+    font-size:13px;font-weight:700;color:#475569;border-bottom:1px solid #e2e8f0;}
+  .code-check-head .ck-tag{margin-left:auto;font-size:11px;padding:2px 8px;border-radius:4px;
+    background:#e0e7ff;color:#4338ca;font-weight:600;}
+  .code-editor{width:100%;min-height:140px;padding:12px 14px;border:none;outline:none;
+    font-family:"Cascadia Code","Fira Code",Consolas,monospace;font-size:13px;line-height:1.6;
+    color:#1e293b;background:#f8fafc;resize:vertical;tab-size:4;}
+  .code-editor:focus{background:#fff;}
+  .code-check-ops{display:flex;gap:8px;padding:10px 14px;background:#f8fafc;border-top:1px solid #e2e8f0;}
+  .code-feedback{padding:0 14px;max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s ease;}
+  .code-feedback.show{padding:10px 14px;max-height:400px;}
+  .cf-pass{background:#dcfce7;border:1px solid #86efac;color:#15803d;border-radius:8px;padding:10px 14px;font-size:13px;line-height:1.6;}
+  .cf-fail{background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:8px;padding:10px 14px;font-size:13px;line-height:1.6;}
+  .cf-fail ul{margin:6px 0 0 18px;padding:0;}
+  .cf-warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:8px;padding:8px 12px;font-size:12px;margin-top:6px;}
+  /* 代码质量评分卡片 */
+  .qcard{margin-top:10px;border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.6;border:1px solid #e5e7eb;background:#fff;}
+  .qcard.pass{border-color:#86efac;background:#f0fdf4;}
+  .qcard.fail{border-color:#fde68a;background:#fffbeb;}
+  .qcard.urgent{border-color:#fecaca;background:#fef2f2;}
+  .qhead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
+  .qscore{font-size:28px;font-weight:700;line-height:1;}
+  .qscore.pass{color:#16a34a;}
+  .qscore.mid{color:#d97706;}
+  .qscore.low{color:#dc2626;}
+  .qbar{height:8px;border-radius:4px;background:#e5e7eb;overflow:hidden;margin:6px 0 10px;}
+  .qbar>i{display:block;height:100%;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:4px;}
+  .qbar.mid>i{background:linear-gradient(90deg,#f59e0b,#d97706);}
+  .qbar.low>i{background:linear-gradient(90deg,#ef4444,#dc2626);}
+  .qdim{margin:8px 0;padding:6px 10px;background:rgba(0,0,0,.02);border-radius:6px;}
+  .qdim-h{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;}
+  .qdim-bar{height:5px;border-radius:3px;background:#e5e7eb;margin:4px 0;overflow:hidden;}
+  .qdim-bar>i{display:block;height:100%;border-radius:3px;background:#3b82f6;}
+  .qdeduct{font-size:11px;color:#b91c1c;margin-top:4px;padding-left:14px;}
+  .qdeduct b{color:#b91c1c;}
+  .qsugg{font-size:11px;color:#15803d;margin-top:3px;padding-left:14px;}
+  .qunlock{margin-top:10px;padding:8px 12px;background:#dcfce7;border:1px solid #86efac;color:#15803d;border-radius:8px;font-weight:600;}
+  /* 5 要素标准化错误修改计划卡片 */
+  .fixplan{margin:8px 0 12px;padding:10px 12px;border:1px solid #c4b5fd;background:linear-gradient(180deg,#faf5ff 0%,#fff 100%);border-radius:10px;font-size:12px;line-height:1.6;}
+  .fixplan-h{display:flex;align-items:center;gap:6px;font-weight:700;color:#6d28d9;margin-bottom:6px;font-size:13px;}
+  .fixplan-sec{margin:8px 0;padding:6px 8px;background:rgba(124,58,237,.04);border-radius:6px;}
+  .fixplan-sec-h{font-weight:600;color:#5b21b6;margin-bottom:4px;display:flex;align-items:center;gap:4px;}
+  .fixplan-step{padding:3px 0 3px 18px;position:relative;}
+  .fixplan-step:before{content:"";position:absolute;left:4px;top:11px;width:6px;height:6px;border-radius:50%;background:#7c3aed;}
+  .fixplan-step b{color:#4c1d95;}
+  .fixplan-step .v{color:#15803d;font-size:11px;}
+  .fixplan-diff{margin:4px 0 4px 0;display:flex;gap:6px;flex-wrap:wrap;align-items:flex-start;}
+  .fixplan-diff .lbl{font-size:10px;font-weight:600;margin-bottom:2px;display:block;}
+  .fixplan-diff .del{display:inline-block;padding:3px 7px;background:#fef2f2;color:#991b1b;border:1px solid #fecaca;border-radius:4px;font-family:Consolas,monospace;font-size:11px;text-decoration:line-through;text-decoration-color:#ef4444;}
+  .fixplan-diff .add{display:inline-block;padding:3px 7px;background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;border-radius:4px;font-family:Consolas,monospace;font-size:11px;}
+  .fixplan-code{display:block;margin:4px 0;padding:8px 10px;background:#0f172a;color:#e2e8f0;border-radius:6px;white-space:pre-wrap;font-family:Consolas,monospace;font-size:11px;line-height:1.5;}
+  .fixplan-code .c{color:#94a3b8;}
+  .fixplan-code .k{color:#fde68a;}
+  .fixplan-verify{width:100%;border-collapse:collapse;margin:4px 0;font-size:11px;}
+  .fixplan-verify th,.fixplan-verify td{border:1px solid #e5e7eb;padding:4px 6px;text-align:left;vertical-align:top;}
+  .fixplan-verify th{background:#ede9fe;color:#5b21b6;font-weight:600;}
+  .fixplan-verify .ok{color:#15803d;}
+  .fixplan-verify .bad{color:#b91c1c;}
+  .fixplan-prevent{margin:0;padding-left:18px;}
+  .fixplan-prevent li{padding:2px 0;}
+  .fixplan-link{color:#7c3aed;text-decoration:underline;cursor:pointer;}
+  .fixplan-fold{font-size:11px;color:#7c3aed;cursor:pointer;margin:4px 0;display:inline-block;}
+
+  /* ===== VS Code 模拟运行窗口 ===== */
+  .vsc-win{margin:10px 0;border-radius:10px;overflow:hidden;border:1px solid #2b2d30;box-shadow:0 4px 14px rgba(0,0,0,.18);font-size:12px;}
+  .vsc-titlebar{display:flex;align-items:center;gap:7px;background:#323233;color:#cccccc;padding:7px 12px;font-size:12px;}
+  .vsc-dot{width:11px;height:11px;border-radius:50%;display:inline-block;}
+  .vsc-dot.r{background:#ff5f57;}.vsc-dot.y{background:#febc2e;}.vsc-dot.g{background:#28c840;}
+  .vsc-title{margin-left:8px;font-family:'Segoe UI',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .vsc-title b{color:#fff;font-weight:600;}
+  .vsc-simtag{margin-left:auto;font-size:10px;background:#7c3aed;color:#fff;border-radius:3px;padding:1px 6px;font-weight:600;white-space:nowrap;}
+  .vsc-tabs{display:flex;background:#252526;border-bottom:1px solid #1e1e1e;overflow-x:auto;}
+  .vsc-tab{display:flex;align-items:center;gap:6px;padding:6px 14px;color:#969696;font-size:12px;border-right:1px solid #1e1e1e;white-space:nowrap;}
+  .vsc-tab.active{background:#1e1e1e;color:#fff;border-top:2px solid #7c3aed;padding-top:4px;}
+  .vsc-body{background:#1e1e1e;color:#d4d4d4;font-family:Consolas,'Courier New',monospace;padding:0;}
+  .vsc-term{padding:10px 14px;line-height:1.65;white-space:pre-wrap;word-break:break-all;}
+  .vsc-term .cmd{color:#dcdcaa;}
+  .vsc-term .prompt{color:#23d18b;}
+  .vsc-term .ok{color:#23d18b;}
+  .vsc-term .err{color:#f48771;}
+  .vsc-term .warn{color:#cca700;}
+  .vsc-term .info{color:#569cd6;}
+  .vsc-term .dim{color:#808080;}
+  .vsc-term .caret{color:#f48771;}
+  .vsc-term .out{color:#e2e8f0;}
+  .vsc-envgrid{display:grid;grid-template-columns:auto 1fr;gap:1px 14px;background:#2b2d30;border-radius:6px;overflow:hidden;margin:6px 0;}
+  .vsc-envgrid span{padding:3px 10px;background:#252526;}
+  .vsc-envgrid .k{color:#9cdcfe;}
+  .vsc-envgrid .v{color:#ce9178;white-space:pre-wrap;word-break:break-all;}
+  .vsc-problems{background:#1e1e1e;border-top:2px solid #7c3aed;}
+  .vsc-problems-h{background:#252526;color:#fff;padding:6px 12px;font-weight:600;font-family:'Segoe UI',sans-serif;font-size:12px;display:flex;align-items:center;gap:8px;}
+  .vsc-problems table{width:100%;border-collapse:collapse;font-family:'Segoe UI',sans-serif;font-size:11.5px;}
+  .vsc-problems th{background:#2d2d30;color:#9d9d9d;text-align:left;padding:4px 10px;font-weight:500;}
+  .vsc-problems td{padding:4px 10px;border-top:1px solid #2b2d30;color:#cccccc;vertical-align:top;}
+  .vsc-problems tr:hover td{background:#2a2d2e;}
+  .vsc-badge{display:inline-block;width:14px;height:14px;line-height:14px;text-align:center;border-radius:2px;font-size:10px;font-weight:700;color:#fff;}
+  .vsc-badge.e{background:#f14c4c;}.vsc-badge.w{background:#cca700;}
+  .vsc-qf{color:#569cd6;}
+  .vsc-depgrid{width:100%;border-collapse:collapse;font-family:'Segoe UI',sans-serif;font-size:11.5px;margin:6px 0;}
+  .vsc-depgrid th{background:#2d2d30;color:#9d9d9d;text-align:left;padding:4px 10px;font-weight:500;}
+  .vsc-depgrid td{padding:3px 10px;color:#cccccc;border-top:1px solid #2b2d30;}
+  .vsc-depgrid .ok2{color:#23d18b;}.vsc-depgrid .miss{color:#f48771;}.vsc-depgrid .auto{color:#569cd6;}
+  .vsc-fold{background:#252526;color:#9cdcfe;padding:6px 12px;font-family:'Segoe UI',sans-serif;font-size:12px;cursor:pointer;user-select:none;}
+  .vsc-fold summary{outline:none;}
+  .vsc-fold[open] .vsc-fold-hint{display:none;}
+
+  /* ===== 评分规则芯片与评分细则 ===== */
+  .qchip{display:inline-block;font-family:Consolas,monospace;font-size:10px;background:#ede9fe;color:#6d28d9;border-radius:3px;padding:0 5px;margin-right:5px;font-weight:600;}
+  .qcap{font-size:11px;color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe;border-radius:4px;padding:2px 8px;margin:4px 0;}
+  .qrule-tbl{width:100%;border-collapse:collapse;font-size:11px;margin:6px 0;}
+  .qrule-tbl th,.qrule-tbl td{border:1px solid #e5e7eb;padding:3px 6px;text-align:left;vertical-align:top;}
+  .qrule-tbl th{background:#f5f3ff;color:#5b21b6;font-weight:600;}
+  .qmeta{margin-top:8px;padding-top:8px;border-top:1px dashed #d1d5db;font-size:10.5px;color:#6b7280;line-height:1.7;}
+  .qmeta code{background:#f3f4f6;padding:0 4px;border-radius:3px;font-family:Consolas,monospace;color:#5b21b6;}
+  .qmeta details{margin-top:4px;}
+  .qmeta summary{cursor:pointer;color:#7c3aed;font-weight:600;}
 
   .breadcrumb{font-size:13px;color:var(--ink-3);margin-bottom:10px;}
   .breadcrumb b{color:var(--ink-2);}
@@ -179,7 +319,7 @@
       <div class="nav-group-title">总览</div>
       <div class="nav-item active" data-page="home">📊 学习总览</div>
 
-      <div class="nav-group-title">Java 基础强化（8 章）</div>
+      <div class="nav-group-title">Java 系列课程（10 章）</div>
       <div class="nav-item" data-page="java">🗂️ 课程与项目地图</div>
 
       <div class="nav-group-title" style="padding-top:10px;">第 1 章 · Java 入门</div>
@@ -304,7 +444,7 @@
         <h1>你好，未来的程序员 👋</h1>
         <p>这里是你的专属 Java 文字课堂。不看视频，一次只学一个小板块，学完一章做一个真实小项目。</p>
         <div class="big"><span id="heroPct">0</span>%</div>
-        <p>Java 基础强化 · 总学习进度（<span id="heroX">0</span> / 48 个板块，第 1～8 章）</p>
+        <p>Java 系列课程 · 总学习进度（<span id="heroX">0</span> / 57 个板块，第 1～10 章）</p>
       </div>
 
       <h2>📌 我们的学习规则</h2>
@@ -334,31 +474,42 @@
         <p>每天投入 <strong>1.5 ~ 2 小时</strong>：读板块文字约 30 分钟 → 对照例子亲手敲代码 40 分钟 → 做检查题/项目。每周可休息一天或用来补进度。</p>
       </div>
 
-      <div style="margin-top:30px;">
-        <button class="btn btn-primary" onclick="go('c1s1')">▶ 开始第 1 板块：Java 是什么</button>
+      <div class="prog-btn-wrap">
+        <button class="prog-btn" id="overviewStartBtn" onclick="overviewStart()">
+          <div class="prog-ring">
+            <svg width="46" height="46"><circle class="bg-ring" cx="23" cy="23" r="20"/><circle class="fg-ring" id="progRingFg" cx="23" cy="23" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66"/></svg>
+            <span class="pct-label" id="progRingPct">0%</span>
+          </div>
+          <div class="prog-text">
+            <div id="progBtnTitle">▶ 开始第 1 板块：Java 是什么</div>
+            <div class="prog-sub" id="progBtnSub">点击开始学习之旅</div>
+          </div>
+        </button>
       </div>
     </section>
 
     <!-- ====== Java 课程地图 ====== -->
     <section class="page" id="page-java">
-      <div class="breadcrumb">Java 基础强化 / <b>课程与项目地图</b></div>
-      <h1>8 章 · 8 个项目递进路线</h1>
-      <p class="muted">项目前后关联：第 4、5 章是同一个成绩分析器的两次升级，第 6～8 章最终汇成一个"通讯录系统"。</p>
-      <table>
+      <div class="breadcrumb">Java 系列课程 / <b>课程与项目地图</b></div>
+      <h1>10 章 · 10 个项目递进路线</h1>
+      <p class="muted">项目前后关联：第 4、5 章是同一个成绩分析器的两次升级，第 6～8 章最终汇成一个"通讯录系统"；第 9 章用算法小题修炼"内功"，第 10 章综合文件读写与 JSON 做音乐评论分析，完成 P2 收官。</p>
+      <table id="courseMapTable">
         <tr><th>章节</th><th>学什么</th><th>章节项目</th><th>状态</th></tr>
-        <tr class="cur"><td>第1章 Java 入门</td><td>环境、程序结构、输出、注释</td><td>个人名片打印器</td><td><span class="tag now">学习中</span></td></tr>
-        <tr class="cur"><td>第2章 变量/类型/输入</td><td>8 种基本类型、运算符、Scanner</td><td>便利店收银台</td><td><span class="tag now">已解锁</span></td></tr>
-        <tr class="cur"><td>第3章 流程控制</td><td>if / switch / for / while</td><td>迷你 ATM</td><td><span class="tag now">已解锁</span></td></tr>
-        <tr class="cur"><td>第4章 数组</td><td>数组遍历、查找、排序</td><td>班级成绩分析器</td><td><span class="tag now">已解锁</span></td></tr>
-        <tr class="cur"><td>第5章 方法</td><td>参数、返回值、方法重载</td><td>成绩分析器重构版 + 计算器</td><td><span class="tag now">已解锁</span></td></tr>
-        <tr class="cur"><td>第6章 面向对象基础</td><td>类、对象、封装、构造方法</td><td>图书管理 v1</td><td><span class="tag now">已解锁</span></td></tr>
-        <tr class="cur"><td>第7章 继承与多态</td><td>extends、重写、抽象类、接口</td><td>员工薪资系统</td><td><span class="tag now">已解锁</span></td></tr>
-        <tr class="cur"><td>第8章 集合与异常</td><td>String、ArrayList、try-catch</td><td>通讯录 v1（阶段大成品）</td><td><span class="tag now">已解锁</span></td></tr>
+        <tr data-ch="1"><td>第1章 Java 入门</td><td>环境、程序结构、输出、注释</td><td>个人名片打印器</td><td><span class="tag now" id="mapTag1">学习中</span></td></tr>
+        <tr data-ch="2"><td>第2章 变量/类型/输入</td><td>8 种基本类型、运算符、Scanner</td><td>便利店收银台</td><td><span class="tag now" id="mapTag2">已解锁</span></td></tr>
+        <tr data-ch="3"><td>第3章 流程控制</td><td>if / switch / for / while</td><td>迷你 ATM</td><td><span class="tag now" id="mapTag3">已解锁</span></td></tr>
+        <tr data-ch="4"><td>第4章 数组</td><td>数组遍历、查找、排序</td><td>班级成绩分析器</td><td><span class="tag now" id="mapTag4">已解锁</span></td></tr>
+        <tr data-ch="5"><td>第5章 方法</td><td>参数、返回值、方法重载</td><td>成绩分析器重构版 + 计算器</td><td><span class="tag now" id="mapTag5">已解锁</span></td></tr>
+        <tr data-ch="6"><td>第6章 面向对象基础</td><td>类、对象、封装、构造方法</td><td>图书管理 v1</td><td><span class="tag now" id="mapTag6">已解锁</span></td></tr>
+        <tr data-ch="7"><td>第7章 继承与多态</td><td>extends、重写、抽象类、接口</td><td>员工薪资系统</td><td><span class="tag now" id="mapTag7">已解锁</span></td></tr>
+        <tr data-ch="8"><td>第8章 集合与异常</td><td>String、ArrayList、try-catch</td><td>通讯录 v1（阶段大成品）</td><td><span class="tag now" id="mapTag8">已解锁</span></td></tr>
+        <tr data-ch="9"><td>第9章 数据结构与算法入门</td><td>复杂度、双指针、链表/栈/队列、哈希表</td><td>算法小题训练</td><td><span class="tag lock" id="mapTag9">未解锁</span></td></tr>
+        <tr data-ch="10"><td>第10章 实战音乐评论分析</td><td>文件读写、JSON 解析（Gson）、统计汇总</td><td>音乐评论情感分析（P2 收官项目）</td><td><span class="tag lock" id="mapTag10">未解锁</span></td></tr>
       </table>
-      <div class="callout c-tip"><span class="h">💡 说明</span>章节标题以学习平台实际内容为准；如果对不上，把真实标题发给老师，项目会按实际内容微调。</div>
+      <div class="callout c-tip"><span class="h">💡 说明</span>章节标题以学习平台实际内容为准；如果对不上，把真实标题发给老师，项目会按实际内容微调。状态随你的学习进度自动更新。</div>
       <div class="foot-nav">
         <button class="btn btn-ghost" onclick="go('home')">← 返回总览</button>
-        <button class="btn btn-primary" onclick="go('c1s1')">进入第 1 章 →</button>
+        <button class="btn btn-primary" id="mapStartBtn" onclick="mapStart()">进入第一章 →</button>
       </div>
     </section>
 
@@ -7048,14 +7199,1403 @@ function syncAnswerGate(id){
   if(!hasAns)return;
   var s=G.sec[id]||{};
   var viewed=!!s.viewed;
-  hasAns.textContent=viewed?'👁 已查看参考答案（再点重开）':'👁 查看参考答案';
-  hasAns.classList.toggle('done-state',viewed);
+  var codedone=!!s.codedone;
+  if(viewed){
+    hasAns.textContent='👁 已查看参考答案（再点重开）';
+    hasAns.classList.add('done-state');
+    hasAns.classList.remove('is-disabled');
+  }else if(!codedone){
+    hasAns.textContent='🔒 完成代码检测后解锁参考答案';
+    hasAns.classList.remove('done-state');
+    hasAns.classList.add('is-disabled');
+  }else{
+    hasAns.textContent='👁 查看参考答案';
+    hasAns.classList.remove('done-state','is-disabled');
+  }
 }
 function openRefAnswer(id){
-  var s=getS(id); s.viewed=1; saveG();
+  var s=getS(id);
+  if(!s.codedone){
+    alert('⚠️ 请先完成代码检测。\n\n把你在 VS Code 里写的代码粘贴到检测区，点「🔍 检测代码」通过后，才能查看参考答案。');
+    return;
+  }
+  s.viewed=1; saveG();
   syncAnswerGate(id);
   refreshUI();
   alert('✅ 已标记为"已查看参考答案"。\n\n现在可以继续学习下一个板块了。');
+}
+
+/* ================= 代码检测引擎 ================= */
+/* 从源码中提取 System.out.println / print 的字符串参数，模拟运行输出 */
+function simulateOutput(code){
+  var lines=[];
+  /* 匹配 System.out.println(...) 和 System.out.print(...) */
+  var re=/(?:System\.out\.print(?:ln)?\s*\()\s*([\s\S]*?)\s*(?:\)\s*;)/g;
+  var m;
+  while((m=re.exec(code))!==null){
+    var expr=m[1].trim();
+    var text=evalJavaStringExpr(expr);
+    lines.push({text:text,isNewline:/println/.test(m[0])});
+  }
+  /* 组装最终输出 */
+  var out='';
+  for(var i=0;i<lines.length;i++){
+    out+=lines[i].text;
+    if(lines[i].isNewline)out+='\n';
+  }
+  return out.trim();
+}
+/* 简单求值 Java 字符串表达式："abc" + var + "def" → 只保留字符串字面量 */
+function evalJavaStringExpr(expr){
+  var parts=[];
+  var re=/"((?:[^"\\]|\\.)*)"/g;
+  var m,lastIdx=0;
+  while((m=re.exec(expr))!==null){
+    if(m.index>lastIdx){
+      /* 两个字符串之间的非字符串部分（变量/表达式）→ 用 [表达式] 占位 */
+      var between=expr.substring(lastIdx,m.index).replace(/[+\s]/g,'');
+      if(between)parts.push('['+between+']');
+    }
+    /* 解析 Java 字符串转义 */
+    var raw=m[1];
+    var decoded=raw.replace(/\\n/g,'\n').replace(/\\t/g,'\t').replace(/\\"/g,'"').replace(/\\\\/g,'\\');
+    parts.push(decoded);
+    lastIdx=re.lastIndex;
+  }
+  if(!parts.length){
+    /* 没有字符串字面量，可能是变量或数字 */
+    var cleaned=expr.replace(/["+]/g,'').trim();
+    return '['+cleaned+']';
+  }
+  return parts.join('');
+}
+/* 从 expected 字段提取关键输出行（忽略描述性文字，只取示例输出行） */
+function extractExpectedLines(expected){
+  var raw=String(expected||'');
+  /* 如果有"例如："，取其后的部分 */
+  var afterEg=raw;
+  var egIdx=raw.indexOf('例如：');
+  if(egIdx>=0)afterEg=raw.substring(egIdx+3);
+  /* 去掉描述性前缀（如"运行后屏幕上出现..."） */
+  afterEg=afterEg.replace(/^[^：]*：?\s*/,'');
+  var lines=afterEg.split('\n').map(function(l){return l.trim();}).filter(function(l){return l.length>0;});
+  return lines;
+}
+/* ================= 代码质量评分系统 v2 =================
+   对标 VS Code + Java 扩展（JDT.LS）的静态分析标准：
+   1. 无论检测是否通过都生成评分；编译失败时对「运行相关」维度做封顶（仍出分，不跳过）；
+   2. 5 个维度，权重合计 100：规范性 25 / 逻辑完整性 30 / 错误处理 20 / 性能 15 / 可读性 10；
+   3. 每条规则有固定 RULE-ID 与固定分值，纯确定性计算 → 同一份代码任意次评分结果相同；
+   4. report.trail 记录每一次扣分，report.meta.fingerprint 为评分指纹，过程可复现、结果可解释。 */
+var CODE_QUALITY_RUBRIC = {
+  rubricVersion:'2.0',
+  passingScore: 60,    /* 综合评分 ≥60 才解锁答案 */
+  dimensions: [
+    { id:'specification', name:'代码规范性', weight:25, rules:[
+      {id:'RULE-S01',points:4,desc:'类名遵循 PascalCase（首字母大写）'},
+      {id:'RULE-S02',points:5,desc:'语法类编译错误（括号/引号/非法字符），每条扣分，本规则封顶 -15'},
+      {id:'RULE-S03',points:4,desc:'符号类编译错误（System/main 等大小写拼写），每条扣分，封顶 -12'},
+      {id:'RULE-S04',points:2,desc:'缩进混用 Tab 与空格'},
+      {id:'RULE-S05',points:1,desc:'行尾分号警告，每条扣分，封顶 -4'},
+      {id:'RULE-S06',points:2,desc:'缺少 import 导入，每条扣分，封顶 -4'}
+    ]},
+    { id:'logic', name:'逻辑完整性', weight:30, rules:[
+      {id:'RULE-L01',points:10,desc:'main 入口签名完整（public static void main(String[] args)）'},
+      {id:'RULE-L02',points:4,desc:'class 结构声明存在'},
+      {id:'RULE-L03',points:6,desc:'包含标准输出语句 System.out.print/println'},
+      {id:'RULE-L04',points:18,desc:'输出与练习预期逐字匹配，按匹配率线性扣分'},
+      {id:'CAP-LOGIC',points:0,desc:'编译失败时本维度封顶 50%：代码无法运行，逻辑不可验证'},
+      {id:'RULE-G01',points:0,desc:'【全局硬闸口】只要存在错误（javac 编译错误、java 启动错误或教学校验未通过，退出码≠0），综合分一律封顶 59，修复全部错误后才可越过 60 解锁线'}
+    ]},
+    { id:'errorHandling', name:'错误处理能力', weight:20, rules:[
+      {id:'RULE-E01',points:6,desc:'数值输入先用 hasNextInt/hasNextDouble 校验类型'},
+      {id:'RULE-E02',points:6,desc:'除法运算前检查除数不为 0'},
+      {id:'RULE-E03',points:4,desc:'整数除法精度丢失意识（5/2=2，需要小数写 5.0/2）'},
+      {id:'RULE-E04',points:4,desc:'Scanner/IO 等外部资源用 try-catch 或 throws 处理异常'},
+      {id:'RULE-E05',points:2,desc:'Scanner 使用后 close() 释放资源'},
+      {id:'RULE-E06',points:3,desc:'敏感信息（密码/令牌）不硬编码在源码中'},
+      {id:'CAP-EH',points:0,desc:'编译失败时本维度封顶 70%'}
+    ]},
+    { id:'performance', name:'性能效率', weight:15, rules:[
+      {id:'RULE-P01',points:6,desc:'不在循环体内重复 new 对象'},
+      {id:'RULE-P02',points:4,desc:'循环内大量字符串拼接改用 StringBuilder'},
+      {id:'RULE-P03',points:2,desc:'System.out.print 调用 >5 次，建议合并组织'},
+      {id:'CAP-PERF',points:0,desc:'编译失败时本维度封顶 60%'}
+    ]},
+    { id:'readability', name:'可读性', weight:10, rules:[
+      {id:'RULE-R01',points:2,desc:'变量名有语义（单字母仅限 i/j/k/n），每条扣分，封顶 -4'},
+      {id:'RULE-R02',points:1,desc:'单行超过 100 字符，每条扣分，封顶 -3'},
+      {id:'RULE-R03',points:2,desc:'有效代码 >10 行时包含必要注释'}
+    ]}
+  ]
+};
+/* 配置接口：运行时调整权重（参数如 {specification:25, logic:30, ...}） */
+function setRubricWeights(weights){
+  if(!weights||typeof weights!=='object')return false;
+  var ok=true;
+  CODE_QUALITY_RUBRIC.dimensions.forEach(function(d){
+    if(typeof weights[d.id]==='number'&&weights[d.id]>=0){
+      d.weight=weights[d.id];
+    }else{ok=false;}
+  });
+  try{localStorage.setItem('java-rubric-v2',JSON.stringify({version:CODE_QUALITY_RUBRIC.rubricVersion,passingScore:CODE_QUALITY_RUBRIC.passingScore,dimensions:CODE_QUALITY_RUBRIC.dimensions.map(function(d){return {id:d.id,weight:d.weight};})}));}catch(e){}
+  return ok;
+}
+/* 启动时加载已保存的配置（v2 存储键；旧 v1 权重仅迁移同名维度） */
+(function(){
+  try{
+    var saved=JSON.parse(localStorage.getItem('java-rubric-v2')||localStorage.getItem('java-rubric-v1')||'null');
+    if(saved&&saved.dimensions){
+      saved.dimensions.forEach(function(sd){
+        var d=CODE_QUALITY_RUBRIC.dimensions.find(function(x){return x.id===sd.id;});
+        if(d&&typeof sd.weight==='number')d.weight=sd.weight;
+      });
+      if(typeof saved.passingScore==='number')CODE_QUALITY_RUBRIC.passingScore=saved.passingScore;
+    }
+  }catch(e){}
+})();
+
+/* 评分主函数 v2 - 输入 code + checkCode 结果，无论通过与否都输出评分报告
+   每个扣分点带固定 RULE-ID；trail 与 fingerprint 保证过程可复现、结果可解释。 */
+function scoreCodeQuality(code,checkResult){
+  var R=CODE_QUALITY_RUBRIC;
+  var totalWeight=0;
+  R.dimensions.forEach(function(d){totalWeight+=d.weight;});
+  if(totalWeight<=0)totalWeight=100;
+  var errors=checkResult.errors||[];
+  var warnings=checkResult.warnings||[];
+  function errCount(s){return errors.filter(function(e){return String(e).indexOf(s)>=0;}).length;}
+  function warnCount(s){return warnings.filter(function(w){return String(w).indexOf(s)>=0;}).length;}
+
+  var dims=R.dimensions.map(function(d){
+    var max=Math.round(d.weight/totalWeight*100);
+    return {
+      id:d.id,name:d.name,weight:d.weight,rules:d.rules,
+      maxScore:max,score:max,deductions:[],suggestions:[],caps:[]
+    };
+  });
+  function dim(id){return dims.find(function(d){return d.id===id;});}
+  /* 扣分：clamp 保证维度不出现负分；封顶由 cap() 单独处理 */
+  function deduct(id,ruleId,points,reason,suggestion){
+    var d=dim(id);if(!d||points<=0)return;
+    var before=d.score;
+    d.score=Math.max(0,d.score-points);
+    var applied=before-d.score;
+    d.deductions.push({ruleId:ruleId,points:applied,reason:reason});
+    if(suggestion)d.suggestions.push(suggestion);
+  }
+  /* 封顶（编译失败时对运行相关维度使用） */
+  function cap(id,ruleId,ratio,reason){
+    var d=dim(id);if(!d)return;
+    var ceil=Math.round(d.maxScore*ratio);
+    if(d.score>ceil){
+      d.score=ceil;
+      d.caps.push({ruleId:ruleId,ceil:ceil,reason:reason});
+    }
+  }
+
+  /* ============ 1. 代码规范性（25） ============ */
+  var classMatch=code.match(/\bclass\s+([A-Za-z_]\w*)/);
+  if(classMatch&&classMatch[1].charAt(0)!==classMatch[1].charAt(0).toUpperCase()){
+    deduct('specification','RULE-S01',4,'类名「'+classMatch[1]+'」首字母未大写','💡 Java 类名遵循 PascalCase：class Hello { ... }');
+  }
+  /* 语法类错误：中文标点 / 括号 / 引号闭合，每条 -5，封顶 -15（过滤器互不相交，一条错误只计一次） */
+  var syntaxErrs=errors.filter(function(e){
+    var t=String(e);return t.indexOf('中文')>=0||t.indexOf('括号')>=0||t.indexOf('闭合')>=0||t.indexOf('引号')>=0||t.indexOf('多余的')>=0;
+  }).length;
+  if(syntaxErrs>0){
+    deduct('specification','RULE-S02',Math.min(15,syntaxErrs*5),'语法类编译错误 '+syntaxErrs+' 个（括号/引号/非法字符），javac 无法编译','💡 先按错误卡片中的行号逐一修复语法错误');
+  }
+  /* 符号类错误：System/main 大小写，每条 -4，封顶 -12 */
+  var symbolErrs=errors.filter(function(e){
+    var t=String(e);return t.indexOf('大写')>=0||t.indexOf('不是 system')>=0||t.indexOf('不是 SYSTEM')>=0;
+  }).length;
+  if(symbolErrs>0){
+    deduct('specification','RULE-S03',Math.min(12,symbolErrs*4),'符号拼写/大小写错误 '+symbolErrs+' 个（Java 严格区分大小写）','💡 System 首字母大写，main、out、println 全小写');
+  }
+  if(/\t/.test(code)&&/\n    /.test(code)){
+    deduct('specification','RULE-S04',2,'缩进混用 Tab 和空格','💡 VS Code 右下角可切换缩进，统一用 4 个空格');
+  }
+  var missSemi=warnings.filter(function(w){return String(w).indexOf('分号')>=0;}).length;
+  if(missSemi>0){
+    deduct('specification','RULE-S05',Math.min(4,missSemi),'分号警告 '+missSemi+' 处','💡 Java 每条可执行语句末尾必须加 ;');
+  }
+  var missImport=warnings.filter(function(w){var t=String(w);return t.indexOf('导入')>=0||t.indexOf('import')>=0;}).length;
+  if(missImport>0){
+    deduct('specification','RULE-S06',Math.min(4,missImport*2),'缺少 import 导入 '+missImport+' 处','💡 在 class 前补 import java.util.Scanner;（VS Code 可用 Ctrl+Shift+O 自动整理导入）');
+  }
+
+  /* ============ 2. 逻辑完整性（30） ============ */
+  var hasMain=/public\s+static\s+void\s+main\s*\(\s*(String\s*\[\]\s+\w+|String\s+\w+\s*\[\])/.test(code);
+  var hasClass=/\bclass\s+\w+/.test(code);
+  var hasPrint=/System\.out\.print/.test(code);
+  if(!hasMain){
+    if(/static\s+void\s+main\s*\(/.test(code)&&!/public\s+static/.test(code)){
+      deduct('logic','RULE-L01',3,'main 方法缺少 public 修饰符','💡 标准签名：public static void main(String[] args)');
+    }else{
+      deduct('logic','RULE-L01',10,'main 入口方法缺失或签名不完整','💡 入口必须是 public static void main(String[] args) { ... }');
+    }
+  }
+  if(!hasClass){
+    deduct('logic','RULE-L02',4,'未找到 class 声明','💡 Java 代码必须写在 class 体内');
+  }
+  if(!hasPrint){
+    deduct('logic','RULE-L03',6,'没有 System.out.print/println 输出语句','💡 程序需要输出语句才能看到运行结果');
+  }
+  /* 输出匹配率：优先取 checkResult.matchPct；没有则从错误文本解析；无相关问题视为 100 */
+  var matchPct=100;
+  if(typeof checkResult.matchPct==='number'){
+    matchPct=checkResult.matchPct;
+  }else{
+    var allText=errors.join('\n')+'\n'+warnings.join('\n');
+    var pm=allText.match(/匹配率\s*(\d+)\s*%/);
+    if(pm)matchPct=parseInt(pm[1],10);
+  }
+  if(hasPrint){
+    var lost=Math.round(18*(1-matchPct/100));
+    if(lost>0){
+      deduct('logic','RULE-L04',lost,'输出与预期匹配率 '+matchPct+'%（-'+lost+'/18）','💡 逐字符对照预期输出，检查大小写、标点、空格与换行');
+    }
+  }else{
+    deduct('logic','RULE-L04',18,'无输出语句，输出匹配率按 0% 计','💡 先用 System.out.println 输出题目要求的内容');
+  }
+
+  /* ============ 3. 错误处理能力（20，仅在使用相关特性时触发） ============ */
+  if(/\.next(?:Int|Double|Long|Float)\s*\(/.test(code)&&!/hasNext/.test(code)){
+    deduct('errorHandling','RULE-E01',6,'数值输入未做 hasNextXxx 类型校验','💡 先 if(sc.hasNextInt()) 再 sc.nextInt()，避免 InputMismatchException');
+  }
+  var divs=code.match(/\b[A-Za-z_]\w*\s*\/\s*[A-Za-z_]\w*/g)||[];
+  if(divs.length>0&&!/!=\s*0|==\s*0|>\s*0|>=\s*0/.test(code)){
+    deduct('errorHandling','RULE-E02',6,'检测到变量除法 '+divs.length+' 处，未发现除零判断','💡 除法前确认除数不为 0，例如 if(b != 0){ int c = a / b; }');
+  }
+  if(/\b\d+\s*\/\s*\d+/.test(code)&&!/double|float/.test(code)){
+    deduct('errorHandling','RULE-E03',4,'存在整数除法，小数部分会被截断','💡 5/2 结果是 2；需要 2.5 请写 5.0/2 或强转 (double)');
+  }
+  if(/new\s+(Scanner|File|FileReader|BufferedReader|FileWriter|InputStreamReader)\b/.test(code)&&!/try\s*\{/.test(code)&&!/\bthrows\b/.test(code)){
+    deduct('errorHandling','RULE-E04',4,'使用了外部资源但没有 try-catch / throws','💡 IO 与 Scanner 可能抛异常，建议 try-catch 包裹或在 main 上声明 throws Exception');
+  }
+  if(/new\s+Scanner/.test(code)&&!/\.close\s*\(\s*\)/.test(code)){
+    deduct('errorHandling','RULE-E05',2,'Scanner 未调用 close()','💡 用完后 sc.close(); 释放底层资源');
+  }
+  if(/\b(?:password|passwd|pwd|secret|token)\s*=\s*"/i.test(code)){
+    deduct('errorHandling','RULE-E06',3,'检测到硬编码的密码/令牌','💡 敏感信息不要写死在源码里，应从配置或环境变量读取');
+  }
+
+  /* ============ 4. 性能效率（15） ============ */
+  if(/for\s*\([^)]*\)\s*\{[^}]*new\s+\w/.test(code)||/while\s*\([^)]*\)\s*\{[^}]*new\s+\w/.test(code)){
+    deduct('performance','RULE-P01',6,'循环体内创建对象，每次迭代都重新分配内存','💡 把对象创建提到循环外，循环内只复用');
+  }
+  if(/for\s*\([^)]*\)\s*\{[^}]*\+/.test(code)){
+    deduct('performance','RULE-P02',4,'循环体内用 + 拼接字符串，会产生大量临时对象','💡 循环外创建 StringBuilder，循环内 append');
+  }
+  var printCalls=code.match(/System\.out\.print(?:ln)?\s*\(/g)||[];
+  if(printCalls.length>5){
+    deduct('performance','RULE-P03',2,'System.out.print 调用 '+printCalls.length+' 次（>5）','💡 可先拼接到变量再一次性输出，减少 IO 次数');
+  }
+
+  /* ============ 5. 可读性（10） ============ */
+  var varDecl=code.match(/\b(?:int|double|float|long|String|char|boolean)\s+([A-Za-z_]\w*)\s*[=;]/g)||[];
+  var shortNames={};
+  varDecl.forEach(function(d){
+    var name=(d.match(/([A-Za-z_]\w*)\s*[=;]/)||[])[1]||'';
+    if(name.length===1&&'ijkn'.indexOf(name)<0)shortNames[name]=1;
+  });
+  var shortCount=Object.keys(shortNames).length;
+  if(shortCount>0){
+    deduct('readability','RULE-R01',Math.min(4,shortCount*2),'语义不明的单字母变量：'+Object.keys(shortNames).join('、'),'💡 用有意义的名字：int age; 而非 int a;（循环变量 i/j/k/n 除外）');
+  }
+  var lines=code.split('\n');
+  var longLines=0;
+  lines.forEach(function(l){if(l.trim().length>100)longLines++;});
+  if(longLines>0){
+    deduct('readability','RULE-R02',Math.min(3,longLines),'有 '+longLines+' 行超过 100 字符','💡 长表达式可拆行或提取为变量');
+  }
+  var codeLineCount=lines.filter(function(l){
+    var t=l.trim();return t&&t.indexOf('//')!==0&&t.indexOf('/*')!==0&&t.indexOf('*')!==0;
+  }).length;
+  if(codeLineCount>10&&!/\/\/|\/\*/.test(code)){
+    deduct('readability','RULE-R03',2,'有效代码 '+codeLineCount+' 行但没有任何注释','💡 在关键变量或复杂逻辑处加 // 说明意图');
+  }
+
+  /* ============ 编译失败封顶（仍出分，但运行相关维度不可证） ============ */
+  var compileFailed=errors.length>0;
+  if(compileFailed){
+    cap('logic','CAP-LOGIC',0.5,'存在编译错误，程序无法运行，逻辑完整性按可验证部分封顶 50%');
+    cap('errorHandling','CAP-EH',0.7,'存在编译错误，错误处理能力封顶 70%');
+    cap('performance','CAP-PERF',0.6,'存在编译错误，性能效率封顶 60%');
+  }
+
+  /* ============ 汇总（按权重归一化到 0-100） ============ */
+  var rawSum=0,maxSum=0;
+  dims.forEach(function(d){rawSum+=d.score;maxSum+=d.maxScore;});
+  var totalScore=maxSum>0?Math.round(rawSum/maxSum*100):0;
+  /* 全局硬闸口 RULE-G01：编译失败一律 ≤59，javac 退出码非 0 的代码不予通过 */
+  var gateCapped=false;
+  if(compileFailed&&totalScore>=R.passingScore){
+    totalScore=R.passingScore-1;
+    gateCapped=true;
+  }
+
+  /* 评分指纹：把「命中的规则+次数」与代码长度做确定性哈希，同一份代码必出同一指纹与分数 */
+  var hits={};
+  dims.forEach(function(d){
+    d.deductions.forEach(function(x){hits[x.ruleId]=(hits[x.ruleId]||0)+1;});
+    d.caps.forEach(function(c){hits[c.ruleId]=(hits[c.ruleId]||0)+1;});
+  });
+  if(gateCapped)hits['RULE-G01']=1;
+  var basis='v='+R.rubricVersion+';len='+code.length+';hits='+Object.keys(hits).sort().map(function(k){return k+'x'+hits[k];}).join(',');
+  var hash=5381;
+  for(var hi=0;hi<basis.length;hi++){hash=((hash<<5)+hash+basis.charCodeAt(hi))>>>0;}
+  var fingerprint=R.rubricVersion+'-'+hash.toString(16).toUpperCase();
+
+  return {
+    rubricVersion:R.rubricVersion,
+    totalScore:totalScore,
+    maxScore:100,
+    passingScore:R.passingScore,
+    passed:totalScore>=R.passingScore,
+    compileFailed:compileFailed,
+    gateCapped:gateCapped,
+    dimensions:dims,
+    meta:{
+      totalWeight:totalWeight,
+      fingerprint:fingerprint,
+      basis:basis,
+      formula:'总分 = Σ(各维度实得分) ÷ Σ(各维度满分='+maxSum+') × 100；通过线 '+R.passingScore+' 分。规则分值固定、无随机项，结果可复现。'
+    }
+  };
+}
+
+/* 渲染质量评分卡片 HTML v2（带规则 ID、封顶说明、评分细则、评分指纹） */
+function renderQualityCard(report){
+  if(!report)return '';
+  var cls=report.passed?'pass':(report.totalScore>=report.passingScore?'fail':'urgent');
+  var scoreCls=report.passed?'pass':(report.totalScore>=report.passingScore?'mid':'low');
+  var h='<div class="qcard '+cls+'">';
+  h+='<div class="qhead">';
+  h+='<div><b>📊 代码质量评分</b><br><span style="font-size:11px;color:var(--ink-3)">对标 VS Code/JDT 静态分析 · 5 维规则化评分 v'+escH(report.rubricVersion||'2.0')+(report.compileFailed?' · <span style="color:#b91c1c">编译失败仍出分</span>':'')+'</span></div>';
+  h+='<div style="text-align:right"><div class="qscore '+scoreCls+'">'+report.totalScore+'</div>';
+  h+='<div style="font-size:11px;color:var(--ink-3)">/ '+report.maxScore+' · 通过线 '+report.passingScore+'</div></div>';
+  h+='</div>';
+  h+='<div class="qbar '+scoreCls+'"><i style="width:'+report.totalScore+'%"></i></div>';
+  if(report.gateCapped){
+    h+='<div class="qcap" style="background:#fef2f2;border-color:#fecaca;color:#991b1b;font-weight:600">⛔ <span class="qchip" style="background:#fee2e2;color:#991b1b">RULE-G01</span>检测未全部通过（javac 编译 / java 启动 / 教学校验存在错误，退出码非 0），综合分已按全局硬闸口封顶 59。修复全部错误后重新检测，才可越过 '+report.passingScore+' 分解锁线。</div>';
+  }
+  report.dimensions.forEach(function(d){
+    var pct=Math.round(d.score/(d.maxScore||1)*100);
+    h+='<div class="qdim">';
+    h+='<div class="qdim-h"><span><b>'+d.name+'</b> <span style="color:var(--ink-3);font-size:11px">(权重 '+d.weight+'%)</span></span>';
+    h+='<span><b>'+d.score+'</b>/'+d.maxScore+' 分</span></div>';
+    h+='<div class="qdim-bar"><i style="width:'+pct+'%"></i></div>';
+    if(d.caps&&d.caps.length){
+      d.caps.forEach(function(c){
+        h+='<div class="qcap">⛔ <span class="qchip">'+c.ruleId+'</span>'+escH(c.reason)+'（本维度最多 '+c.ceil+'/'+d.maxScore+' 分）</div>';
+      });
+    }
+    if(d.deductions.length){
+      d.deductions.forEach(function(dd){
+        h+='<div class="qdeduct"><span class="qchip">'+escH(dd.ruleId||'')+'</span>⚠ -'+dd.points+' 分：'+escH(dd.reason)+'</div>';
+      });
+    }
+    if(d.suggestions.length){
+      d.suggestions.forEach(function(s){h+='<div class="qsugg">'+escH(s)+'</div>';});
+    }
+    if(d.deductions.length===0&&(!d.caps||!d.caps.length)&&d.suggestions.length===0){
+      h+='<div style="font-size:11px;color:#15803d">✓ 本维度满分，未命中任何扣分规则</div>';
+    }
+    h+='</div>';
+  });
+  if(report.passed){
+    h+='<div class="qunlock">🎉 综合评分 ≥ '+report.passingScore+'，参考答案已自动解锁！</div>';
+  }else{
+    var gap=report.passingScore-report.totalScore;
+    h+='<div class="qunlock" style="background:#fef3c7;border-color:#fde68a;color:#92400e">📈 距解锁还差 '+gap+' 分。按上方带 RULE 编号的建议优化代码后重新检测。</div>';
+  }
+  /* 评分细则（可折叠）：固定规则表 + 计算公式 + 评分指纹，保证可解释/可复现 */
+  h+='<div class="qmeta">';
+  h+='<details><summary>📐 评分细则、权重与复现信息（点击展开）</summary>';
+  h+='<table class="qrule-tbl"><tr><th>维度（权重）</th><th>规则 ID</th><th>分值</th><th>判定标准</th></tr>';
+  report.dimensions.forEach(function(d){
+    (d.rules||[]).forEach(function(r,ri){
+      h+='<tr><td>'+(ri===0?escH(d.name)+'（'+d.weight+'%）':'')+'</td>';
+      h+='<td><code>'+escH(r.id)+'</code></td><td>'+(r.points>0?'-'+r.points:'封顶')+'</td><td>'+escH(r.desc)+'</td></tr>';
+    });
+  });
+  h+='</table>';
+  h+='<div>🧮 <b>计算公式：</b>'+escH(report.meta.formula)+'</div>';
+  h+='<div>🔁 <b>可复现性：</b>全部规则为确定性静态分析，无随机项、无时间因子；同一份代码无论何时检测、检测几次，分数与指纹完全一致。</div>';
+  h+='<div>🔑 <b>评分指纹：</b><code>'+escH(report.meta.fingerprint)+'</code>（由规则命中清单确定性生成）<br><span style="color:#9ca3af">指纹基串：'+escH(report.meta.basis)+'</span></div>';
+  h+='<div style="margin-top:6px">📖 <b>完整规则文档：</b>每条规则的触发条件、扣分值、正反例与回归基准见 <a href="代码质量评分规则-v2.0.md" target="_blank" style="color:#2563eb">《代码质量评分规则-v2.0.md》</a></div>';
+  h+='</details></div>';
+  h+='</div>';
+  return h;
+}
+/* ================= 代码质量评分系统（结束） ================= */
+
+/* 主检测函数 */
+function checkCode(id,code){
+  var p=PRACTICE[id];
+  var errors=[];
+  var warnings=[];
+  /* 工具：字符偏移→行号 */
+  function lnOf(idx){var n=1;for(var j=0;j<idx&&j<code.length;j++)if(code[j]==='\n')n++;return n;}
+  /* 工具：取某行文本 */
+  function lineText(ln){var ls=code.split('\n');return(ln>=1&&ln<=ls.length)?ls[ln-1].trim():'';}
+  /* 工具：带行号+代码片段的提示 */
+  function atLine(idx,msg){var ln=lnOf(idx),src=lineText(ln);return msg+'（第 '+ln+' 行'+(src?'：'+src:'')+'）';}
+
+  /* ===== 1. 语法检查 ===== */
+  /* 1a. 括号平衡（带行号追踪） */
+  var stack=[];
+  var pairs={'{':'}','(':')','[':']'};
+  var opens=Object.keys(pairs);
+  var closers=Object.values(pairs);
+  var inString=false,inChar=false,inLineComment=false,inBlockComment=false;
+  var strStartLn=0,charStartLn=0;
+  for(var i=0;i<code.length;i++){
+    var ch=code[i],next=code[i+1];
+    if(inLineComment){if(ch==='\n')inLineComment=false;continue;}
+    if(inBlockComment){if(ch==='*'&&next==='/')inBlockComment=false,i++;continue;}
+    if(inString){if(ch==='\\'){i++;continue;}if(ch==='"')inString=false;continue;}
+    if(inChar){if(ch==='\\'){i++;continue;}if(ch==="'")inChar=false;continue;}
+    if(ch==='/'&&next==='/'){inLineComment=true;continue;}
+    if(ch==='/'&&next==='*'){inBlockComment=true;continue;}
+    if(ch==='"'){inString=true;strStartLn=lnOf(i);continue;}
+    if(ch==="'"){inChar=true;charStartLn=lnOf(i);continue;}
+    if(opens.indexOf(ch)>=0){
+      stack.push({ch:ch,idx:i});
+    }else if(closers.indexOf(ch)>=0){
+      if(!stack.length){
+        errors.push(atLine(i,'多余的「'+ch+'」没有对应的开括号——检查是否多写了一个闭合符号'));
+        break;
+      }
+      var top=stack[stack.length-1];
+      if(pairs[top.ch]!==ch){
+        errors.push(atLine(i,'括号不匹配：第 '+lnOf(top.idx)+' 行的「'+top.ch+'」应该用「'+pairs[top.ch]+'」闭合，但这里出现了「'+ch+'」'));
+        break;
+      }
+      stack.pop();
+    }
+  }
+  if(inString){
+    errors.push('第 '+strStartLn+' 行开始的字符串引号 " 没有闭合。\n💡 修复：在字符串内容结尾补一个 "，例如：System.out.println("你好");');
+  }
+  if(inChar){
+    errors.push('第 '+charStartLn+' 行开始的字符引号 \' 没有闭合。\n💡 修复：字符要用单引号包住一个字符，如 \'A\'');
+  }
+  if(stack.length){
+    var detail=stack.map(function(item){return '第 '+lnOf(item.idx)+' 行的「'+item.ch+'」';}).join('、');
+    errors.push('以下括号没有闭合：'+detail+'。\n💡 修复：在对应位置补上闭合符号 '+stack.map(function(s){return pairs[s.ch];}).join(''));
+  }
+
+  /* 1b. main 方法检查 */
+  var mainMatch=code.match(/public\s+static\s+void\s+main\s*\(\s*(String\s*\[\]\s+\w+|String\s+\w+\s*\[\])/);
+  if(!mainMatch){
+    if(/void\s+Main\s*\(/.test(code)){
+      errors.push('main 方法名写成了大写 Main，Java 区分大小写，必须是小写 main。\n💡 正确写法：public static void main(String[] args)');
+    }else if(/public\s+static\s+void\s+main\s*\(/.test(code)&&!/String\s*\[/.test(code)){
+      errors.push('main 方法的参数缺少 String[] args。\n💡 正确写法：public static void main(String[] args)');
+    }else if(/static\s+void\s+main\s*\(/.test(code)&&!/public\s+static/.test(code)){
+      warnings.push('main 方法缺少 public 修饰符。虽然能编译，但标准写法是：public static void main(String[] args)');
+    }else if(!/void\s+main\s*\(/.test(code)){
+      errors.push('未找到 main 方法。Java 程序的入口必须是：\npublic static void main(String[] args) { ... }\n💡 检查是否拼写正确、括号是否配对。');
+    }
+  }
+
+  /* 1c. class 声明检查 */
+  if(!/\bclass\s+\w+/.test(code)){
+    warnings.push('未找到 class 声明。Java 代码必须在 class 内部，例如：\npublic class Main {\n    public static void main(String[] args) { ... }\n}');
+  }
+
+  /* 1d. System.out 拼写检查（必须严格大小写敏感，否则会把正确的 System.out.println 也误报为错误） */
+  var typos=[
+    {re:/\bSystem\.Out\.print/,msg:'out 全小写——是 System.out 不是 System.Out'},
+    {re:/\bSystem\.out\.Println/,msg:'println 全小写——是 System.out.println 不是 System.out.Println'},
+    {re:/\bsystem\.out\.print/,msg:'System 首字母必须大写——是 System 不是 system'},
+    {re:/\bSYSTEM\.out\.print/,msg:'System 首字母必须大写——是 System 不是 SYSTEM'},
+    {re:/\bSystem\.out\.Print(?!ln)/,msg:'print 全小写——是 System.out.print 不是 System.out.Print'}
+  ];
+  typos.forEach(function(tp){var m=tp.re.exec(code);if(m)errors.push(atLine(m.index,'⚠️ '+tp.msg));});
+
+  /* 1e. 分号检查 */
+  var codeLines=code.split('\n');
+  for(var li=0;li<codeLines.length;li++){
+    var tr=codeLines[li].trim();
+    if(!tr||tr.startsWith('//')||tr.startsWith('/*')||tr.startsWith('*')||
+       tr==='{'||tr==='}'||tr.startsWith('package')||tr.startsWith('import')||
+       /^(public\s+)?class\s/.test(tr)||/void\s+main/.test(tr))continue;
+    if(/System\.out\.print(?:ln)?\s*\(/.test(tr)&&!tr.endsWith(';')){
+      var nl=(li+1<codeLines.length)?codeLines[li+1].trim():'';
+      if(nl&&!nl.startsWith('//')&&!nl.startsWith('}')&&!/^(public|class|void|if|for|while|else)/.test(nl)){
+        warnings.push('第 '+(li+1)+' 行可能缺少分号 ;。\n💡 Java 每条语句末尾必须加分号，例如：System.out.println("你好");');
+      }
+    }
+    if(/\b(?:int|double|String|long|float|char|boolean)\s+\w+\s*=/.test(tr)&&!tr.endsWith(';')&&!tr.endsWith('{')){
+      warnings.push('第 '+(li+1)+' 行的变量赋值语句可能缺少分号 ;');
+    }
+  }
+
+  /* 1f. 中文标点检查 */
+  if(/[“”]/.test(code)){
+    var cm=code.match(/[“”]/);
+    if(cm)errors.push(atLine(cm.index,'⚠️ 检测到中文引号，Java 字符串必须用英文引号 ""\n💡 修复：切换到英文输入法，按 Shift+引号键'));
+  }
+
+  /* 1g. Scanner import 检查 */
+  if(/new\s+Scanner\s*\(/.test(code)&&!/import\s+java\.util\.Scanner/.test(code)){
+    warnings.push('使用了 Scanner 但没有导入。在 class 前面加一行：\nimport java.util.Scanner;');
+  }
+
+  /* ===== 2. 输出语句检查 ===== */
+  var hasPrint=/System\.out\.print/.test(code);
+  if(!hasPrint){
+    if(/print\s*\(/.test(code)&&!/System\.out/.test(code)){
+      errors.push('检测到 print() 但缺少 System.out 前缀。\n💡 正确写法：System.out.println("内容");');
+    }else if(/System\.out/.test(code)&&!/print/.test(code)){
+      errors.push('写了 System.out 但没有调用 print 或 println 方法。\n💡 正确写法：System.out.println("内容");');
+    }else{
+      errors.push('代码中没有 System.out.println 或 System.out.print 输出语句。\n💡 程序需要输出内容才能看到运行结果，例如：\nSystem.out.println("Hello,World!");');
+    }
+  }
+
+  /* ===== 3. 输出内容比对 ===== */
+  var simOut='';
+  var expectedLines=[];
+  var unmatchedExpected=[];
+  var matchPct=100;   /* 提升到函数作用域，供评分系统 v2 使用 */
+  if(hasPrint&&errors.length===0&&p){
+    simOut=simulateOutput(code);
+    expectedLines=extractExpectedLines(p.expected);
+    if(expectedLines.length>0){
+      var simLines=simOut.split('\n').map(function(l){return l.trim();});
+      var matched=0;
+      for(var ei=0;ei<expectedLines.length;ei++){
+        var found=false;
+        for(var si=0;si<simLines.length;si++){
+          if(simLines[si]===expectedLines[ei]||simLines[si].indexOf(expectedLines[ei])>=0||expectedLines[ei].indexOf(simLines[si])>=0){
+            found=true;matched++;break;
+          }
+        }
+        if(!found)unmatchedExpected.push(expectedLines[ei]);
+      }
+      matchPct=expectedLines.length>0?Math.round(matched/expectedLines.length*100):100;
+      if(matchPct<50){
+        var detail='输出内容与预期不符（匹配率 '+matchPct+'%）。\n\n';
+        detail+='📋 预期输出应包含：\n'+expectedLines.slice(0,6).map(function(l){return '  ✓ '+l;}).join('\n')+'\n';
+        if(unmatchedExpected.length>0){
+          detail+='\n❌ 以下预期行在你的输出中没找到：\n'+unmatchedExpected.slice(0,4).map(function(l){return '  ✗ '+l;}).join('\n')+'\n';
+        }
+        detail+='\n📋 你的实际输出：\n'+(simOut||'（无输出）');
+        errors.push(detail);
+      }else if(matchPct<100){
+        var warn='部分输出匹配（'+matchPct+'%），还有 '+unmatchedExpected.length+' 行预期输出没找到。';
+        if(unmatchedExpected.length>0)warn+='\n缺失的行：'+unmatchedExpected.slice(0,3).join(' / ');
+        warnings.push(warn);
+      }
+    }
+  }
+
+  var errorPlans=buildErrorPlans(errors,code);
+  return {
+    passed:errors.length===0,
+    errors:errors,
+    errorPlans:errorPlans,
+    warnings:warnings,
+    simOutput:simOut,
+    expectedLines:expectedLines,
+    matchPct:matchPct,
+    hasPrint:hasPrint
+  };
+}
+/* ================= 5 要素标准化错误修改计划生成器 =================
+   每条 error 配一张「修改计划卡片」，包含 5 要素：
+   1) 详细错误分析（现象 / 根因 / 根因背后根因 / 受影响组件）
+   2) 分步实施修复指南（每步可独立验证）
+   3) 代码示例或配置片段（可直接复制运行）
+   4) 验证步骤（表格化期望 / 实际对比）
+   5) 预防措施（工具链 + 自检脚本 + 项目硬约束 + PR 清单）
+   保持与 errors 数组索引对齐，未匹配到模板的 error 返回 null（仍按原方式渲染）。 */
+function buildErrorPlans(errors,code){
+  if(!errors||!errors.length)return [];
+  /* 受影响组件指向 checkCode 内部检查项的行号锚点（与 index.html 实际行号保持一致） */
+  var AFF={
+    cnPunct:{name:'checkCode 中文标点检查（1f）',href:'#L7505'},
+    mainCase:{name:'checkCode main 方法大小写检查（1b）',href:'#L7458'},
+    systemOut:{name:'checkCode System.out 拼写检查（1d）',href:'#L7477'},
+    bracket:{name:'checkCode 括号平衡检查（1a）',href:'#L7414'},
+    semi:{name:'checkCode 分号检查（1e）',href:'#L7487'},
+    noMain:{name:'checkCode main 入口检查（1b）',href:'#L7458'},
+    printMissing:{name:'checkCode 输出语句检查（2）',href:'#L7517'},
+    outputMismatch:{name:'checkCode 输出内容比对（3）',href:'#L7528'},
+    stringUnclosed:{name:'checkCode 字符串引号闭合检查（1a）',href:'#L7446'}
+  };
+  /* 文件路径锚点：d 盘真源 */
+  var FILE='d:/AI小游戏/新建文件夹/java-course-site/index.html';
+  function link(a){return '<a class="fixplan-link" href="file:///'+FILE+a.href+'" title="'+a.name+'">'+a.name+'</a>';}
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  /* 通用：每个计划的骨架 */
+  function plan(title,analysis,fixSteps,codeExample,verification,prevention){
+    return {
+      title:title,
+      analysis:analysis,         /* {phenomenon,rootCause,deepRootCause,affected:[]}*/
+      fixSteps:fixSteps,         /* [{step,desc,verify}] */
+      codeExample:codeExample,   /* 字符串，可含 \n */
+      verification:verification, /* [{input,expected,actual,status}] */
+      prevention:prevention      /* [string] */
+    };
+  }
+  var plans=[];
+  for(var i=0;i<errors.length;i++){
+    var e=String(errors[i]),p=null;
+    var has=function(s){return e.indexOf(s)>=0;};
+    /* 1. 中文标点 */
+    if(has('中文')&&(has('引号')||has('标点'))){
+      p=plan('中文标点误用',
+        {
+          phenomenon:'Java 编译器在源码字符串或字符里遇到了中文全角标点（U+201C/U+201D 等中文双引号），与 Java 语法要求的半角英文双引号 U+0022 不一致，导致 javac 报「非法字符」错误。',
+          rootCause:'输入法仍处于中文模式时敲下了引号键，被输入法转成了 Unicode 中文双引号（左码点 U+201C、右码点 U+201D），而不是 Java 期望的 ASCII 双引号（码点 U+0022）。',
+          deepRootCause:'初学者未在 IDE 中切换为英文输入法；或工具链（如某些自动转换脚本的 Edit 操作）会把 U+0022 转成 U+201C/U+201D，造成肉眼难辨的「隐形」差异。',
+          affected:[link(AFF.cnPunct)]
+        },
+        [
+          {step:'1',desc:'定位第 1 处中文双引号字符（错误信息已给出所在行号）。',verify:'在对应行用鼠标选中引号字符，VS Code 状态栏会显示码点为 U+201C 或 U+201D。'},
+          {step:'2',desc:'切换系统输入法到英文模式（按 Shift 或 Win+空格切到 EN）。',verify:'在任意文本框敲一次引号键，确认输出的是直引号 (U+0022) 而非弯引号。'},
+          {step:'3',desc:'把出错行的中文双引号全部删除，用英文双引号重新输入。',before:'System.out.println(\u201C你好\u201D);  // 中文弯引号 U+201C U+201D',after:'System.out.println("你好");  // 英文直引号 U+0022',verify:'该行左侧不再有红色波浪线；javac 报错消失。'},
+          {step:'4',desc:'整文件搜索残留中文引号（VS Code Ctrl+F 粘贴字符查找），全部替换为英文引号。',verify:'搜索结果为 0 处。'}
+        ],
+        'public class Hello {\n    public static void main(String[] args) {\n        System.out.println("你好，Java");  // 此处必须用英文双引号\n    }\n}',
+        [
+          {input:'javac Hello.java',expected:'无输出（编译成功）',actual:'原报错 非法字符: 0x201c',status:'ok'},
+          {input:'java Hello',expected:'输出：你好，Java',actual:'未运行',status:'bad'}
+        ],
+        [
+          '工具链约束：VS Code 安装「Chinese Character Checker」类扩展，遇到中文标点自动高亮提醒。',
+          '自检脚本：在项目根目录放一个 PowerShell 自检脚本，遍历 .java 文件，凡匹配 U+201C/U+201D 等中文标点立即报告位置。',
+          '项目内存硬约束：写入 project_memory.md，规定所有含中文标点的正则字面量必须用 [char]0x201C codepoint 方式构造，禁止用 Edit 工具直接写。',
+          'PR 清单：新增「输入法检查」项，提交前确认所有引号均为 U+0022。'
+        ]
+      );
+    }
+    /* 2. main 大写 Main */
+    else if(has('Main')&&has('大写')){
+      p=plan('main 方法名首字母误大写为 Main',
+        {
+          phenomenon:'javac 把 public static void Main(String[] args) 当作普通方法编译通过，但 java 命令运行时找不到入口，报「main 方法不存在」或「Error: Main method not found」。',
+          rootCause:'Java 严格区分大小写，JVM 规定的程序入口方法名必须是全小写的 main，写成 Main 不会被识别为入口。',
+          deepRootCause:'初学者把「类名首字母大写」的命名规范错误地套用到了方法名上，或在 IDE 自动补全时按 Tab 接受了 Main 提示。',
+          affected:[link(AFF.mainCase)]
+        },
+        [
+          {step:'1',desc:'找到 Main 所在行（错误信息已给出行号）。',verify:'光标停在方法名上，VS Code 不会高亮为入口方法。'},
+          {step:'2',desc:'把 Main 的首字母 M 改成小写 m，其余字母 ain 不动。',before:'public static void Main(String[] args) {',after:'public static void main(String[] args) {',verify:'方法名旁会出现绿色 运行按钮（VS Code Java 扩展识别入口）。'},
+          {step:'3',desc:'保存（Ctrl+S）后重新运行 javac + java。',verify:'控制台输出预期结果而非「Main method not found」。'}
+        ],
+        'public class Hello {\n    public static void main(String[] args) {  // 全小写 main\n        System.out.println("Hello");\n    }\n}',
+        [
+          {input:'javac Hello.java',expected:'无输出',actual:'原报错 Error: Main method not found',status:'ok'},
+          {input:'java Hello',expected:'输出：Hello',actual:'未运行',status:'bad'}
+        ],
+        [
+          '工具链约束：安装 VS Code Java Extension Pack，对非标准 main 写法给出警告提示。',
+          '自检脚本：在 checkCode 里加 /void\\s+Main\\s*\\(/ 正则，命中即报错（已生效）。',
+          '项目内存硬约束：写入 project_memory.md「Java 严格区分大小写，类名 PascalCase、方法名 camelCase、入口方法必须是 main」。',
+          'PR 清单：检查所有方法名拼写，main/main 区分清楚。'
+        ]
+      );
+    }
+    /* 3. System.out 拼写错误（Out/Println/system/SYSTEM/Print） */
+    else if(has('System.Out')||has('System.out.Println')||has('System 不是 system')||has('System 不是 SYSTEM')||has('System.out.Print')){
+      var typo='System.out 拼写';
+      if(has('System.Out'))typo='System.Out（Out 误大写）';
+      else if(has('System.out.Println'))typo='System.out.Println（Println 误大写）';
+      else if(has('不是 system'))typo='system.out（System 误小写）';
+      else if(has('不是 SYSTEM'))typo='SYSTEM.out（System 全大写）';
+      else if(has('System.out.Print'))typo='System.out.Print（Print 误大写）';
+      p=plan('System.out 拼写错误：'+typo,
+        {
+          phenomenon:'javac 报「找不到符号」或「package system does not exist」，程序无法编译运行。',
+          rootCause:'System 是 JDK 内置类 java.lang.System，out 是它的静态字段，println/print 是方法。三者大小写必须严格按 JDK 定义：System 首字母大写、out 全小写、println 全小写。',
+          deepRootCause:'初学者对 Java「类名首字母大写、字段与方法全小写」的命名规范不熟，或在 IDE 自动补全时未仔细确认拼写。',
+          affected:[link(AFF.systemOut)]
+        },
+        [
+          {step:'1',desc:'在错误信息给出的行号处，找到小写的 system。',before:'system.out.print("请输入你的年龄：");',after:'System.out.print("请输入你的年龄：");',verify:'VS Code 在 system 下方标红色波浪线。'},
+          {step:'2',desc:'把 system 的首字母 s 改成大写 S（只需改一个字母，out 和 print 保持原样不动）。',before:'system.out.print(...)',after:'System.out.print(...)',verify:'红色波浪线消失；输入 S. 后 VS Code 自动补全弹出 System 选项。'},
+          {step:'3',desc:'保存文件（Ctrl+S），重新点「检测代码」或运行 javac + java。',verify:'javac 无任何报错输出；java 控制台显示预期内容。'}
+        ],
+        'public class Hello {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");  // 三段全小写，仅 System 首字母大写\n    }\n}',
+        [
+          {input:'javac Hello.java',expected:'无输出',actual:'原报错 cannot find symbol',status:'ok'},
+          {input:'java Hello',expected:'输出：Hello, World!',actual:'未运行',status:'bad'}
+        ],
+        [
+          '工具链约束：VS Code 安装 Java Extension Pack，对 System.out 错误拼写立即红色波浪线提示。',
+          '自检脚本：checkCode 已内置 5 类 System.out 拼写正则，命中即报错（已生效）。',
+          '项目内存硬约束：project_memory.md 已写入「System.out 拼写检查必须严格大小写敏感，禁止 /i 标志」。',
+          'PR 清单：检查所有输出语句拼写与大小写。'
+        ]
+      );
+    }
+    /* 4. 括号不匹配 / 没有闭合 */
+    else if(has('括号不匹配')||has('没有闭合')||has('多余的')){
+      p=plan('括号不匹配',
+        {
+          phenomenon:'javac 报「需要 )」「需要 }」或「不闭合的字符字面量」，编译失败。',
+          rootCause:'开括号 ( [ { 与闭括号 ) ] } 数量或顺序不一致，导致栈在文件结束时仍非空，或中途出现无法配对的闭括号。',
+          deepRootCause:'初学者在嵌套调用（如 System.out.println(method(args))）时漏写一个闭括号，或在写 if/for/while 代码块时漏写 }。',
+          affected:[link(AFF.bracket)]
+        },
+        [
+          {step:'1',desc:'查看错误信息中给出的行号，跳到该行，肉眼清点 ( 与 ) 的数量。',verify:'VS Code 光标停在某个括号上时自动高亮配对的另一半；没高亮说明仍缺。'},
+          {step:'2',desc:'从内向外逐层补齐闭括号，先补最内层再补外层。',before:'System.out.println("test"  // 缺右括号 )',after:'System.out.println("test");  // 补齐 ) 和分号 ;',verify:'每补一个括号立即保存，红色波浪线减少。'},
+          {step:'3',desc:'文件末尾如果还缺 } ，根据已开的 class 与方法层数依次补齐。',before:'public class Hello {\n    public static void main(String[] args) {\n        System.out.println("hi");\n    // 缺 } 闭合 main\n// 缺 } 闭合 class',after:'public class Hello {\n    public static void main(String[] args) {\n        System.out.println("hi");\n    }  // 闭合 main\n}      // 闭合 class',verify:'javac 编译无报错。'}
+        ],
+        'public class Hello {\n    public static void main(String[] args) {\n        System.out.println("括号配对");\n    }  // 闭合 main\n}      // 闭合 class',
+        [
+          {input:'javac Hello.java',expected:'无输出',actual:'原报错 需要 }',status:'ok'},
+          {input:'java Hello',expected:'输出：括号配对',actual:'未运行',status:'bad'}
+        ],
+        [
+          '工具链约束：VS Code 默认开启括号配对高亮与彩色括号（Rainbow Brackets 扩展可叠加颜色层级）。',
+          '自检脚本：checkCode 已内置括号栈追踪，能给出首个不匹配位置（已生效）。',
+          '项目内存硬约束：project_memory.md 已写入「括号检查必须忽略字符串/字符/注释内部的括号，否则会误报」。',
+          'PR 清单：提交前用 Ctrl+Shift+\\ 跳到配对括号，逐对确认。'
+        ]
+      );
+    }
+    /* 5. main 方法缺失 / 参数错误 */
+    else if(has('未找到 main')||has('缺少 String[] args')||has('缺少 public')){
+      p=plan('main 入口方法问题',
+        {
+          phenomenon:'javac 编译通过，但 java 命令报「Main method not found in class」或「main method is not declared public」。',
+          rootCause:'Java 程序入口必须严格写作 public static void main(String[] args)，四要素缺一不可：public（可被 JVM 外部调用）、static（无需实例化即可运行）、void（无返回值）、main（小写入口名）、参数 String[] args。',
+          deepRootCause:'初学者对「JVM 调用入口的固定签名」记忆不牢，遗漏 public 或写错参数。',
+          affected:[link(AFF.noMain)]
+        },
+        [
+          {step:'1',desc:'在 class 大括号内部搜索 void main(，确认 main 方法是否存在。',verify:'如果没有搜索到，说明 main 方法完全缺失。'},
+          {step:'2',desc:'在 class 体内补写标准入口方法（5 要素：public、static、void、main、String[] args）。',before:'public class Hello {\n    // 这里缺少 main 方法\n}',after:'public class Hello {\n    public static void main(String[] args) {\n        System.out.println("Hello");\n    }\n}',verify:'VS Code 在 main 方法名左侧出现绿色 运行按钮。'},
+          {step:'3',desc:'保存（Ctrl+S）后用 javac 编译、java 运行。',verify:'控制台输出预期结果。'}
+        ],
+        'public class Hello {\n    public static void main(String[] args) {\n        System.out.println("Hello");\n    }\n}',
+        [
+          {input:'javac Hello.java',expected:'无输出',actual:'原报错 main method not found',status:'ok'},
+          {input:'java Hello',expected:'输出：Hello',actual:'未运行',status:'bad'}
+        ],
+        [
+          '工具链约束：VS Code Java Extension Pack 对非标准 main 写法给出警告。',
+          '自检脚本：checkCode 已内置 main 签名正则校验（已生效）。',
+          '项目内存硬约束：project_memory.md 已写入「Java 程序入口固定签名为 public static void main(String[] args)」。',
+          'PR 清单：检查 main 完整签名，4 要素+1 参数列表全齐。'
+        ]
+      );
+    }
+    /* 6. 分号缺失（注意：分号缺失当前作为 warnings 推送，但 scoreCodeQuality 仍会扣分；为兼容也可能出现在 errors） */
+    else if(has('缺少分号')||has('分号')){
+      p=plan('语句末尾缺少分号',
+        {
+          phenomenon:'javac 报「需要 ;」或「 unexpected token」，提示在某个语句末尾。',
+          rootCause:'Java 语法规定每条可执行语句必须以英文分号 U+003B ; 结尾，漏写则编译器无法判断语句边界。',
+          deepRootCause:'初学者从 Python（依赖换行符分割语句）迁移时容易漏分号；或写完一行后未敲分号键直接回车。',
+          affected:[link(AFF.semi)]
+        },
+        [
+          {step:'1',desc:'查看错误信息中给出的行号，跳到该行，把光标移到行尾。',verify:'该行末尾没有英文分号 ;。'},
+          {step:'2',desc:'在该行最后一个非空白字符（通常是 ) ）后面补一个英文分号 ;。',before:'System.out.println("Hello")  // 行尾缺 ;',after:'System.out.println("Hello");  // 补上英文分号 ;',verify:'保存后该行红色波浪线消失；javac 报错消失。'},
+          {step:'3',desc:'全文件检查其它无分号的可执行语句（变量赋值、输出语句等）。',before:'int age = 18  // 缺 ;',after:'int age = 18;  // 补 ;',verify:'javac 编译通过。'}
+        ],
+        'public class Hello {\n    public static void main(String[] args) {\n        int age = 18;                          // 变量赋值要分号\n        System.out.println("年龄：" + age);    // 输出语句要分号\n    }\n}',
+        [
+          {input:'javac Hello.java',expected:'无输出',actual:'原报错 需要 ;',status:'ok'},
+          {input:'java Hello',expected:'输出：年龄：18',actual:'未运行',status:'bad'}
+        ],
+        [
+          '工具链约束：VS Code 默认对 Java 文件末尾分号缺失给出红色波浪线提示。',
+          '自检脚本：checkCode 已内置 System.out.print/变量赋值 行尾分号检查（已生效，作为 warning 推送但会扣分）。',
+          '项目内存硬约束：project_memory.md 已写入「Java 每条可执行语句必须以 ; 结尾」。',
+          'PR 清单：提交前通读每行可执行语句，确认 ; 收尾。'
+        ]
+      );
+    }
+    /* 7. 输出语句缺失 */
+    else if(has('没有 System.out.println')||has('缺少 System.out')||has('没有调用 print')||has('检测到 print() 但缺少')){
+      p=plan('缺少标准输出语句',
+        {
+          phenomenon:'javac 编译通过，但 java 运行后控制台无任何输出。',
+          rootCause:'程序中没有调用 System.out.println(...) 或 System.out.print(...)，JVM 执行完 main 后直接退出，没有任何内容写入 stdout。',
+          deepRootCause:'初学者把变量赋值或方法定义当成「输出」，或写了 print() 而漏掉 System.out. 前缀。',
+          affected:[link(AFF.printMissing)]
+        },
+        [
+          {step:'1',desc:'在 main 方法内末尾补一行 System.out.println 输出语句。',before:'public static void main(String[] args) {\n    int age = 18;\n    // 没有任何输出语句\n}',after:'public static void main(String[] args) {\n    int age = 18;\n    System.out.println("年龄：" + age);  // 补输出语句\n}',verify:'该行写完后 VS Code 不报红；运行后控制台出现文字。'},
+          {step:'2',desc:'如已写 print(...) 但缺少 System.out. 前缀，补全前缀。',before:'print("Hello");  // 缺 System.out. 前缀',after:'System.out.print("Hello");  // 补全前缀',verify:'代码补全弹窗能匹配到 println/println(String) 重载方法。'},
+          {step:'3',desc:'保存（Ctrl+S）并运行。',verify:'控制台输出预期字符串。'}
+        ],
+        'public class Hello {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");  // 必须 System.out. 前缀\n    }\n}',
+        [
+          {input:'javac Hello.java',expected:'无输出',actual:'编译通过',status:'ok'},
+          {input:'java Hello',expected:'输出：Hello, World!',actual:'原输出：（空）',status:'bad'}
+        ],
+        [
+          '工具链约束：VS Code Java 扩展对 main 方法内无任何输出语句时给出灰色提示。',
+          '自检脚本：checkCode 已内置 hasPrint 检查（已生效）。',
+          '项目内存硬约束：project_memory.md 已写入「程序需要输出内容才能看到运行结果」。',
+          'PR 清单：确认 main 内至少有一条 System.out.println/print 语句。'
+        ]
+      );
+    }
+    /* 8. 输出内容与预期不符 */
+    else if(has('输出内容与预期不符')||has('匹配率')){
+      p=plan('输出内容与预期不符',
+        {
+          phenomenon:'程序能编译运行，但运行结果与练习要求的预期输出文本对不上（如该输出 Hello,World! 实际输出 helloworld）。',
+          rootCause:'输出语句中的字符串字面量与预期文本不一致——大小写、标点、空格、换行、特殊字符任一差异都会导致逐字比对失败。',
+          deepRootCause:'初学者未仔细读题，把预期输出当作「大致意思」而非「逐字要求」；或忽略了中文/英文标点差异、漏了逗号空格等细节。',
+          affected:[link(AFF.outputMismatch)]
+        },
+        [
+          {step:'1',desc:'查看错误卡片中预期输出与你的实际输出，逐字符对照圈出第一处不同。',verify:'常见差异：大小写（H vs h）、标点（中英逗号）、空格、换行。'},
+          {step:'2',desc:'修改 System.out.println 的字符串字面量，让其与预期完全一致。',before:'System.out.println("hello world");  // 预期是 Hello,World!',after:'System.out.println("Hello,World!");  // 逐字一致',verify:'再次点「检测代码」，匹配率应升到 100%。'},
+          {step:'3',desc:'若预期含多行，每行用独立的 println 或用 \\n 分隔。',before:'System.out.println("第一行\\n第二行");  // 易出错',after:'System.out.println("第一行");\nSystem.out.println("第二行");  // 更清晰',verify:'javac 编译通过；java 运行后控制台逐行输出与预期一致。'}
+        ],
+        '// 预期输出：Hello,World!\nSystem.out.println("Hello,World!");\n\n// 预期输出两行：\nSystem.out.println("第一行");\nSystem.out.println("第二行");',
+        [
+          {input:'点「检测代码」',expected:'匹配率 100%',actual:'原匹配率 <50%',status:'ok'},
+          {input:'java Hello',expected:'与预期逐字一致',actual:'原输出差异',status:'ok'}
+        ],
+        [
+          '工具链约束：在线学习中心提供「检测代码」按钮，自动比对预期与实际输出。',
+          '自检脚本：checkCode 已内置 extractExpectedLines + simulateOutput 双向匹配（已生效）。',
+          '项目内存硬约束：project_memory.md 已写入「输出比对必须支持子串包含，避免空格差异导致误报」。',
+          'PR 清单：提交前用「检测代码」按钮验证，匹配率必须 100%。'
+        ]
+      );
+    }
+    /* 9. 字符串引号未闭合 */
+    else if(has('字符串引号')||has('引号')&&has('没有闭合')){
+      p=plan('字符串引号未闭合',
+        {
+          phenomenon:'javac 报「unclosed string literal」或「非法转义字符」，编译失败。',
+          rootCause:'一个字符串字面量以英文双引号 " 开始，但到行尾或文件结束都没遇到下一个 " 闭合。',
+          deepRootCause:'初学者写输出语句时只敲了开头的 "，忘了在内容结尾再敲一次；或想换行却误删了闭合引号。',
+          affected:[link(AFF.stringUnclosed)]
+        },
+        [
+          {step:'1',desc:'查看错误信息给出的起始行号，跳到该行，找到开头的 "。',verify:'该行只有左引号 "，右引号缺失。'},
+          {step:'2',desc:'在字符串内容结尾补一个英文双引号 " 闭合。',before:'System.out.println("你好);  // 缺右引号 "',after:'System.out.println("你好");  // 补上右引号 "',verify:'该行 IDE 不再报红；引号内内容变成字符串颜色。'},
+          {step:'3',desc:'如字符串要跨多行，用 + 连接或用 \\n 转义换行（不能直接在字符串内回车）。',before:'System.out.println("第一行\n第二行");  // 直接回车会报错',after:'System.out.println("第一行\\n第二行");  // 用 \\n 转义',verify:'javac 编译通过。'}
+        ],
+        'System.out.println("你好，Java");  // 开头一个 "，结尾一个 "\nSystem.out.println("第一行\\n第二行");  // 跨行用 \\n',
+        [
+          {input:'javac Hello.java',expected:'无输出',actual:'原报错 unclosed string literal',status:'ok'},
+          {input:'java Hello',expected:'输出：你好，Java',actual:'未运行',status:'bad'}
+        ],
+        [
+          '工具链约束：VS Code 对未闭合字符串立即整段标黄。',
+          '自检脚本：checkCode 已内置 inString 状态机追踪（已生效，给出起始行号）。',
+          '项目内存硬约束：project_memory.md 已写入「字符串引号闭合检查必须忽略注释内的引号，避免误报」。',
+          'PR 清单：每写完一个 System.out.println 立即确认 " 数量为偶数。'
+        ]
+      );
+    }
+    /* 兜底：未匹配到模板，不追加 5 要素卡片（保持原渲染） */
+    plans.push(p);
+  }
+  return plans;
+}
+/* ================= 5 要素标准化错误修改计划生成器（结束） ================= */
+/* 检测按钮回调 */
+function runCodeCheck(id){
+  var ta=document.getElementById('codeEditor_'+id);
+  if(!ta)return;
+  var code=ta.value;
+  var fb=document.getElementById('codeFeedback_'+id);
+  if(!fb)return;
+  if(!code.trim()){
+    fb.className='code-feedback show';
+    fb.innerHTML='<div class="cf-fail">⚠️ 请先在编辑区粘贴你的代码，再点「检测代码」。</div>';
+    return;
+  }
+  var result=checkCode(id,code);
+  var s=getS(id);
+  /* 无论编译/校验是否通过，都生成 5 维评分（编译失败内部做封顶 + RULE-G01 硬闸口） */
+  var qualityReport=scoreCodeQuality(code,result);
+  /* 评分 ≥ 通过线才解锁参考答案（与质量卡 passed 完全一致） */
+  s.codedone=qualityReport.passed?1:0; saveG();
+
+  if(result.passed){
+    var h='<div class="cf-pass">';
+    h+='✅ <b>检测通过！</b>javac 编译成功、java 正常退出（0）、教学校验全部通过。';
+    if(result.warnings.length){
+      h+='<div class="cf-warn" style="margin-top:8px">⚠️ 另有 '+result.warnings.length+' 条警告（不阻止通过），已在下方 VS Code 窗口的「问题 PROBLEMS」面板列出，建议顺手修正。</div>';
+    }
+    h+='</div>';
+    /* VS Code 同款运行环境窗口（终端三阶段 + 依赖解析 + Problems） */
+    h+=renderVSCPanel(code,result);
+    /* 5 维规则化评分卡 */
+    h+=renderQualityCard(qualityReport);
+    fb.className='code-feedback show';
+    fb.innerHTML=h;
+    syncAnswerGate(id);
+    celebrate(40,1200);
+  }else{
+    var h2='<div class="cf-fail">';
+    h2+='❌ <b>检测未通过</b>——共 '+result.errors.length+' 个错误';
+    if(result.warnings.length)h2+='，'+result.warnings.length+' 个警告';
+    h2+='。下方先按 VS Code 的真实流程还原报错现场，再给出评分与逐条修改计划。</div>';
+    /* ① VS Code 同款运行环境窗口（javac 报错格式 + Problems + Quick Fix） */
+    h2+=renderVSCPanel(code,result);
+    /* ② 即使未通过也出分（带封顶与硬闸口说明） */
+    h2+=renderQualityCard(qualityReport);
+    /* ③ 逐条错误 + 5 要素修改计划（无模板匹配时回退为紧凑原始错误块） */
+    h2+='<div style="margin-top:10px"><b style="color:#b91c1c">📝 逐条修复（错误共 '+result.errors.length+' 个）：</b></div>';
+    result.errors.forEach(function(e,i){
+      var plan=result.errorPlans&&result.errorPlans[i];
+      if(plan){
+        h2+=renderFixPlan(plan,i+1);
+      }else{
+        var parts=String(e).split('\n');
+        h2+='<div style="margin:10px 0;padding:6px 10px;background:rgba(239,68,68,.06);border-radius:6px">';
+        h2+='<b style="color:#b91c1c">错误 '+(i+1)+'：</b> '+escH(parts[0]);
+        for(var pi=1;pi<parts.length;pi++){
+          var p=parts[pi];
+          if(p.indexOf('💡')>=0){
+            h2+='<br><span style="color:#15803d;font-size:12px">'+escH(p)+'</span>';
+          }else if(p.trim()){
+            h2+='<br><span style="font-size:12px;white-space:pre-wrap">'+escH(p)+'</span>';
+          }
+        }
+        h2+='</div>';
+      }
+    });
+    fb.className='code-feedback show';
+    fb.innerHTML=h2;
+    syncAnswerGate(id);
+  }
+}
+/* 转义 HTML */
+function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+/* 渲染 5 要素标准化错误修改计划卡片
+   plan 结构见 buildErrorPlans；errNo 为错误序号（1-based） */
+function renderFixPlan(plan,errNo){
+  if(!plan)return '';
+  var h='<div class="fixplan">';
+  /* 卡片头 */
+  h+='<div class="fixplan-h">📋 修改计划卡片 #'+(errNo||1)+'：'+escH(plan.title)+'</div>';
+  /* 1) 详细错误分析 */
+  var a=plan.analysis||{};
+  h+='<div class="fixplan-sec">';
+  h+='<div class="fixplan-sec-h">① 详细错误分析</div>';
+  h+='<div><b>错误现象：</b>'+escH(a.phenomenon)+'</div>';
+  h+='<div><b>根因：</b>'+escH(a.rootCause)+'</div>';
+  h+='<div><b>根因背后的根因：</b>'+escH(a.deepRootCause)+'</div>';
+  if(a.affected&&a.affected.length){
+    h+='<div><b>受影响组件：</b>'+a.affected.join('、')+'</div>';
+  }
+  h+='</div>';
+  /* 2) 分步实施修复指南 */
+  if(plan.fixSteps&&plan.fixSteps.length){
+    h+='<div class="fixplan-sec">';
+    h+='<div class="fixplan-sec-h">② 分步实施修复指南</div>';
+    plan.fixSteps.forEach(function(s){
+      h+='<div class="fixplan-step"><b>步骤 '+escH(s.step)+'：</b>'+escH(s.desc);
+      if(s.before||s.after){
+        h+='<div class="fixplan-diff">';
+        if(s.before)h+='<div><span class="lbl">修改前（错误）</span><span class="del">'+escH(s.before)+'</span></div>';
+        if(s.after)h+='<div><span class="lbl">修改后（正确）</span><span class="add">'+escH(s.after)+'</span></div>';
+        h+='</div>';
+      }
+      if(s.verify)h+='<div class="v">✓ 验证：'+escH(s.verify)+'</div>';
+      h+='</div>';
+    });
+    h+='</div>';
+  }
+  /* 3) 代码示例或配置片段 */
+  if(plan.codeExample){
+    h+='<div class="fixplan-sec">';
+    h+='<div class="fixplan-sec-h">③ 代码示例或配置片段</div>';
+    h+='<pre class="fixplan-code">'+escH(plan.codeExample)+'</pre>';
+    h+='</div>';
+  }
+  /* 4) 验证步骤 */
+  if(plan.verification&&plan.verification.length){
+    h+='<div class="fixplan-sec">';
+    h+='<div class="fixplan-sec-h">④ 验证步骤</div>';
+    h+='<table class="fixplan-verify">';
+    h+='<tr><th>输入</th><th>期望结果</th><th>实际结果</th><th>状态</th></tr>';
+    plan.verification.forEach(function(v){
+      var cls=v.status==='ok'?'ok':'bad';
+      var mark=v.status==='ok'?'✓':'✗';
+      h+='<tr>';
+      h+='<td>'+escH(v.input)+'</td>';
+      h+='<td>'+escH(v.expected)+'</td>';
+      h+='<td>'+escH(v.actual)+'</td>';
+      h+='<td class="'+cls+'">'+mark+'</td>';
+      h+='</tr>';
+    });
+    h+='</table>';
+    h+='</div>';
+  }
+  /* 5) 预防措施 */
+  if(plan.prevention&&plan.prevention.length){
+    h+='<div class="fixplan-sec">';
+    h+='<div class="fixplan-sec-h">⑤ 预防措施</div>';
+    h+='<ul class="fixplan-prevent">';
+    plan.prevention.forEach(function(p){h+='<li>'+escH(p)+'</li>';});
+    h+='</ul>';
+    h+='</div>';
+  }
+  h+='</div>';
+  return h;
+}
+
+/* ================= VS Code 运行环境模拟层 =================
+   浏览器无法真正启动 javac/java，本模块按 VS Code + Java Extension Pack 的真实
+   工作流做「教学模拟」：launch.json 运行配置 → JDK/环境变量 → import 依赖解析
+   → javac 编译（终端 + Problems 同款报错格式）→ java 启动 → 教学校验（测试任务）。
+   全部为确定性静态分析，诊断行/列与 checkCode 同标准。 */
+var VSC_ENV={
+  workspace:'D:\\java学习中心\\JavaLearning',
+  jdk:'Eclipse Temurin JDK 17.0.10',
+  javaHome:'C:\\Program Files\\Java\\jdk-17',
+  srcDir:'src',outDir:'bin'
+};
+/* JDK 常用类型依赖表：simpleName → 全限定名（java.lang 由 JVM 自动导入，无需 import） */
+var VSC_TYPE_PKG={
+  Scanner:'java.util.Scanner',Random:'java.util.Random',ArrayList:'java.util.ArrayList',
+  LinkedList:'java.util.LinkedList',List:'java.util.List',Map:'java.util.Map',
+  HashMap:'java.util.HashMap',TreeMap:'java.util.TreeMap',Set:'java.util.Set',
+  HashSet:'java.util.HashSet',Collections:'java.util.Collections',Arrays:'java.util.Arrays',
+  Date:'java.util.Date',InputMismatchException:'java.util.InputMismatchException',
+  File:'java.io.File',FileReader:'java.io.FileReader',BufferedReader:'java.io.BufferedReader',
+  InputStreamReader:'java.io.InputStreamReader',FileWriter:'java.io.FileWriter',
+  BufferedWriter:'java.io.BufferedWriter',IOException:'java.io.IOException',
+  DecimalFormat:'java.text.DecimalFormat',SimpleDateFormat:'java.text.SimpleDateFormat',
+  LocalDate:'java.time.LocalDate',LocalDateTime:'java.time.LocalDateTime',
+  LocalTime:'java.time.LocalTime',DateTimeFormatter:'java.time.DateTimeFormatter',
+  BigDecimal:'java.math.BigDecimal',BigInteger:'java.math.BigInteger'
+};
+/* 结构化诊断：返回 {className,sourceFile,problems,deps,...}
+   problem = {sev:error|warning, phase:compile|run|check, line,col,ruleId,title,detail,quickFix,symbol,source} */
+function javaVscAnalyze(code,result){
+  var srcLines=code.split('\n');
+  function posOf(idx){
+    var line=1,col=1;
+    for(var j=0;j<idx&&j<code.length;j++){if(code[j]==='\n'){line++;col=1;}else col++;}
+    return {line:line,col:col};
+  }
+  var problems=[];
+  function push(o){
+    var pos=posOf(Math.max(0,Math.min(o.idx||0,code.length)));
+    var line=o.line||pos.line,col=o.col||pos.col;
+    problems.push({sev:o.sev,phase:o.phase,ruleId:o.ruleId,
+      line:line,col:col,title:o.title,detail:o.detail||'',quickFix:o.quickFix||'',
+      symbol:o.symbol||'',source:o.source||'javac',srcLine:srcLines[line-1]||''});
+  }
+  /* --- 词法状态机：字符串/字符/注释 + 括号栈 + 中文引号（codepoint 构造，避免源码污染） --- */
+  var stack=[],pairs={'{':'}','(':')','[':']'};
+  var opens=Object.keys(pairs),closers=['}',')',']'];
+  var inString=false,inChar=false,inLine=false,inBlock=false,strStart=-1,charStart=-1,cnCount=0;
+  for(var i=0;i<code.length;i++){
+    var ch=code[i],next=code[i+1],cp=ch.charCodeAt(0);
+    if(inLine){if(ch==='\n')inLine=false;continue;}
+    if(inBlock){if(ch==='*'&&next==='/'){inBlock=false;i++;}continue;}
+    if(inString){if(ch==='\\'){i++;continue;}if(ch==='"')inString=false;continue;}
+    if(inChar){if(ch==='\\'){i++;continue;}if(ch==="'")inChar=false;continue;}
+    if(ch==='/'&&next==='/'){inLine=true;continue;}
+    if(ch==='/'&&next==='*'){inBlock=true;continue;}
+    if(ch==='"'){inString=true;strStart=i;continue;}
+    if(ch==="'"){inChar=true;charStart=i;continue;}
+    if((cp===0x201C||cp===0x201D)&&cnCount===0){
+      cnCount++;
+      push({sev:'error',phase:'compile',idx:i,ruleId:'COMP-ENC-01',
+        title:'非法字符',
+        detail:'非法字符: \\u'+cp.toString(16)+'（中文弯引号；Java 源码只接受 ASCII 双引号 U+0022）',
+        symbol:'字符 '+ch,
+        quickFix:'删除该字符，切换英文输入法后重新输入英文双引号'});
+    }
+    if(opens.indexOf(ch)>=0){stack.push({ch:ch,idx:i});}
+    else if(closers.indexOf(ch)>=0){
+      if(!stack.length){
+        push({sev:'error',phase:'compile',idx:i,ruleId:'SYN-BRK-01',
+          title:'多余的闭括号「'+ch+'」',detail:'找不到与该闭括号配对的开括号',
+          quickFix:'检查是否多写了 '+ch+'，或其前面漏了对应开括号'});
+        break;
+      }
+      var top=stack[stack.length-1];
+      if(pairs[top.ch]!==ch){
+        var lp=posOf(top.idx);
+        push({sev:'error',phase:'compile',idx:i,ruleId:'SYN-BRK-01',
+          title:'需要「'+pairs[top.ch]+'」',
+          detail:'第 '+lp.line+' 行的「'+top.ch+'」应当用「'+pairs[top.ch]+'」闭合，但这里出现了「'+ch+'」',
+          quickFix:'在第 '+lp.line+' 行之后补齐 '+pairs[top.ch]});
+        break;
+      }
+      stack.pop();
+    }
+  }
+  if(inString)push({sev:'error',phase:'compile',idx:strStart,ruleId:'SYN-STR-01',
+    title:'未闭合的字符串字面量',detail:'需要双引号，但已到达语句结尾',
+    quickFix:'在字符串内容结尾补英文双引号，例如 System.out.println("你好");'});
+  if(inChar)push({sev:'error',phase:'compile',idx:charStart,ruleId:'SYN-CHAR-01',
+    title:'未闭合的字符字面量',detail:"字符必须用单引号包住恰好一个字符，例如 'A'",
+    quickFix:'补上单引号，或改用双引号字符串'});
+  if(stack.length){
+    var it=stack[stack.length-1];
+    push({sev:'error',phase:'compile',idx:it.idx,ruleId:'SYN-BRK-01',
+      title:'需要「'+pairs[it.ch]+'」',
+      detail:'未闭合括号：'+stack.map(function(s){return '第 '+posOf(s.idx).line+' 行「'+s.ch+'」';}).join('、'),
+      quickFix:'按 class/方法层级补 '+stack.map(function(s){return pairs[s.ch];}).join('')});
+  }
+  /* --- 符号类：System.out 五种拼写（严格大小写敏感，禁止 /i） --- */
+  var typos=[
+    {re:/\bSystem\.Out\.print/,id:'SYM-01',sym:'变量 Out',msg:'out 必须全小写：System.out'},
+    {re:/\bSystem\.out\.Println/,id:'SYM-02',sym:'方法 Println',msg:'println 必须全小写'},
+    {re:/\bsystem\.out\.print/,id:'SYM-03',sym:'变量 system',msg:'System 首字母必须大写'},
+    {re:/\bSYSTEM\.out\.print/,id:'SYM-04',sym:'变量 SYSTEM',msg:'System 只首字母大写'},
+    {re:/\bSystem\.out\.Print(?!ln)/,id:'SYM-05',sym:'方法 Print',msg:'print 必须全小写'}
+  ];
+  typos.forEach(function(t){
+    var m=t.re.exec(code);
+    if(m)push({sev:'error',phase:'compile',idx:m.index,ruleId:t.id,
+      title:'找不到符号',detail:t.msg,symbol:t.sym,
+      quickFix:'改为 System.out.println(...) 或 System.out.print(...)'});
+  });
+  /* --- main 入口：javac 可过，java 启动阶段报错 --- */
+  var mainOK=/public\s+static\s+void\s+main\s*\(\s*(String\s*\[\]\s+\w+|String\s+\w+\s*\[\])/.test(code);
+  if(!mainOK){
+    var cm0=code.match(/\bclass\s+([A-Za-z_]\w*)/);
+    var clsName=cm0?cm0[1]:'Main',anchor=cm0?cm0.index:0;
+    var mMain=/void\s+Main\s*\(/.exec(code);
+    var mArgs=/public\s+static\s+void\s+main\s*\(/.test(code);
+    var mAny=/void\s+main\s*\(/.test(code);
+    if(mMain){
+      push({sev:'error',phase:'run',idx:mMain.index,ruleId:'ENTRY-01',source:'java 启动器',
+        title:'在类 '+clsName+' 中找不到 main 方法',
+        detail:'写的是 Main（首字母大写），JVM 只认全小写 main',symbol:'方法 Main',
+        quickFix:'改成 public static void main(String[] args)'});
+    }else if(mArgs&&!/String\s*\[/.test(code)){
+      push({sev:'error',phase:'run',idx:anchor,ruleId:'ENTRY-01',source:'java 启动器',
+        title:'main 方法参数列表错误',detail:'入口参数必须是 String[] args',
+        quickFix:'改成 public static void main(String[] args)'});
+    }else if(!mAny){
+      push({sev:'error',phase:'run',idx:anchor,ruleId:'ENTRY-01',source:'java 启动器',
+        title:'在类 '+clsName+' 中找不到 main 方法，请将 main 方法定义为:',
+        detail:'public static void main(String[] args)',
+        quickFix:'在 class 内补写标准入口方法'});
+    }else if(/static\s+void\s+main\s*\(/.test(code)&&!/public\s+static/.test(code)){
+      var mp=/static\s+void\s+main\s*\(/.exec(code);
+      push({sev:'warning',phase:'run',idx:mp.index,ruleId:'W-PUBLIC',source:'checkCode',
+        title:'main 方法缺少 public 修饰符',detail:'标准入口签名需要 public',
+        quickFix:'补成 public static void main(String[] args)'});
+    }
+  }
+  if(!/\bclass\s+\w+/.test(code)){
+    push({sev:'warning',phase:'compile',line:1,col:1,ruleId:'W-CLASS',source:'checkCode',
+      title:'未找到 class 声明',detail:'Java 代码必须放在 class 内',
+      quickFix:'写 public class Main { ... }'});
+  }
+  /* --- 警告：分号（启发式，跳过跨行与声明行，避免误报） --- */
+  code.split('\n').forEach(function(l,li){
+    var tr=l.trim();
+    if(!tr||tr.indexOf('//')===0||tr.indexOf('/*')===0||tr.indexOf('*')===0||
+       tr==='{'||tr==='}'||/^package/.test(tr)||/^import/.test(tr)||
+       /^(public\s+)?class\s/.test(tr)||/void\s+main/.test(tr))return;
+    if(/System\.out\.print(?:ln)?\s*\(/.test(tr)&&tr.charAt(tr.length-1)!==';'){
+      var nl=(li+1<srcLines.length)?srcLines[li+1].trim():'';
+      if(nl&&nl.indexOf('//')!==0&&nl.indexOf('}')!==0&&!/^(public|class|void|if|for|while|else)/.test(nl)){
+        push({sev:'warning',phase:'compile',line:li+1,col:l.length,ruleId:'W-SEMI',source:'checkCode',
+          title:'可能缺少分号',detail:'输出语句通常需要以 ; 结尾（跨行写法除外）',
+          quickFix:'在行尾补英文分号 ;'});
+      }
+    }
+    /* 变量声明/赋值行同样检查行尾分号 */
+    if(/\b(?:int|double|String|long|float|char|boolean)\s+\w+\s*=/.test(tr)&&tr.charAt(tr.length-1)!==';'&&tr.charAt(tr.length-1)!=='{'){
+      push({sev:'warning',phase:'compile',line:li+1,col:l.length,ruleId:'W-SEMI',source:'checkCode',
+        title:'可能缺少分号',detail:'变量声明/赋值语句需要以 ; 结尾',
+        quickFix:'在行尾补英文分号 ;'});
+    }
+  });
+  /* --- 依赖解析：import 声明 vs 类型使用（JDT.LS Quick Fix 同款提示） --- */
+  var imported={},im,imRe=/import\s+([\w.]+)\s*;/g;
+  while((im=imRe.exec(code))!==null)imported[im[1]]=1;
+  /* 依赖判定只看 import 之外的代码，避免 import 声明被当成“已使用” */
+  var codeNoImport=code.replace(/^[ \t]*import\s+[\w.]+(?:\.\*)?\s*;[ \t]*$/gm,'');
+  var deps=[];
+  Object.keys(VSC_TYPE_PKG).forEach(function(t){
+    var usedRe=new RegExp('new\\s+'+t+'\\b|\\b'+t+'\\s+[A-Za-z_]\\w*|\\b'+t+'\\.');
+    if(usedRe.test(codeNoImport)){
+      var fqn=VSC_TYPE_PKG[t],ok=!!imported[fqn];
+      deps.push({type:t,fqn:fqn,status:ok?'ok':'missing',quickFix:ok?'':'在 class 前补 import '+fqn+';'});
+    }
+  });
+  Object.keys(imported).forEach(function(fqn){
+    var simple=fqn.split('.').pop().replace('*','');
+    if(!simple)return; /* 通配导入（xxx.*）不判未使用 */
+    var usedRe2=new RegExp('new\\s+'+simple+'\\b|\\b'+simple+'\\s+[A-Za-z_]\\w*|\\b'+simple.replace(/\$/g,'\\$')+'\\.');
+    if(!usedRe2.test(codeNoImport)){
+      deps.push({type:simple,fqn:fqn,status:'unused',quickFix:'删除未使用的 import（Ctrl+Shift+O 整理导入）'});
+    }
+  });
+  deps.forEach(function(d){
+    if(d.status==='missing'){
+      push({sev:'warning',phase:'compile',line:1,col:1,ruleId:'W-IMPORT',source:'java',
+        title:d.type+' cannot be resolved to a type',
+        detail:'缺少 import '+d.fqn+'（VS Code 中该行有黄色灯泡 Quick Fix）',
+        quickFix:d.quickFix});
+    }else if(d.status==='unused'){
+      push({sev:'warning',phase:'compile',line:1,col:1,ruleId:'W-IMPORT',source:'java',
+        title:'The import '+d.fqn+' is never used',detail:'未使用的导入',
+        quickFix:d.quickFix});
+    }
+  });
+  /* --- 教学校验阶段：输出语句 + 输出匹配（结果取自 checkResult） --- */
+  if(result&&!result.hasPrint){
+    var pm=/print\s*\(/.exec(code);
+    push({sev:'error',phase:'check',idx:pm?pm.index:0,ruleId:'CHK-PRINT-01',source:'checkCode',
+      title:'缺少标准输出语句',detail:'练习要求运行后在控制台输出内容，但没有 System.out.print/println',
+      quickFix:'在 main 内补 System.out.println("题目要求的内容");'});
+  }
+  if(result&&typeof result.matchPct==='number'&&result.matchPct<100){
+    push({sev:result.matchPct<50?'error':'warning',phase:'check',line:1,col:1,ruleId:'CHK-OUT-01',source:'checkCode',
+      title:'输出内容与预期不符（匹配率 '+result.matchPct+'%）',
+      detail:'预期 '+(result.expectedLines||[]).length+' 行；实际输出：'+(result.simOutput||'（空）'),
+      quickFix:'逐字符对照预期，检查大小写、标点、空格与换行'});
+  }
+  var cm3=code.match(/\bclass\s+([A-Za-z_]\w*)/);
+  var className=cm3?cm3[1]:'Main';
+  return {
+    className:className,sourceFile:VSC_ENV.srcDir+'/'+className+'.java',
+    problems:problems,deps:deps,
+    compileErrors:problems.filter(function(q){return q.sev==='error'&&q.phase==='compile';}),
+    runErrors:problems.filter(function(q){return q.sev==='error'&&q.phase==='run';}),
+    checkErrors:problems.filter(function(q){return q.sev==='error'&&q.phase==='check';}),
+    warnings:problems.filter(function(q){return q.sev==='warning';})
+  };
+}
+/* 把单条诊断渲染成 javac 终端格式：文件:行: 错误 + 源码行 + ^ 列指示 */
+function renderJavacBlock(file,q){
+  var s='<div style="margin-top:4px"><span class="err">'+escH(file)+':'+q.line+': 错误: '+escH(q.title)+'</span>';
+  if(q.srcLine!==''){
+    s+='<div class="out">        '+escH(q.srcLine)+'</div>';
+    s+='<div class="caret">        '+new Array(Math.max(1,q.col)).join(' ')+'^</div>';
+  }
+  if(q.symbol)s+='<div class="dim">  符号:　 '+escH(q.symbol)+'</div>';
+  if(q.detail)s+='<div class="dim">  '+escH(q.detail)+'</div>';
+  s+='</div>';
+  return s;
+}
+/* 渲染整个 VS Code 模拟窗口（标题栏/标签页/终端/依赖与配置/Problems） */
+function renderVSCPanel(code,result){
+  var a=javaVscAnalyze(code,result);
+  var h='<div class="vsc-win">';
+  h+='<div class="vsc-titlebar"><span class="vsc-dot r"></span><span class="vsc-dot y"></span><span class="vsc-dot g"></span>';
+  h+='<span class="vsc-title"><b>'+escH(a.sourceFile)+'</b> — JavaLearning — Visual Studio Code</span>';
+  h+='<span class="vsc-simtag">教学模拟</span></div>';
+  h+='<div class="vsc-tabs"><div class="vsc-tab active">'+escH(a.className)+'.java</div>';
+  h+='<div class="vsc-tab">终端 TERMINAL</div><div class="vsc-tab">问题 PROBLEMS</div></div>';
+  h+='<div class="vsc-body"><div class="vsc-term">';
+  h+='<div class="dim">Windows PowerShell · '+escH(VSC_ENV.jdk)+' · 工作区 '+escH(VSC_ENV.workspace)+'</div>';
+  /* 阶段 ① javac */
+  h+='<div style="margin-top:4px"><span class="prompt">PS '+escH(VSC_ENV.workspace)+'&gt;</span> <span class="cmd">javac -encoding UTF-8 -d '+VSC_ENV.outDir+' '+escH(a.sourceFile)+'</span></div>';
+  if(a.compileErrors.length===0){
+    h+='<div class="dim">（javac 无输出 = 编译成功，已生成 '+VSC_ENV.outDir+'/'+escH(a.className)+'.class）</div>';
+  }else{
+    a.compileErrors.forEach(function(q){h+=renderJavacBlock(a.sourceFile,q);});
+    h+='<div class="err">'+a.compileErrors.length+' 个错误</div>';
+  }
+  /* 阶段 ② java */
+  h+='<div style="margin-top:6px"><span class="prompt">PS '+escH(VSC_ENV.workspace)+'&gt;</span> <span class="cmd">java -Dfile.encoding=UTF-8 -cp '+VSC_ENV.outDir+' '+escH(a.className)+'</span></div>';
+  if(a.compileErrors.length>0){
+    h+='<div class="warn">（上一步编译失败，JVM 未启动）</div>';
+    h+='<div class="err">进程已退出，退出代码为 1</div>';
+  }else if(a.runErrors.length>0){
+    a.runErrors.forEach(function(q){
+      h+='<div class="err">错误: '+escH(q.title)+'</div>';
+      if(q.detail)h+='<div class="dim">'+escH(q.detail)+'</div>';
+    });
+    h+='<div class="err">进程已退出，退出代码为 1</div>';
+  }else{
+    if(result.simOutput){
+      result.simOutput.split('\n').forEach(function(l){h+='<div class="out">'+escH(l)+'</div>';});
+    }else{
+      h+='<div class="dim">（程序正常运行，控制台无输出）</div>';
+    }
+    h+='<div class="ok">进程已结束，退出代码为 0</div>';
+  }
+  /* 阶段 ③ 教学校验（等同 VS Code 测试任务） */
+  h+='<div style="margin-top:6px"><span class="info">▶ 教学任务 checkCode（等同 VS Code 测试资源管理器中的 Test 任务）</span></div>';
+  h+='<div class="'+(result.hasPrint?'ok':'err')+'">['+(result.hasPrint?'√':'×')+'] 输出语句检查：'+(result.hasPrint?'已发现 System.out.print/println':'未发现标准输出语句')+'</div>';
+  if(result.expectedLines&&result.expectedLines.length){
+    h+='<div class="'+(result.matchPct===100?'ok':'err')+'">['+(result.matchPct===100?'√':'×')+'] 输出比对：匹配率 '+result.matchPct+'%（预期 '+result.expectedLines.length+' 行）</div>';
+  }else{
+    h+='<div class="dim">[—] 本练习无固定预期输出，跳过逐字比对</div>';
+  }
+  h+='<div class="'+(result.passed?'ok':'err')+'">checkCode 退出代码：'+(result.passed?'0':'1')+'</div>';
+  h+='</div>';
+  /* 依赖解析 + launch.json + 环境变量（折叠） */
+  h+='<details class="vsc-fold" style="background:#252526;padding:0"><summary style="padding:6px 12px">🔌 依赖解析（import）与运行配置（launch.json / 环境变量）— 点击展开</summary>';
+  h+='<div style="padding:4px 12px 10px">';
+  h+='<div style="color:#9d9d9d;font-size:11px;margin:4px 0">JDT.LS 类路径解析：java.lang.* 自动可用；其他包需 import，Ctrl+. 触发 Quick Fix</div>';
+  h+='<table class="vsc-depgrid"><tr><th style="width:130px">类型</th><th>全限定名 / 解析来源</th><th style="width:150px">状态</th></tr>';
+  if(a.deps.length===0){
+    h+='<tr><td>System / String</td><td>java.lang（JVM 自动导入）</td><td class="auto">内置，无需 import</td></tr>';
+  }else{
+    a.deps.forEach(function(d){
+      var cls=d.status==='ok'?'ok2':(d.status==='missing'?'miss':'warn');
+      var txt=d.status==='ok'?'✔ 已解析 import':(d.status==='missing'?'✘ 未解析（缺 import）':'⚠ 导入未使用');
+      h+='<tr><td>'+escH(d.type)+'</td><td>'+escH(d.fqn)+'</td><td class="'+cls+'">'+txt+'</td></tr>';
+    });
+  }
+  h+='</table>';
+  var launch={version:'0.2.0',configurations:[{
+    type:'java',name:'Launch '+a.className,request:'launch',
+    mainClass:a.className,projectName:'JavaLearning',
+    classPaths:['${workspaceFolder}/'+VSC_ENV.outDir],
+    encoding:'UTF-8',vmArgs:'-Dfile.encoding=UTF-8'
+  }]};
+  h+='<div style="color:#9d9d9d;font-size:11px;margin-top:8px">.vscode/launch.json（F5 / Run Java 时读取）</div>';
+  h+='<pre class="fixplan-code">'+escH(JSON.stringify(launch,null,2))+'</pre>';
+  var settings={
+    'java.jdt.ls.java.home':VSC_ENV.javaHome,
+    'java.configuration.runtimes':[{name:'JavaSE-17',path:VSC_ENV.javaHome,default:true}],
+    'files.encoding':'utf8',
+    'java.saveActions.organizeImports':true,
+    'java.compile.nullAnalysis.mode':'automatic'
+  };
+  h+='<div style="color:#9d9d9d;font-size:11px">.vscode/settings.json（工作区设置）</div>';
+  h+='<pre class="fixplan-code">'+escH(JSON.stringify(settings,null,2))+'</pre>';
+  h+='<div style="color:#9d9d9d;font-size:11px">运行时环境变量 / 系统属性（java 进程生效）</div>';
+  h+='<div class="vsc-envgrid">';
+  function kv(k,v){h+='<span class="k">'+escH(k)+'</span><span class="v">'+escH(v)+'</span>';}
+  kv('JAVA_HOME',VSC_ENV.javaHome);
+  kv('Path（追加）',VSC_ENV.javaHome+'\\bin');
+  kv('file.encoding','UTF-8（源码与控制台编码，-encoding UTF-8）');
+  kv('sun.jnu.encoding','UTF-8（文件名编码）');
+  kv('user.language / user.country','zh / CN');
+  kv('java.class.path',VSC_ENV.outDir+'（由 -cp 指定）');
+  kv('java.version / java.vm.name','17.0.10 / OpenJDK 64-Bit Server VM');
+  kv('os.name / os.arch','Windows 11 / amd64');
+  h+='</div></div></details>';
+  /* Problems 面板 */
+  var ec=a.problems.filter(function(q){return q.sev==='error';}).length;
+  var wc=a.problems.filter(function(q){return q.sev==='warning';}).length;
+  h+='<div class="vsc-problems"><div class="vsc-problems-h">问题 &nbsp;<span style="color:#f48771">错误: '+ec+'</span> &nbsp;<span style="color:#cca700">警告: '+wc+'</span></div>';
+  if(a.problems.length===0){
+    h+='<table><tr><td style="color:#23d18b;padding:8px 12px">✔ 没有问题。工作区 JavaLearning 中检测到 0 个错误、0 个警告</td></tr></table>';
+  }else{
+    h+='<table><tr><th style="width:46px">严重程度</th><th>描述 / Quick Fix</th><th style="width:130px">文件</th><th style="width:60px">位置</th><th style="width:96px">来源</th></tr>';
+    a.problems.forEach(function(q){
+      var badge=q.sev==='error'?'<span class="vsc-badge e">×</span>':'<span class="vsc-badge w">!</span>';
+      h+='<tr><td>'+badge+'</td><td><b>'+escH(q.title)+'</b>';
+      if(q.detail)h+='<div style="color:#9d9d9d">'+escH(q.detail)+'</div>';
+      if(q.quickFix)h+='<div class="vsc-qf">💡 Quick Fix（Ctrl+.）：'+escH(q.quickFix)+'</div>';
+      h+='</td><td>'+escH(a.sourceFile)+'</td><td>['+q.line+', '+q.col+']</td><td>'+escH(q.source)+'</td></tr>';
+    });
+    h+='</table>';
+  }
+  h+='</div></div></div>';
+  return h;
 }
 
 /* ================= 自定义弹窗（#lkMask / #lkCard） ================= */
@@ -7201,6 +8741,64 @@ function injectProjectAttest(){
   });
 }
 
+/* 总览页按钮点击 → 跳到第一个未完成且已解锁的板块 */
+function overviewStart(){
+  for(var i=0;i<ORDER.length;i++){
+    if(!isDone(ORDER[i])&&unlocked(ORDER[i])){go(ORDER[i]);return;}
+  }
+  go('home');
+}
+
+/* ================= 课程地图：动态「进入第 N 章」按钮 ================= */
+var CN_NUM=['一','二','三','四','五','六','七','八','九','十'];
+/* 当前学习点：ORDER 中第一个未完成板块所在的章；全部完成返回 allDone */
+function studyPoint(){
+  var nx=null;
+  for(var i=0;i<ORDER.length;i++){
+    if(!isDone(ORDER[i])){nx=ORDER[i];break;}
+  }
+  if(!nx)return {allDone:true};
+  var ch=chOf(nx),chDone=0;
+  for(var j=0;j<ORDER.length;j++){
+    if(chOf(ORDER[j])===ch&&isDone(ORDER[j]))chDone++;
+  }
+  return {allDone:false,chapter:ch,section:nx,chDone:chDone};
+}
+/* 地图主按钮点击 → 直达当前应学板块；该章未解锁时由 go 的路由守卫弹口令框 */
+function mapStart(){
+  var p=studyPoint();
+  if(p.allDone){go('home');return;}
+  go(p.section);
+}
+/* 同步地图页按钮文本、各章状态标签与当前章行高亮 */
+function syncCourseMap(){
+  var p=studyPoint();
+  var btn=document.getElementById('mapStartBtn');
+  if(btn){
+    if(p.allDone){
+      btn.textContent='🎉 全部 10 章已完成';
+    }else{
+      var verb=p.chDone>0?'继续学习':'进入';
+      btn.textContent=verb+'第'+CN_NUM[p.chapter-1]+'章 →';
+    }
+  }
+  var curCh=p.allDone?null:p.chapter;
+  document.querySelectorAll('#courseMapTable tr[data-ch]').forEach(function(tr){
+    var ch=parseInt(tr.dataset.ch,10);
+    var total=CHLEN[ch]||0,d=0;
+    ORDER.forEach(function(id){if(chOf(id)===ch&&isDone(id))d++;});
+    var tag=tr.querySelector('.tag');
+    if(tag){
+      tag.classList.remove('now','lock','done');
+      if(total>0&&d>=total){tag.classList.add('done');tag.textContent='已完成 ✓';}
+      else if(d>0){tag.classList.add('now');tag.textContent='学习中 '+d+'/'+total;}
+      else if(approved(ch)){tag.classList.add('now');tag.textContent='已解锁';}
+      else{tag.classList.add('lock');tag.textContent='未解锁';}
+    }
+    tr.classList.toggle('cur',ch===curCh);
+  });
+}
+
 /* ================= 侧边栏锁与章进度 ================= */
 function refreshUI(){
   // 同步侧边栏锁定状态
@@ -7250,7 +8848,44 @@ function refreshUI(){
     pbarText.textContent='总进度 '+n+' / '+ORDER.length+' 板块';
     if(heroX)heroX.textContent=n;
     if(heroPct)heroPct.textContent=pct;
+    /* ===== 总览页动态进度按钮 ===== */
+    var obtn=document.getElementById('overviewStartBtn');
+    if(obtn){
+      var ringFg=document.getElementById('progRingFg');
+      var ringPct=document.getElementById('progRingPct');
+      var btnTitle=document.getElementById('progBtnTitle');
+      var btnSub=document.getElementById('progBtnSub');
+      var circ=2*Math.PI*20; /* r=20 */
+      var offset=circ-(pct/100)*circ;
+      if(ringFg){ringFg.setAttribute('stroke-dasharray',circ.toFixed(2));ringFg.setAttribute('stroke-dashoffset',offset.toFixed(2));}
+      if(ringPct)ringPct.textContent=pct+'%';
+      obtn.classList.remove('pct-low','pct-mid','pct-high','pct-done');
+      if(pct===0)obtn.classList.add('pct-low');
+      else if(pct<50)obtn.classList.add('pct-low');
+      else if(pct<80)obtn.classList.add('pct-mid');
+      else if(pct<100)obtn.classList.add('pct-high');
+      else obtn.classList.add('pct-done');
+      var nx=null;
+      for(var i2=0;i2<ORDER.length;i2++){
+        if(!isDone(ORDER[i2])&&unlocked(ORDER[i2])){nx=ORDER[i2];break;}
+      }
+      if(nx){
+        if(btnTitle)btnTitle.textContent='▶ 继续学习：'+(titles[nx]||nx);
+        if(btnSub)btnSub.textContent='已完成 '+n+' / '+ORDER.length+' 个板块 · 点击进入下一节';
+        obtn.onclick=function(){go(nx);};
+      }else if(pct>=100){
+        if(btnTitle)btnTitle.textContent='🎉 全部完成！';
+        if(btnSub)btnSub.textContent='恭喜你学完全部课程，太棒了！';
+        obtn.onclick=function(){go('home');};
+      }else{
+        if(btnTitle)btnTitle.textContent='🔒 继续闯关解锁';
+        if(btnSub)btnSub.textContent='已完成 '+n+' / '+ORDER.length+' 个板块 · 通关下一章口令解锁';
+        obtn.onclick=function(){go('java');};
+      }
+    }
   }
+  /* 同步课程地图页：动态「进入第 N 章」按钮 + 各章状态标签 */
+  syncCourseMap();
   /* 同步每个板块的章节通关状态条 */
   if(typeof renderGateBars==='function')renderGateBars();
 }
@@ -7321,6 +8956,16 @@ function renderPracticeCards(){
       p.steps.forEach(function(st){h+='<li>'+st+'</li>';});
       h+='</ol>';
     }
+    /* ===== 代码检测区 ===== */
+    h+='<div class="code-check">';
+    h+='<div class="code-check-head">🔍 代码检测<span class="ck-tag">通过后解锁参考答案</span></div>';
+    h+='<textarea class="code-editor" id="codeEditor_'+id+'" placeholder="把你在 VS Code 里写的代码粘贴到这里，点「检测代码」按钮。&#10;系统会自动检查语法、输出内容是否正确。"></textarea>';
+    h+='<div class="code-check-ops">';
+    h+='<button type="button" class="btn btn-primary" onclick="runCodeCheck(\''+id+'\')">🔍 检测代码</button>';
+    h+='<button type="button" class="btn btn-ghost" onclick="document.getElementById(\'codeEditor_'+id+'\').value=\'\'">🗑 清空</button>';
+    h+='</div>';
+    h+='<div class="code-feedback" id="codeFeedback_'+id+'"></div>';
+    h+='</div>';
     if(p.expected){
       h+='<div class="vs-tip" style="background:#eff6ff;border-color:#bfdbfe;color:#1e40af"><b>✅ 预期结果：</b>'+String(p.expected).replace(/\n/g,'<br>')+'</div>';
     }

@@ -26,7 +26,7 @@ jobs:
             target: '--win nsis --x64'
           - os: macos-latest
             os-name: macos
-            target: '--mac dmg --x64 --arm64'
+            target: '--mac dmg zip --x64 --arm64'
           - os: ubuntu-latest
             os-name: linux
             target: '--linux AppImage deb --x64'

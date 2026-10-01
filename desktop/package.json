@@ -86,6 +86,7 @@
     "mac": {
       "icon": "build/icon.png",
       "category": "public.app-category.education",
+      "artifactName": "JavaLearningCenter-${version}-${arch}.${ext}",
       "target": [
         {
           "target": "dmg",

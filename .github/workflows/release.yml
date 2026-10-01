@@ -42,11 +42,21 @@ jobs:
 
       - name: 安装依赖
         working-directory: desktop
-        run: npm ci
+        # 跳过 install 脚本：electron 二进制改由下一步带重试地下载，避免 GitHub 偶发 500 导致整步失败
+        run: npm ci --ignore-scripts
 
       - name: 确保 Electron 二进制就位
         working-directory: desktop
-        run: node node_modules/electron/install.js
+        shell: bash
+        run: |
+          n=0
+          until [ $n -ge 3 ]; do
+            node node_modules/electron/install.js && break
+            n=$((n+1))
+            echo "::warning::Electron 二进制下载失败，10 秒后重试（第 $n 次）"
+            sleep 10
+          done
+          if [ $n -ge 3 ]; then echo "::error::Electron 二进制 3 次下载均失败"; exit 1; fi
 
       - name: 配置 Electron 沙箱权限（仅 Linux）
         if: matrix.os-name == 'linux'
@@ -62,7 +72,8 @@ jobs:
 
       - name: 打包（${{ matrix.os-name }}）
         working-directory: desktop
-        run: npx electron-builder ${{ matrix.target }}
+        # --publish never：只构建产物；上传发布统一由 release job 的 softprops 完成
+        run: npx electron-builder ${{ matrix.target }} --publish never
 
       - name: 上传安装包产物
         uses: actions/upload-artifact@v4

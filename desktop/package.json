@@ -106,9 +106,6 @@
     "dmg": {
       "artifactName": "JavaLearningCenter-${version}-${arch}.${ext}"
     },
-    "zip": {
-      "artifactName": "JavaLearningCenter-${version}-${arch}.${ext}"
-    },
     "linux": {
       "icon": "build/icon.png",
       "category": "Education",

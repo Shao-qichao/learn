@@ -1,7 +1,7 @@
 {
   "name": "java-learning-center",
   "productName": "Java学习中心",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "闯关式 Java 零基础学习桌面软件",
   "main": "main.js",
   "author": {
@@ -18,6 +18,9 @@
     "dist:linux": "electron-builder --linux AppImage deb",
     "dist:all": "electron-builder --win nsis --mac dmg --linux AppImage deb"
   },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
+  },
   "devDependencies": {
     "electron": "^33.2.0",
     "electron-builder": "^25.1.8"
@@ -28,8 +31,19 @@
     "directories": {
       "output": "dist"
     },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Shao-qichao",
+        "repo": "learn"
+      }
+    ],
     "files": [
       "main.js",
+      "updater.js",
+      "updater-core.js",
+      "update-preload.js",
+      "update-notifier.html",
       "package.json"
     ],
     "extraResources": [
@@ -79,10 +93,20 @@
             "x64",
             "arm64"
           ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ]
     },
     "dmg": {
+      "artifactName": "JavaLearningCenter-${version}-${arch}.${ext}"
+    },
+    "zip": {
       "artifactName": "JavaLearningCenter-${version}-${arch}.${ext}"
     },
     "linux": {

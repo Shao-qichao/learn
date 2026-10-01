@@ -11,6 +11,7 @@
 const { app, BrowserWindow, Menu, shell, dialog, session } = require('electron');
 const fs = require('fs');
 const path = require('path');
+const { createUpdateManager } = require('./updater');
 
 const APP_NAME = 'Java学习中心';
 const isDev = !app.isPackaged;
@@ -97,6 +98,7 @@ function buildRuntimeHtml() {
 }
 
 let mainWindow = null;
+let updateManager = null;   // 更新管理器（app ready 后创建）
 
 function createWindow() {
   const page = buildRuntimeHtml();
@@ -170,6 +172,8 @@ function createWindow() {
               '仓库：https://github.com/Shao-qichao/learn'
           })
         },
+        { type: 'separator' },
+        { label: '检查更新…', click: () => updateManager && updateManager.checkNowWithUi() },
         { label: '访问 GitHub 仓库', click: () => shell.openExternal('https://github.com/Shao-qichao/learn') }
       ]
     }
@@ -211,6 +215,11 @@ if (!app.requestSingleInstanceLock()) {
     syncPractice();
     writeWorkspaceReadme();
     createWindow();
+
+    // 更新系统：打包后启动 3.5 秒静默检查，下载完成后弹非模态提示窗；
+    // 开发态可设置环境变量 SIMULATE_UPDATE=1 演示完整交互。
+    updateManager = createUpdateManager(() => mainWindow);
+    updateManager.start();
 
     app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
   });

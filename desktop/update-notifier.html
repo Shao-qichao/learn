@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline';">
+<title>发现新版本</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%;
+    background: transparent;
+    font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+    overflow: hidden;
+    -webkit-user-select: none; user-select: none;
+  }
+  body { padding: 12px; }
+
+  .card {
+    position: relative;
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    border-radius: 18px;
+    overflow: hidden;
+    background: linear-gradient(160deg, #1b1f3a 0%, #141729 55%, #101327 100%);
+    border: 1px solid rgba(124, 108, 255, .35);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, .55), 0 0 0 1px rgba(255,255,255,.03) inset;
+    color: #e8e9f3;
+    animation: pop-in .34s cubic-bezier(.2, .9, .3, 1.2) both;
+  }
+  @keyframes pop-in {
+    from { opacity: 0; transform: translateY(14px) scale(.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* ---------- 顶部 ---------- */
+  header {
+    padding: 18px 18px 14px;
+    -webkit-app-region: drag; app-region: drag;
+    background: linear-gradient(120deg, rgba(124,108,255,.22), rgba(124,108,255,0) 70%);
+    position: relative;
+  }
+  .badge {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    background: linear-gradient(135deg, #7c5cff, #5b8cff);
+    box-shadow: 0 6px 18px rgba(124, 92, 255, .45);
+    margin-bottom: 10px;
+  }
+  h1 { font-size: clamp(17px, 4.6vw, 20px); font-weight: 700; letter-spacing: .5px; }
+  .sub { margin-top: 4px; font-size: clamp(12px, 3.4vw, 13px); color: #a6abce; }
+  .win-close {
+    position: absolute; top: 10px; right: 10px;
+    width: 30px; height: 30px; border: 0; border-radius: 8px;
+    background: transparent; color: #8b90b5; font-size: 16px; cursor: pointer;
+    -webkit-app-region: no-drag; app-region: no-drag;
+    transition: background .15s, color .15s;
+  }
+  .win-close:hover { background: rgba(255,255,255,.1); color: #fff; }
+
+  /* ---------- 内容 ---------- */
+  .body { flex: 1; overflow-y: auto; padding: 4px 18px 8px; -webkit-user-select: text; user-select: text; }
+  .body::-webkit-scrollbar { width: 6px; }
+  .body::-webkit-scrollbar-thumb { background: rgba(255,255,255,.14); border-radius: 3px; }
+
+  .ver-row { display: flex; align-items: center; gap: 10px; margin: 6px 0 12px; flex-wrap: wrap; }
+  .chip {
+    padding: 5px 12px; border-radius: 999px; font-size: clamp(12px, 3.4vw, 13px);
+    white-space: nowrap;
+  }
+  .chip.old { background: rgba(255,255,255,.08); color: #a6abce; text-decoration: line-through; }
+  .chip.new {
+    background: linear-gradient(135deg, rgba(124,92,255,.35), rgba(91,140,255,.3));
+    color: #fff; font-weight: 700;
+    border: 1px solid rgba(124,108,255,.55);
+  }
+  .arrow { color: #7c5cff; font-size: 15px; }
+  .date { font-size: 12px; color: #6f7498; }
+
+  .notes {
+    background: rgba(255,255,255,.045);
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: clamp(12.5px, 3.5vw, 13.5px);
+    line-height: 1.75;
+    color: #c9cde6;
+  }
+  .notes .ln-heading { font-size: 14px; font-weight: 700; color: #fff; margin: 8px 0 4px; }
+  .notes .ln-heading:first-child { margin-top: 0; }
+  .notes .ln-bullet { display: flex; gap: 8px; }
+  .notes .ln-bullet::before { content: ""; flex: 0 0 5px; width: 5px; height: 5px; border-radius: 50%;
+    background: #7c5cff; margin-top: 10px; }
+  .notes .ln-blank { height: 6px; }
+  .notes b, .notes strong { color: #fff; font-weight: 700; }
+  .notes .no-notes { color: #8b90b5; text-align: center; padding: 14px 0; }
+
+  /* 骨架屏 */
+  .skel { border-radius: 6px; background: rgba(255,255,255,.08); position: relative; overflow: hidden; }
+  .skel::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
+    animation: shimmer 1.2s infinite;
+  }
+  @keyframes shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+
+  /* ---------- 错误条 ---------- */
+  .errbar {
+    margin: 0 18px 8px;
+    background: rgba(255, 92, 110, .12);
+    border: 1px solid rgba(255, 92, 110, .4);
+    color: #ffb3bc;
+    border-radius: 10px; padding: 9px 12px;
+    font-size: 12.5px; line-height: 1.55;
+    display: none; align-items: flex-start; gap: 8px;
+    animation: slide-down .25s ease both;
+  }
+  .errbar.show { display: flex; }
+  @keyframes slide-down { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+  .errbar .ico { flex: 0 0 auto; }
+  .errbar .msg { flex: 1; }
+  .errbar a { color: #8fb4ff; cursor: pointer; text-decoration: underline; }
+
+  /* ---------- 底部按钮 ---------- */
+  footer {
+    padding: 12px 18px 16px;
+    display: flex; gap: 10px; align-items: center;
+    border-top: 1px solid rgba(255,255,255,.06);
+    background: rgba(0,0,0,.18);
+  }
+  .btn {
+    border: 0; border-radius: 10px;
+    font-family: inherit; font-size: clamp(12.5px, 3.5vw, 13.5px);
+    padding: 10px 14px; cursor: pointer;
+    transition: transform .12s ease, box-shadow .15s ease, background .15s ease, opacity .15s;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn:disabled { opacity: .55; cursor: not-allowed; }
+  .btn-ghost {
+    background: rgba(255,255,255,.07); color: #c9cde6;
+    border: 1px solid rgba(255,255,255,.1);
+  }
+  .btn-ghost:hover:not(:disabled) { background: rgba(255,255,255,.13); color: #fff; }
+  .btn-quiet {
+    background: transparent; color: #8b90b5; padding: 10px 8px;
+  }
+  .btn-quiet:hover:not(:disabled) { color: #c9cde6; }
+  .btn-primary {
+    flex: 1;
+    color: #fff; font-weight: 700;
+    background: linear-gradient(135deg, #7c5cff, #5b8cff);
+    box-shadow: 0 6px 18px rgba(91, 108, 255, .4);
+  }
+  .btn-primary:hover:not(:disabled) { box-shadow: 0 8px 22px rgba(91, 108, 255, .55); transform: translateY(-1px); }
+  .spacer { flex: 1; }
+
+  /* ---------- 安装中遮罩 ---------- */
+  .overlay {
+    position: absolute; inset: 0; z-index: 10;
+    background: rgba(10, 12, 26, .78);
+    backdrop-filter: blur(3px);
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px; padding: 24px; text-align: center;
+  }
+  .overlay.show { display: flex; animation: fade-in .25s ease both; }
+  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+  .spinner {
+    width: 42px; height: 42px; border-radius: 50%;
+    border: 3px solid rgba(255,255,255,.15);
+    border-top-color: #7c5cff;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .ov-msg { color: #dfe2f5; font-size: 14px; line-height: 1.7; }
+
+  /* ---------- 小屏 / 低分辨率适配 ---------- */
+  @media (max-width: 379px) {
+    body { padding: 8px; }
+    footer { flex-direction: column; align-items: stretch; gap: 8px; }
+    footer .btn { width: 100%; }
+    footer .spacer { display: none; }
+    .btn-primary { order: -1; }   /* 窄屏主按钮排在最上，方便点击 */
+    .btn-quiet { padding: 8px; }
+    header { padding: 14px 14px 10px; }
+    .body { padding: 4px 14px 8px; }
+  }
+  @media (max-height: 520px) {
+    .badge { width: 36px; height: 36px; font-size: 18px; margin-bottom: 6px; }
+    header { padding: 12px 16px 8px; }
+    .sub { display: none; }
+    .notes { padding: 10px 12px; line-height: 1.6; }
+    footer { padding: 9px 16px 12px; }
+    .btn { padding: 8px 12px; }
+  }
+</style>
+</head>
+<body>
+  <div class="card" id="card">
+    <header>
+      <div class="badge">🚀</div>
+      <h1>发现新版本</h1>
+      <div class="sub">新版本已经下载完成，重启后即可使用</div>
+      <button class="win-close" id="btnClose" title="关闭（以后再提醒）">✕</button>
+    </header>
+
+    <div class="body">
+      <div class="ver-row">
+        <span class="chip old" id="verOld">当前 v…</span>
+        <span class="arrow">→</span>
+        <span class="chip new" id="verNew">新版 v…</span>
+        <span class="date" id="verDate"></span>
+      </div>
+      <div class="notes" id="notes">
+        <div class="skel" style="height:14px;width:90%;margin-bottom:8px"></div>
+        <div class="skel" style="height:14px;width:100%;margin-bottom:8px"></div>
+        <div class="skel" style="height:14px;width:70%;margin-bottom:14px"></div>
+        <div class="skel" style="height:14px;width:85%;margin-bottom:8px"></div>
+        <div class="skel" style="height:14px;width:60%"></div>
+      </div>
+    </div>
+
+    <div class="errbar" id="errbar">
+      <span class="ico">⚠️</span>
+      <span class="msg" id="errMsg"></span>
+    </div>
+
+    <footer>
+      <button class="btn btn-ghost" id="btnLater">以后更新</button>
+      <button class="btn btn-quiet" id="btnIgnore">忽略此版本</button>
+      <span class="spacer"></span>
+      <button class="btn btn-primary" id="btnInstall">立即更新</button>
+    </footer>
+
+    <div class="overlay" id="overlay">
+      <div class="spinner"></div>
+      <div class="ov-msg" id="ovMsg">正在准备更新…</div>
+    </div>
+  </div>
+
+<script>
+(function () {
+  'use strict';
+
+  var $ = function (id) { return document.getElementById(id); };
+  var api = window.updateAPI || {};
+  var busy = false;
+
+  /* 安全渲染极简 Markdown：全部走 textNode，杜绝注入 */
+  function addRichLine(container, text) {
+    var cls = '';
+    var t = text;
+    if (/^#{1,4}\s+/.test(t)) { cls = 'ln-heading'; t = t.replace(/^#{1,4}\s+/, ''); }
+    else if (/^\s*[-*]\s+/.test(t)) { cls = 'ln-bullet'; t = t.replace(/^\s*[-*]\s+/, ''); }
+
+    var div = document.createElement('div');
+    if (cls) div.className = cls;
+
+    /* 解析 **加粗**（偶数段普通，奇数段加粗） */
+    var parts = t.split('**');
+    parts.forEach(function (seg, i) {
+      if (!seg) return;
+      var node = (i % 2 === 1) ? document.createElement('b') : document.createTextNode(seg);
+      if (i % 2 === 1) node.textContent = seg;
+      div.appendChild(node);
+    });
+    container.appendChild(div);
+  }
+
+  function renderNotes(notes) {
+    var box = $('notes');
+    box.textContent = '';
+    var raw = (notes || '').replace(/\r\n?/g, '\n').trim();
+    if (!raw) {
+      var p = document.createElement('div');
+      p.className = 'no-notes';
+      p.textContent = '本次更新以问题修复与体验优化为主，详见发布页说明。';
+      box.appendChild(p);
+      return;
+    }
+    raw.split('\n').forEach(function (line) {
+      if (!line.trim()) {
+        var blank = document.createElement('div');
+        blank.className = 'ln-blank';
+        box.appendChild(blank);
+      } else {
+        addRichLine(box, line);
+      }
+    });
+  }
+
+  function setBusy(on, msg) {
+    busy = on;
+    ['btnLater', 'btnIgnore', 'btnInstall', 'btnClose'].forEach(function (id) {
+      $(id).disabled = on;
+    });
+    $('overlay').classList.toggle('show', on);
+    if (msg) $('ovMsg').textContent = msg;
+  }
+
+  function showError(msg) {
+    $('errMsg').textContent = msg || '更新失败，请稍后重试。';
+    $('errbar').classList.add('show');
+    $('btnInstall').textContent = '重试安装';
+    busy = false;
+    ['btnLater', 'btnIgnore', 'btnInstall', 'btnClose'].forEach(function (id) { $(id).disabled = false; });
+    $('overlay').classList.remove('show');
+  }
+
+  function hideError() {
+    $('errbar').classList.remove('show');
+  }
+
+  /* 按钮事件 */
+  $('btnLater').addEventListener('click', function () {
+    if (busy) return;
+    if (api.later) api.later(); else window.close();
+  });
+  $('btnClose').addEventListener('click', function () {
+    if (busy) return;
+    if (api.later) api.later(); else window.close();
+  });
+  $('btnIgnore').addEventListener('click', function () {
+    if (busy) return;
+    if (api.ignore) api.ignore(); else window.close();
+  });
+  $('btnInstall').addEventListener('click', function () {
+    if (busy) return;
+    hideError();
+    setBusy(true, '正在退出并安装新版本，安装完成后将自动重启…');
+    if (api.install) api.install();
+    else showError('未连接到主进程。');
+  });
+
+  /* Esc = 以后更新 */
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !busy) {
+      if (api.later) api.later(); else window.close();
+    }
+  });
+
+  /* 主进程状态推送 */
+  if (api.onState) {
+    api.onState(function (st) {
+      if (!st) return;
+      if (st.phase === 'downloading') {
+        setBusy(true, '正在下载更新包… ' + (typeof st.percent === 'number' ? st.percent + '%' : ''));
+      } else if (st.phase === 'installing') {
+        setBusy(true, st.message || '正在退出并安装新版本…');
+      } else if (st.phase === 'error') {
+        showError(st.message);
+      }
+    });
+  }
+
+  /* 拉取版本信息（4 秒未返回则展示兜底文案，不卡死界面） */
+  var loaded = false;
+  var fallbackTimer = setTimeout(function () {
+    if (!loaded) {
+      loaded = true;
+      renderNotes('');
+    }
+  }, 4000);
+
+  Promise.resolve(api.getInfo ? api.getInfo() : null)
+    .then(function (info) {
+      if (loaded) return;
+      loaded = true;
+      clearTimeout(fallbackTimer);
+      info = info || {};
+      $('verOld').textContent = '当前 v' + (info.currentVersion || '?');
+      $('verNew').textContent = '新版 v' + (info.version || '?');
+      $('verDate').textContent = info.releaseDate ? '发布于 ' + info.releaseDate : '';
+      renderNotes(info.notes);
+    })
+    .catch(function () {
+      if (loaded) return;
+      loaded = true;
+      clearTimeout(fallbackTimer);
+      renderNotes('');
+    });
+})();
+</script>
+</body>
+</html>

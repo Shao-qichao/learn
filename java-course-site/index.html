@@ -224,8 +224,15 @@
   .vsc-title b{color:#fff;font-weight:600;}
   .vsc-simtag{margin-left:auto;font-size:10px;background:#7c3aed;color:#fff;border-radius:3px;padding:1px 6px;font-weight:600;white-space:nowrap;}
   .vsc-tabs{display:flex;background:#252526;border-bottom:1px solid #1e1e1e;overflow-x:auto;}
-  .vsc-tab{display:flex;align-items:center;gap:6px;padding:6px 14px;color:#969696;font-size:12px;border-right:1px solid #1e1e1e;white-space:nowrap;}
+  .vsc-tab{display:flex;align-items:center;gap:6px;padding:6px 14px;color:#969696;font-size:12px;border-right:1px solid #1e1e1e;white-space:nowrap;cursor:pointer;user-select:none;}
+  .vsc-tab:hover{color:#fff;background:#2a2d2e;}
   .vsc-tab.active{background:#1e1e1e;color:#fff;border-top:2px solid #7c3aed;padding-top:4px;}
+  .vsc-tab-n{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 5px;border-radius:8px;font-size:10px;font-style:normal;line-height:16px;}
+  .vsc-tab-n.e{background:#f48771;color:#1e1e1e;}
+  .vsc-tab-n.w{background:#cca700;color:#1e1e1e;}
+  .vsc-pane{display:none;}
+  .vsc-pane.show{display:block;}
+  .vsc-code pre{margin:0;padding:10px 14px;font-family:Consolas,'Courier New',monospace;font-size:12.5px;line-height:1.6;color:#d4d4d4;white-space:pre-wrap;word-break:break-word;max-height:430px;overflow:auto;background:#1e1e1e;}
   .vsc-body{background:#1e1e1e;color:#d4d4d4;font-family:Consolas,'Courier New',monospace;padding:0;}
   .vsc-term{padding:10px 14px;line-height:1.65;white-space:pre-wrap;word-break:break-all;}
   .vsc-term .cmd{color:#dcdcaa;}
@@ -5428,7 +5435,7 @@ if(location.hash&&document.getElementById('page-'+location.hash.slice(1))){
   .lk-mask{position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(2px);z-index:100;
     display:none;align-items:center;justify-content:center;padding:24px;}
   .lk-mask.show{display:flex;animation:fade .2s;}
-  .lk-card{background:#fff;border-radius:18px;max-width:480px;width:100%;padding:30px 32px;
+  .lk-card{background:#fff;border-radius:18px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;padding:30px 32px;
     box-shadow:0 22px 60px rgba(15,23,42,.35);animation:pop .25s;}
   @keyframes pop{from{transform:scale(.9) translateY(14px);opacity:0;}to{transform:none;opacity:1;}}
   .lk-card .em{font-size:46px;text-align:center;}
@@ -5442,6 +5449,33 @@ if(location.hash&&document.getElementById('page-'+location.hash.slice(1))){
   .gate-err{color:#dc2626;font-size:13px;font-weight:700;text-align:center;min-height:18px;}
   .shake{animation:shake .4s;}
   @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-8px);}75%{transform:translateX(8px);}}
+
+  /* 参考答案弹窗（宽版卡片） */
+  .lk-card.ref-card{max-width:880px;width:min(880px,94vw);max-height:88vh;overflow-y:auto;padding:22px 24px;text-align:left;}
+  .ref-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
+  .ref-title{font-size:18px;font-weight:800;color:var(--ink);}
+  .ref-x{border:none;background:#f1f5f9;color:#64748b;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:14px;flex:none;}
+  .ref-x:hover{background:#e2e8f0;color:#0f172a;}
+  .ref-note{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;border-radius:10px;padding:8px 12px;font-size:13px;margin-bottom:10px;line-height:1.6;}
+  .ref-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:0;}
+  .ref-tab{border:1px solid var(--line);background:#f8fafc;color:var(--ink-2);border-radius:8px 8px 0 0;padding:6px 12px;font-size:12.5px;cursor:pointer;font-family:Consolas,monospace;}
+  .ref-tab.active{background:#0f172a;color:#fff;border-color:#0f172a;}
+  .ref-tab.web{border-style:dashed;color:#b45309;}
+  .ref-tab.web.active{background:#b45309;border-color:#b45309;color:#fff;}
+  .ref-filebar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#0f172a;color:#cbd5e1;border-radius:8px 8px 0 0;padding:6px 12px;font-size:12.5px;font-family:Consolas,monospace;}
+  .ref-copy{padding:4px 10px;font-size:12px;background:#1e293b;color:#e2e8f0;border:1px solid #334155;border-radius:6px;cursor:pointer;font-family:inherit;flex:none;}
+  .ref-copy:hover{background:#334155;}
+  .ref-code{background:#0b1220;color:#dbeafe;border-radius:0 0 8px 8px;padding:14px 16px;font-family:Consolas,'Courier New',monospace;font-size:13px;line-height:1.65;overflow:auto;white-space:pre;margin:0 0 10px;max-height:46vh;}
+  .ref-webhint{background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:10px;padding:8px 12px;font-size:12.5px;margin-bottom:10px;line-height:1.6;}
+  .ref-expected{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px 14px;margin-top:6px;}
+  .ref-expected pre{margin:6px 0 0;font-family:Consolas,monospace;font-size:12.5px;white-space:pre-wrap;color:#14532d;line-height:1.7;}
+  .ref-ops{display:flex;justify-content:center;margin-top:14px;}
+  /* 检测通过反馈区里的显眼「查看参考答案」入口 */
+  .cf-answer-cta{display:block;width:100%;margin-top:12px;padding:13px 16px;border:none;border-radius:12px;cursor:pointer;
+    background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;font-size:15.5px;font-weight:800;font-family:inherit;
+    box-shadow:0 6px 18px rgba(22,163,74,.35);animation:anspulse 1.8s infinite;}
+  .cf-answer-cta:hover{filter:brightness(1.06);}
+  @keyframes anspulse{0%,100%{box-shadow:0 6px 18px rgba(22,163,74,.35);}50%{box-shadow:0 6px 26px rgba(22,163,74,.6);}}
 
   /* 彩带 */
   .confetti{position:fixed;inset:0;pointer-events:none;z-index:200;}
@@ -6749,6 +6783,525 @@ if(location.hash&&document.getElementById('page-'+location.hash.slice(1))){
 ]
 </script>
 <!-- PRACTICE-DATA-END -->
+<!-- SOLUTIONS-DATA-BEGIN（参考答案，配套练习数据手工维护） -->
+<script type="application/json" id="solutionsData">
+{
+ "c1s1": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "// 一次编写，到处运行：Java 编译成字节码后，靠各平台的 JVM 执行，所以能跨平台\npublic class Main {\n    public static void main(String[] args) {\n        // 双引号里写什么，屏幕就显示什么；println 输出完会换行\n        System.out.println(\"Hello,World!\");\n        System.out.println(\"我是小明，我想学 Java 做后台开发\");\n        System.out.println(\"Java 的真实用途：网站后台服务，比如淘宝的订单系统\");\n    }\n}"
+   }
+  ]
+ },
+ "c1s2": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        System.out.println(\"=== JDK / JRE / JVM 小卡片 ===\");\n        System.out.println(\"JVM：Java 虚拟机，真正运行程序的「虚拟电脑」\");\n        System.out.println(\"JRE：运行环境，等于 JVM 加官方类库\");\n        System.out.println(\"JDK：开发工具包，等于 JRE 加编译器 javac\");\n        System.out.println(\"JDK 包含 JRE，JRE 包含 JVM\");\n        // 写代码要装 JDK，因为编译器 javac 只在 JDK 里\n    }\n}"
+   }
+  ]
+ },
+ "c1s3": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        System.out.println(\"=== 编译运行小抄 ===\");\n        // 编译：把 .java 源代码翻译成 .class 字节码文件\n        System.out.println(\"javac HelloWorld.java\");\n        // 运行：java 后面只写类名，不能带 .class 后缀\n        System.out.println(\"java HelloWorld\");\n    }\n}"
+   }
+  ]
+ },
+ "c1s4": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        System.out.println(\"Hello,World!\");\n        System.out.println(\"Hello,Java!\");\n        // println 是换行输出；print 不换行，下一行内容会和它挤在同一行\n        System.out.println(\"小明\");\n        System.out.println(\"18\");\n        System.out.println(\"广州\");\n        // 被 // 注释掉的语句不会参与编译、也不会输出：\n        // System.out.println(\"这一行不会出现\");\n    }\n}"
+   }
+  ]
+ },
+ "c1s5": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        // 用四行输出画出 .java -> .class -> 运行结果 的完整流程\n        System.out.println(\"HelloWorld.java\");\n        System.out.println(\"   ↓ javac 编译\");\n        System.out.println(\"HelloWorld.class\");\n        System.out.println(\"   ↓ java 启动 JVM\");\n        System.out.println(\"Hello,World!\");\n        // 改了 .java 源代码后，必须重新执行 javac 编译，改动才会生效\n    }\n}"
+   }
+  ]
+ },
+ "c1s6": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "/*\n    程序名：注释与规范练习\n    作者：小明\n    缩进：每一层 4 个空格\n*/\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"=== 规范练习 ===\");\n        // 下面这行被单行注释掉后，运行时不再输出；取消注释又会出现\n        // System.out.println(\"这一行不会出现\");\n        System.out.println(\"姓名：小明\");\n        System.out.println(\"城市：广州\");\n    }\n}"
+   }
+  ]
+ },
+ "c2s1": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        int age = 18;                 // 声明并赋值\n        System.out.println(age);\n        int nextYearAge = age + 1;    // 用变量做运算\n        System.out.println(nextYearAge);\n        age = 19;                     // 重新赋值时不要再写 int\n        System.out.println(age);\n        int count = 0;\n        count = count + 1;\n        System.out.println(count);\n    }\n}"
+   }
+  ]
+ },
+ "c2s2": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        System.out.println(\"=== 基本类型练习 ===\");\n        int count = 45;            // 整数\n        double price = 19.9;       // 小数\n        char level = 'A';          // 字符用单引号，只能放一个字符\n        boolean isVip = true;      // 布尔：只有 true / false\n        int a = 10, b = 20;\n        int sum = a + b;\n        System.out.println(count);\n        System.out.println(price);\n        System.out.println(level);\n        System.out.println(isVip);\n        System.out.println(sum);\n    }\n}"
+   }
+  ]
+ },
+ "c2s3": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        int a = 17;\n        int b = 5;\n        System.out.println(\"a + b = \" + (a + b));\n        System.out.println(\"a - b = \" + (a - b));\n        System.out.println(\"a * b = \" + (a * b));\n        System.out.println(\"a / b = \" + (a / b));      // 整数相除，小数部分直接截断\n        System.out.println(\"a % b = \" + (a % b));      // 取余数\n        System.out.println(\"a > b = \" + (a > b));      // 关系运算结果是 boolean\n        System.out.println(\"a == b = \" + (a == b));    // 判断相等是两个等号\n    }\n}"
+   }
+  ]
+ },
+ "c2s4": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        double price = 39.9;\n        // (int) 强制转换：直接砍掉小数部分，39.9 -> 39（不是四舍五入）\n        System.out.println(\"原价取整：\" + (int) price);\n\n        int total = 100;\n        int count = 3;\n        // 先把被除数强转成 double，结果才会保留小数\n        double avg = (double) total / count;\n        System.out.println(\"平均分：\" + avg);\n\n        char c = 'A';\n        int code = c;   // char 本质是整数编号\n        System.out.println(\"'A' 的编码 = \" + code);\n    }\n}"
+   }
+  ]
+ },
+ "c2s5": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "import java.util.Scanner;   // 导入写在 class 外面、文件最顶部\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);   // 领取一个键盘扫描器\n\n        System.out.print(\"请输入你的年龄：\");  // print 不换行，光标停在冒号后\n        int age = sc.nextInt();                // 程序停在这里等整数\n        int nextYearAge = age + 1;\n        System.out.println(\"你明年 \" + nextYearAge + \" 岁\");\n\n        System.out.print(\"请输入你的身高：\");\n        double height = sc.nextDouble();       // 接收小数\n        System.out.println(\"你的身高是 \" + height + \" 米\");\n\n        System.out.print(\"请输入你的姓名：\");\n        String name = sc.next();               // 接收一个单词\n        System.out.println(\"你好，\" + name);\n\n        sc.close();\n    }\n}"
+   }
+  ],
+  "runNote": "示例键盘输入依次为：18 回车、1.75 回车、小明 回车。",
+  "web": "/* ===== 网页检测版 Main.java（仅用于通过网页检测）=====\n   网页检测器不会真的停下来等键盘输入，只认识字符串字面量。\n   学习时请按上面的标准写法用 Scanner；需要通过网页检测时，\n   把下面这份「样例运行结果」贴进检测框即可。 */\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"请输入你的年龄：18\");\n        System.out.println(\"你明年 19 岁\");\n        System.out.println(\"请输入你的身高：1.75\");\n        System.out.println(\"你的身高是 1.75 米\");\n        System.out.println(\"请输入你的姓名：小明\");\n        System.out.println(\"你好，小明\");\n    }\n}"
+ },
+ "c3s1": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        int age = 20;\n        if (age >= 18) {          // 注意：if 的条件后面不要多写分号\n            System.out.println(\"成年\");\n        } else {\n            System.out.println(\"未成年\");\n        }\n        System.out.println(\"程序结束\");\n\n        age = 15;                 // 改小年龄，验证走的是 else\n        if (age >= 18) {\n            System.out.println(\"成年\");\n        } else {\n            System.out.println(\"未成年\");\n        }\n        System.out.println(\"程序结束\");\n\n        int score = 55;\n        if (score >= 60) {\n            System.out.println(\"及格\");\n        } else {\n            System.out.println(\"不及格\");\n        }\n    }\n}"
+   }
+  ]
+ },
+ "c3s2": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        // 多分支判断：条件要从严格到宽松排列（先 >=90 再 >=60）\n        int score = 72;\n        if (score >= 90) {\n            System.out.println(\"优秀\");\n        } else if (score >= 80) {\n            System.out.println(\"良好\");\n        } else if (score >= 60) {\n            System.out.println(\"及格\");\n        } else {\n            System.out.println(\"不及格\");\n        }\n\n        score = 95;               // 改成 95，应输出 优秀\n        if (score >= 90) {\n            System.out.println(\"优秀\");\n        } else if (score >= 80) {\n            System.out.println(\"良好\");\n        } else if (score >= 60) {\n            System.out.println(\"及格\");\n        } else {\n            System.out.println(\"不及格\");\n        }\n\n        score = 45;               // 改成 45，应输出 不及格\n        if (score >= 90) {\n            System.out.println(\"优秀\");\n        } else if (score >= 80) {\n            System.out.println(\"良好\");\n        } else if (score >= 60) {\n            System.out.println(\"及格\");\n        } else {\n            System.out.println(\"不及格\");\n        }\n\n        int temp = 22;            // && 两边都为真，整体才为真\n        if (temp >= 18 && temp <= 26) {\n            System.out.println(\"舒适\");\n        }\n\n        int a = 10, b = 20;\n        int max = a > b ? a : b;  // 三元运算符：条件成立取 a，否则取 b\n        System.out.println(\"较大值：\" + max);\n    }\n}"
+   }
+  ]
+ },
+ "c3s3": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        int choice = 2;\n        switch (choice) {\n            case 1:\n                System.out.println(\"查询\");\n                break;             // 每个 case 结尾都要 break，否则会穿透\n            case 2:\n                System.out.println(\"存款\");\n                break;\n            case 3:\n                System.out.println(\"取款\");\n                break;\n            default:               // 所有 case 都不命中时走 default\n                System.out.println(\"无效选项\");\n        }\n\n        choice = 4;                // 改成 4，应走 default\n        switch (choice) {\n            case 1:\n                System.out.println(\"查询\");\n                break;\n            case 2:\n                System.out.println(\"存款\");\n                break;\n            case 3:\n                System.out.println(\"取款\");\n                break;\n            default:\n                System.out.println(\"无效选项\");\n        }\n\n        String day = \"周六\";       // 周六、周日共用同一段代码\n        switch (day) {\n            case \"周六\":\n            case \"周日\":\n                System.out.println(\"睡个懒觉\");\n                break;\n            default:\n                System.out.println(\"早起上课\");\n        }\n\n        day = \"周三\";\n        switch (day) {\n            case \"周六\":\n            case \"周日\":\n                System.out.println(\"睡个懒觉\");\n                break;\n            default:\n                System.out.println(\"早起上课\");\n        }\n    }\n}"
+   }
+  ]
+ },
+ "c3s4": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        // while 三要素：起点、条件、变化\n        int i = 1;\n        while (i <= 5) {\n            System.out.println(\"第 \" + i + \" 圈\");\n            i++;\n        }\n\n        i = 2;\n        while (i <= 10) {\n            System.out.println(i);\n            i += 2;\n        }\n\n        int sum = 0;\n        int j = 1;\n        while (j <= 100) {\n            sum += j;\n            j++;\n        }\n        System.out.println(sum);    // 1+2+...+100 = 5050\n\n        int k = 1;\n        while (true) {              // 死循环写法，靠 break 跳出\n            System.out.println(k);\n            k++;\n            if (k > 3) {\n                break;\n            }\n        }\n    }\n}"
+   }
+  ]
+ },
+ "c3s5": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        // continue 跳过本轮；break 直接结束整个循环\n        for (int i = 1; i <= 10; i++) {\n            if (i == 5) {\n                continue;\n            }\n            if (i > 8) {\n                break;\n            }\n            System.out.println(i);\n        }\n\n        int sum = 0;\n        for (int i = 1; i <= 100; i++) {\n            if (i % 2 == 0) {\n                sum += i;\n            }\n        }\n        System.out.println(\"1~100 偶数和 = \" + sum);\n    }\n}"
+   }
+  ]
+ },
+ "c4s1": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        // 静态初始化：直接列出全部元素\n        int[] scores = {88, 92, 56, 77, 100};\n        System.out.println(\"第 1 个成绩：\" + scores[0]);\n\n        // 动态初始化：先开 3 个格子，int 格子的默认值是 0\n        int[] arr = new int[3];\n        System.out.println(\"arr[0] 的默认值：\" + arr[0]);\n\n        System.out.println(\"第 3 个成绩：\" + scores[2]);\n\n        arr[0] = 10;\n        arr[1] = 20;\n        arr[2] = 30;\n        System.out.println(\"arr：\" + arr[0] + \" \" + arr[1] + \" \" + arr[2]);\n\n        System.out.println(\"最后一个成绩：\" + scores[4]);\n        // 数组长度是 5，合法下标只有 0~4，写 scores[5] 会越界报错\n    }\n}"
+   }
+  ]
+ },
+ "c4s2": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        int[] arr = {10, 20, 30, 40, 50};\n\n        // 普通 for + arr.length 遍历（length 没有小括号）\n        for (int i = 0; i < arr.length; i++) {\n            System.out.println(arr[i]);\n        }\n        System.out.println(\"数组长度：\" + arr.length);\n\n        // 用带下标的普通 for 修改元素\n        for (int i = 0; i < arr.length; i++) {\n            arr[i] = arr[i] + 5;\n        }\n        for (int i = 0; i < arr.length; i++) {\n            System.out.println(arr[i]);\n        }\n\n        // 增强 for 遍历：拿不到下标，适合只读不写\n        String line = \"\";\n        for (int x : arr) {\n            if (!line.equals(\"\")) {\n                line += \" \";\n            }\n            line += x;\n        }\n        System.out.println(line);\n        // 条件是 i < arr.length 而不是 <=，因为最后一个合法下标是 length-1\n    }\n}"
+   }
+  ],
+  "web": "/* ===== 网页检测版 Main.java（仅用于通过网页检测）=====\n   网页检测器不会真的执行循环和数组变量，只认识字符串字面量。\n   学习时请按上面的标准写法（循环遍历 arr）；检测时贴下面这份运行结果。 */\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"10\");\n        System.out.println(\"20\");\n        System.out.println(\"30\");\n        System.out.println(\"40\");\n        System.out.println(\"50\");\n        System.out.println(\"数组长度：5\");\n        System.out.println(\"15\");\n        System.out.println(\"25\");\n        System.out.println(\"35\");\n        System.out.println(\"45\");\n        System.out.println(\"55\");\n        System.out.println(\"15 25 35 45 55\");\n    }\n}"
+ },
+ "c4s3": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        int[] scores = {88, 92, 56, 77, 100};\n\n        int sum = 0;\n        for (int x : scores) {\n            sum += x;\n        }\n        System.out.println(\"总分：\" + sum);\n\n        // 整数相除会丢小数，先把 sum 强转成 double\n        double avg = (double) sum / scores.length;\n        System.out.println(\"平均分：\" + avg);\n\n        // 打擂台：max 初值取 arr[0]，同时记录下标\n        int max = scores[0];\n        int maxIndex = 0;\n        for (int i = 1; i < scores.length; i++) {\n            if (scores[i] > max) {\n                max = scores[i];\n                maxIndex = i;\n            }\n        }\n        System.out.println(\"最高分：\" + max + \"，在第 \" + (maxIndex + 1) + \" 位\");\n\n        int min = scores[0];\n        for (int i = 1; i < scores.length; i++) {\n            if (scores[i] < min) {\n                min = scores[i];\n            }\n        }\n        System.out.println(\"最低分：\" + min);\n    }\n}"
+   }
+  ]
+ },
+ "c4s4": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        int[] scores = {88, 92, 56, 77, 100};\n        int target = 66;          // 数组里没有的值，用 -1 表示没找到\n        int index = -1;\n        for (int i = 0; i < scores.length; i++) {\n            if (scores[i] == target) {\n                index = i;\n                break;            // 找到后提前收工\n            }\n        }\n        if (index != -1) {\n            System.out.println(\"找到了，下标是 \" + index);\n        } else {\n            System.out.println(\"没找到（index = -1）\");\n        }\n\n        // 冒泡排序：相邻比较，大的往右换，共排 length-1 轮\n        int[] arr = {5, 3, 8, 1};\n        for (int i = 0; i < arr.length - 1; i++) {\n            for (int j = 0; j < arr.length - 1 - i; j++) {\n                if (arr[j] > arr[j + 1]) {\n                    int temp = arr[j];\n                    arr[j] = arr[j + 1];\n                    arr[j + 1] = temp;\n                }\n            }\n        }\n        System.out.print(\"排序后：\");\n        for (int i = 0; i < arr.length; i++) {\n            System.out.print(i == 0 ? arr[i] : \" \" + arr[i]);\n        }\n        System.out.println();\n    }\n}"
+   }
+  ],
+  "web": "/* ===== 网页检测版 Main.java（仅用于通过网页检测）=====\n   网页检测器不会真的执行 for 循环和数组交换，只认识字符串字面量。\n   学习时请按上面的标准写法在 VS Code 里分文件编写；需要通过网页检测时，\n   把下面这份「样例运行结果」贴进检测框即可。 */\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"没找到（index = -1）\");\n        System.out.println(\"排序后：1 3 5 8\");\n    }\n}"
+ },
+ "c5s1": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    // 方法定义在类里面、main 外面，与 main 平级；现阶段都加 static\n    public static void printWelcome() {\n        System.out.println(\"欢迎光临！\");\n        System.out.println(\"今天也要加油哦\");\n    }\n\n    public static void printLine() {\n        System.out.println(\"----------\");\n    }\n\n    public static void main(String[] args) {\n        printWelcome();   // 同一段逻辑反复调用，不用复制代码\n        printLine();\n        printWelcome();\n        printLine();\n    }\n}"
+   }
+  ]
+ },
+ "c5s2": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        Tools.printLine();                       // 标题上方的分割线\n        System.out.println(\"成绩单标题\");\n        Tools.printLine();\n        System.out.println(\"小明：90分\");\n        Tools.printHeader();                     // 复用：上下两条线 + 中间标题\n    }\n}"
+   },
+   {
+    "name": "Tools.java",
+    "code": "public class Tools {\n    // 只在这一个地方维护分割线，所有调用处跟着一起变\n    public static void printLine() {\n        System.out.println(\"====================\"); // 20 个等号\n    }\n\n    public static void printHeader() {\n        printLine();\n        System.out.println(\"学生管理系统\");\n        printLine();\n    }\n}"
+   }
+  ],
+  "web": "/* ===== 网页检测版 Main.java（仅用于通过网页检测）=====\n   网页检测器不会真的调用另一个文件里的 Tools 方法，只认识字符串字面量。\n   学习时请按上面的标准写法在 VS Code 里分文件编写；需要通过网页检测时，\n   把下面这份「样例运行结果」贴进检测框即可。 */\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"====================\");\n        System.out.println(\"成绩单标题\");\n        System.out.println(\"====================\");\n        System.out.println(\"小明：90分\");\n        System.out.println(\"====================\");\n        System.out.println(\"学生管理系统\");\n        System.out.println(\"====================\");\n    }\n}"
+ },
+ "c5s3": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        // 同一个方法，传不同参数就打印不同数据\n        Tools.printWelcome(\"小明\");\n        Tools.printWelcome(\"小明\");\n        Tools.printWelcome(\"小明\");\n        Tools.printWelcome(\"小红\");\n\n        int sum = Tools.add(3, 5);     // 用变量接住 return 回来的值\n        System.out.println(sum);\n\n        if (Tools.isAdult(20)) {       // 返回 boolean 的方法可以直接当条件\n            System.out.println(\"可以进入\");\n        }\n    }\n}"
+   },
+   {
+    "name": "Tools.java",
+    "code": "public class Tools {\n    public static void printWelcome(String name) {\n        System.out.println(\"欢迎你，\" + name);\n    }\n\n    public static int add(int a, int b) {\n        return a + b;\n    }\n\n    public static boolean isAdult(int age) {\n        return age >= 18;\n    }\n}"
+   }
+  ]
+ },
+ "c5s4": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        System.out.println(Tools.add(1, 2));        // 匹配 int 版\n        System.out.println(Tools.add(1.5, 2.5));    // 匹配 double 版，输出 4.0\n        System.out.println(Tools.add(1, 2, 3));     // 匹配三参版\n    }\n}"
+   },
+   {
+    "name": "Tools.java",
+    "code": "public class Tools {\n    // 方法名相同、参数列表不同，就是方法重载\n    public static int add(int a, int b) {\n        return a + b;\n    }\n\n    public static double add(double a, double b) {\n        return a + b;\n    }\n\n    public static int add(int a, int b, int c) {\n        return a + b + c;\n    }\n}"
+   }
+  ]
+ },
+ "c5s5": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        int[] scores = {88, 92, 56};\n        Tools.printArray(scores);\n\n        int sum = 0;\n        for (int x : scores) {\n            sum += x;\n        }\n        System.out.println(\"总分：\" + sum);\n\n        Tools.addFive(scores);       // 方法里改的是同一个数组\n        Tools.printArray(scores);    // 原数组也变成了加 5 之后的值\n\n        Tools.printArray(Tools.makeArray(5));\n    }\n}"
+   },
+   {
+    "name": "Tools.java",
+    "code": "public class Tools {\n    public static void printArray(int[] arr) {\n        String line = \"\";\n        for (int x : arr) {\n            if (!line.equals(\"\")) {\n                line += \" \";\n            }\n            line += x;\n        }\n        System.out.println(line);\n    }\n\n    public static void addFive(int[] arr) {\n        for (int i = 0; i < arr.length; i++) {\n            arr[i] = arr[i] + 5;\n        }\n    }\n\n    public static int[] makeArray(int n) {\n        int[] result = new int[n];\n        for (int i = 0; i < n; i++) {\n            result[i] = i + 1;\n        }\n        return result;\n    }\n}"
+   }
+  ],
+  "web": "/* ===== 网页检测版 Main.java（仅用于通过网页检测）=====\n   网页检测器不会真的执行循环和数组遍历，只认识字符串字面量。\n   学习时请按上面的标准写法在 VS Code 里分文件编写；需要通过网页检测时，\n   把下面这份「样例运行结果」贴进检测框即可。 */\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"88 92 56\");\n        System.out.println(\"总分：236\");\n        System.out.println(\"93 97 61\");\n        System.out.println(\"1 2 3 4 5\");\n    }\n}"
+ },
+ "c6s1": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        System.out.println(\"===== 类与对象练习 =====\");\n        Student s1 = new Student();   // 按「图纸」造出第一个对象\n        s1.name = \"小明\";\n        s1.age = 18;\n        s1.study();\n\n        Student s2 = new Student();   // 再造一个互不影响的对象\n        s2.name = \"小红\";\n        s2.age = 17;\n        s2.study();\n\n        s1.introduce();\n        s2.introduce();\n    }\n}"
+   },
+   {
+    "name": "Student.java",
+    "code": "public class Student {\n    // 成员变量：每个对象各存一份\n    String name;\n    int age;\n\n    // 成员方法不写 static，可以直接使用本对象的成员变量\n    void study() {\n        System.out.println(name + \" 正在学习\");\n    }\n\n    void introduce() {\n        System.out.println(\"我叫 \" + name + \"，今年 \" + age + \" 岁\");\n    }\n}"
+   }
+  ]
+ },
+ "c6s2": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        System.out.println(\"===== 成员变量与方法练习 =====\");\n        Account acc = new Account();\n        acc.owner = \"小明\";\n        acc.deposit(500.0);\n        acc.showBalance();\n        acc.withdraw(200.0);\n        acc.withdraw(1000.0);    // 余额只有 300，应提示余额不足\n    }\n}"
+   },
+   {
+    "name": "Account.java",
+    "code": "public class Account {\n    // 成员变量：写在类里方法外，有默认值（double 默认 0.0）\n    String owner;\n    double balance;\n\n    void deposit(double money) {\n        balance = balance + money;\n        System.out.println(owner + \" 存入 \" + money + \"，余额 \" + balance);\n    }\n\n    void withdraw(double money) {\n        if (money <= balance) {\n            balance = balance - money;\n            System.out.println(owner + \" 取款 \" + money + \"，余额 \" + balance);\n        } else {\n            System.out.println(\"余额不足\");\n        }\n    }\n\n    void showBalance() {\n        System.out.println(\"余额：\" + balance);\n    }\n}"
+   }
+  ],
+  "web": "/* ===== 网页检测版 Main.java（仅用于通过网页检测）=====\n   网页检测器不会真的创建对象、调用 Account 类里的方法，只认识字符串字面量。\n   学习时请按上面的标准写法在 VS Code 里分文件编写；需要通过网页检测时，\n   把下面这份「样例运行结果」贴进检测框即可。 */\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"小明 存入 500.0，余额 500.0\");\n        System.out.println(\"余额：500.0\");\n        System.out.println(\"小明 取款 200.0，余额 300.0\");\n        System.out.println(\"余额不足\");\n    }\n}"
+ },
+ "c6s3": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        Student s = new Student();\n        s.setAge(-100);                 // 非法值：被 setter 拦下\n        s.setName(\"小明\");\n        s.setAge(18);\n        System.out.println(s.getName() + \"，\" + s.getAge());\n\n        s.setPrice(-5);                 // 非法价格：被 setter 拦下\n        s.setPrice(0);\n        System.out.println(\"价格：\" + s.getPrice());\n        // s.age = 20;  // 编译报错：age 是 private，类外不能直接访问\n    }\n}"
+   },
+   {
+    "name": "Student.java",
+    "code": "public class Student {\n    // private：属性藏起来，类外不能直接读写，只能走公开的 get/set\n    private String name;\n    private int age;\n    private double price;\n\n    public String getName() {\n        return name;\n    }\n\n    public void setName(String name) {\n        this.name = name;\n    }\n\n    public int getAge() {\n        return age;\n    }\n\n    public void setAge(int a) {\n        if (a >= 0 && a <= 150) {   // setter 里做合法性校验\n            age = a;\n        } else {\n            System.out.println(\"年龄不合法：\" + a);\n        }\n    }\n\n    public double getPrice() {\n        return price;\n    }\n\n    public void setPrice(double p) {\n        if (p >= 0) {\n            price = p;\n        } else {\n            System.out.println(\"价格不合法\");\n        }\n    }\n}"
+   }
+  ],
+  "web": "/* ===== 网页检测版 Main.java（仅用于通过网页检测）=====\n   网页检测器不会真的创建对象、调用 Student 类里的方法，只认识字符串字面量。\n   学习时请按上面的标准写法在 VS Code 里分文件编写；需要通过网页检测时，\n   把下面这份「样例运行结果」贴进检测框即可。 */\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"年龄不合法：-100\");\n        System.out.println(\"小明，18\");\n        System.out.println(\"价格不合法\");\n        System.out.println(\"价格：0.0\");\n    }\n}"
+ },
+ "c6s4": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        System.out.println(\"===== 构造方法与 this 练习 =====\");\n\n        Student s1 = new Student();\n        System.out.println(\"无参构造 -> \" + s1.getName() + \"，\" + s1.getAge() + \" 岁\");\n\n        Student s2 = new Student(\"小红\");\n        System.out.println(\"单参构造 -> \" + s2.getName() + \"，\" + s2.getAge() + \" 岁\");\n\n        Student s3 = new Student(\"小刚\", 20);\n        System.out.println(\"全参构造 -> \" + s3.getName() + \"，\" + s3.getAge() + \" 岁\");\n\n        s1.setName(\"小美\");\n        s1.setAge(19);\n        System.out.println(\"修改后 -> \" + s1.getName() + \"，\" + s1.getAge() + \" 岁\");\n    }\n}"
+   },
+   {
+    "name": "Student.java",
+    "code": "public class Student {\n    private String name;\n    private int age;\n\n    // 无参构造：用 this(...) 复用全参构造\n    public Student() {\n        this(\"未命名\", 0);\n    }\n\n    // 单参构造：默认年龄 18\n    public Student(String name) {\n        this(name, 18);\n    }\n\n    // 全参构造：构造方法名与类名相同、没有返回类型\n    public Student(String name, int age) {\n        this.name = name;   // this.name 是成员变量，name 是参数\n        this.age = age;\n    }\n\n    public String getName() {\n        return name;\n    }\n\n    public void setName(String name) {\n        this.name = name;\n    }\n\n    public int getAge() {\n        return age;\n    }\n\n    public void setAge(int age) {\n        this.age = age;\n    }\n}"
+   }
+  ]
+ },
+ "c6s5": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        System.out.println(\"===== 对象数组练习 =====\");\n\n        Phone[] phones = new Phone[3];   // 第一步：只开格子，里面全是 null\n        System.out.println(\"数组长度：\" + phones.length);\n        System.out.println(\"还没放对象时 phones[0] = \" + phones[0]);\n\n        phones[0] = new Phone(\"小米\", 1999.0);   // 第二步：逐格 new 对象\n        phones[1] = new Phone(\"荣耀\", 2499.0);\n        phones[2] = new Phone(\"苹果\", 5999.0);\n\n        for (int i = 0; i < phones.length; i++) {\n            phones[i].show();\n        }\n\n        double total = 0;\n        for (Phone p : phones) {\n            total += p.price;\n        }\n        System.out.println(\"总价：\" + total + \" 元\");\n        System.out.println(\"平均价格：\" + total / phones.length + \" 元\");\n    }\n}"
+   },
+   {
+    "name": "Phone.java",
+    "code": "public class Phone {\n    String brand;\n    double price;\n\n    public Phone(String brand, double price) {\n        this.brand = brand;\n        this.price = price;\n    }\n\n    void show() {\n        System.out.println(brand + \" 价格：\" + price + \" 元\");\n    }\n}"
+   }
+  ],
+  "web": "/* ===== 网页检测版 Main.java（仅用于通过网页检测）=====\n   网页检测器不会真的创建对象数组、调用 Phone 类里的方法，只认识字符串字面量。\n   学习时请按上面的标准写法在 VS Code 里分文件编写；需要通过网页检测时，\n   把下面这份「样例运行结果」贴进检测框即可。 */\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"===== 对象数组练习 =====\");\n        System.out.println(\"数组长度：3\");\n        System.out.println(\"还没放对象时 phones[0] = null\");\n        System.out.println(\"小米 价格：1999.0 元\");\n        System.out.println(\"荣耀 价格：2499.0 元\");\n        System.out.println(\"苹果 价格：5999.0 元\");\n        System.out.println(\"总价：10497.0 元\");\n        System.out.println(\"平均价格：3499.0 元\");\n    }\n}"
+ },
+ "c7s1": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        FullTimeEmployee e1 = new FullTimeEmployee(\"小明\", \"E001\", 8000);\n        e1.clockIn();    // clockIn 是从父类 Employee 继承来的\n        System.out.println(\"姓名：\" + e1.getName() + \"，工号：\" + e1.getId());\n\n        FullTimeEmployee e2 = new FullTimeEmployee(\"小红\", \"E002\", 9000);\n        e2.clockIn();\n        System.out.println(\"姓名：\" + e2.getName() + \"，工号：\" + e2.getId()\n                + \"，月薪：\" + e2.getMonthlySalary() + \" 元\");\n\n        e1.setMonthlySalary(12000);\n        System.out.println(e1.getName() + \" 的月薪改为：\" + e1.getMonthlySalary() + \" 元\");\n    }\n}"
+   },
+   {
+    "name": "Employee.java",
+    "code": "public class Employee {\n    // protected：子类可以直接访问\n    protected String name;\n    protected String id;\n\n    public Employee(String name, String id) {\n        this.name = name;\n        this.id = id;\n    }\n\n    public void clockIn() {\n        System.out.println(name + \"(\" + id + \") 打卡成功\");\n    }\n\n    public String getName() {\n        return name;\n    }\n\n    public void setName(String name) {\n        this.name = name;\n    }\n\n    public String getId() {\n        return id;\n    }\n}"
+   },
+   {
+    "name": "FullTimeEmployee.java",
+    "code": "public class FullTimeEmployee extends Employee {\n    private double monthlySalary;\n\n    // 子类构造第一行用 super(...) 初始化父类部分\n    public FullTimeEmployee(String name, String id, double monthlySalary) {\n        super(name, id);\n        this.monthlySalary = monthlySalary;\n    }\n\n    public double getMonthlySalary() {\n        return monthlySalary;\n    }\n\n    public void setMonthlySalary(double monthlySalary) {\n        this.monthlySalary = monthlySalary;\n    }\n}"
+   }
+  ],
+  "web": "/* ===== 网页检测版 Main.java（仅用于通过网页检测）=====\n   网页检测器不会真的执行继承和对象方法调用，只认识字符串字面量。\n   学习时请按上面的标准写法在 VS Code 里分文件编写；需要通过网页检测时，\n   把下面这份「样例运行结果」贴进检测框即可。 */\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"小明(E001) 打卡成功\");\n        System.out.println(\"姓名：小明，工号：E001\");\n        System.out.println(\"小红(E002) 打卡成功\");\n        System.out.println(\"姓名：小红，工号：E002，月薪：9000.0 元\");\n        System.out.println(\"小明 的月薪改为：12000.0 元\");\n    }\n}"
+ },
+ "c7s2": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        System.out.println(\"===== 方法重写练习 =====\");\n        new Employee(\"普通员工\").showPay();\n\n        FullTimeEmployee ft = new FullTimeEmployee(\"小明\", 8000);\n        ft.showPay();\n\n        PartTimeEmployee pt = new PartTimeEmployee(\"小红\", 50, 20);\n        pt.showPay();\n\n        ft.setMonthlySalary(12000);   // 同一方法名，改完工资后表现不同\n        ft.showPay();\n    }\n}"
+   },
+   {
+    "name": "Employee.java",
+    "code": "public class Employee {\n    protected String name;\n\n    public Employee(String name) {\n        this.name = name;\n    }\n\n    public void showPay() {\n        System.out.println(name + \" 的工资按通用规则计算\");\n    }\n}"
+   },
+   {
+    "name": "FullTimeEmployee.java",
+    "code": "public class FullTimeEmployee extends Employee {\n    protected double monthlySalary;\n\n    public FullTimeEmployee(String name, double monthlySalary) {\n        super(name);\n        this.monthlySalary = monthlySalary;\n    }\n\n    public void setMonthlySalary(double monthlySalary) {\n        this.monthlySalary = monthlySalary;\n    }\n\n    @Override    // 重写：方法名和参数列表与父类完全一致\n    public void showPay() {\n        System.out.println(name + \"（全职）月薪：\" + monthlySalary + \" 元\");\n    }\n}"
+   },
+   {
+    "name": "PartTimeEmployee.java",
+    "code": "public class PartTimeEmployee extends Employee {\n    private double hourlyPay;\n    private int hours;\n\n    public PartTimeEmployee(String name, double hourlyPay, int hours) {\n        super(name);\n        this.hourlyPay = hourlyPay;\n        this.hours = hours;\n    }\n\n    @Override\n    public void showPay() {\n        super.showPay();   // 先复用父类版本，再追加兼职自己的内容\n        System.out.println(name + \"（兼职）时薪 \" + hourlyPay + \" 元，本月 \"\n                + hours + \" 小时，合计 \" + (hourlyPay * hours) + \" 元\");\n    }\n}"
+   }
+  ],
+  "web": "/* ===== 网页检测版 Main.java（仅用于通过网页检测）=====\n   网页检测器不会真的执行方法重写和多态调用，只认识字符串字面量。\n   学习时请按上面的标准写法在 VS Code 里分文件编写；需要通过网页检测时，\n   把下面这份「样例运行结果」贴进检测框即可。 */\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"普通员工 的工资按通用规则计算\");\n        System.out.println(\"小明（全职）月薪：8000.0 元\");\n        System.out.println(\"小红 的工资按通用规则计算\");\n        System.out.println(\"小红（兼职）时薪 50.0 元，本月 20 小时，合计 1000.0 元\");\n        System.out.println(\"小明（全职）月薪：12000.0 元\");\n    }\n}"
+ },
+ "c7s3": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        FullTimeEmployee ft = new FullTimeEmployee(\"小明\", 8000);\n        PartTimeEmployee pt = new PartTimeEmployee(\"小红\", 50, 20);\n\n        ft.showPay();\n\n        // 向上转型：左边父类引用，右边子类对象\n        Employee[] staff = {ft, pt};\n        System.out.println(\"数组长度：\" + staff.length);\n\n        for (Employee e : staff) {\n            e.showPay();   // 运行时按真实对象执行对应版本，这就是多态\n        }\n\n        for (Employee e : staff) {\n            if (e instanceof PartTimeEmployee) {        // 先判断真实类型\n                PartTimeEmployee p = (PartTimeEmployee) e;  // 再向下转型\n                System.out.println(p.getName() + \"的月工时：\" + p.getHours() + \" 小时\");\n            }\n        }\n    }\n}"
+   },
+   {
+    "name": "Employee.java",
+    "code": "public class Employee {\n    protected String name;\n\n    public Employee(String name) {\n        this.name = name;\n    }\n\n    public String getName() {\n        return name;\n    }\n\n    public void showPay() {\n        System.out.println(name + \" 的工资按通用规则计算\");\n    }\n}"
+   },
+   {
+    "name": "FullTimeEmployee.java",
+    "code": "public class FullTimeEmployee extends Employee {\n    protected double monthlySalary;\n\n    public FullTimeEmployee(String name, double monthlySalary) {\n        super(name);\n        this.monthlySalary = monthlySalary;\n    }\n\n    @Override\n    public void showPay() {\n        System.out.println(name + \"（全职）月薪：\" + monthlySalary + \" 元\");\n    }\n}"
+   },
+   {
+    "name": "PartTimeEmployee.java",
+    "code": "public class PartTimeEmployee extends Employee {\n    private double hourlyPay;\n    private int hours;\n\n    public PartTimeEmployee(String name, double hourlyPay, int hours) {\n        super(name);\n        this.hourlyPay = hourlyPay;\n        this.hours = hours;\n    }\n\n    public int getHours() {\n        return hours;\n    }\n\n    @Override\n    public void showPay() {\n        System.out.println(name + \"（兼职）时薪 \" + hourlyPay + \" 元，本月 \"\n                + hours + \" 小时，合计 \" + (hourlyPay * hours) + \" 元\");\n    }\n}"
+   }
+  ],
+  "web": "/* ===== 网页检测版 Main.java（仅用于通过网页检测）=====\n   网页检测器不会真的执行对象数组和类型转换，只认识字符串字面量。\n   学习时请按上面的标准写法在 VS Code 里分文件编写；需要通过网页检测时，\n   把下面这份「样例运行结果」贴进检测框即可。 */\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"小明（全职）月薪：8000.0 元\");\n        System.out.println(\"数组长度：2\");\n        System.out.println(\"小明（全职）月薪：8000.0 元\");\n        System.out.println(\"小红（兼职）时薪 50.0 元，本月 20 小时，合计 1000.0 元\");\n        System.out.println(\"小红的月工时：20 小时\");\n    }\n}"
+ },
+ "c7s4": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        // 抽象父类数组，可以装它的任何具体子类对象\n        Employee[] staff = {\n                new FullTimeEmployee(\"小明\", \"E001\", 8000),\n                new PartTimeEmployee(\"小红\", \"E002\", 50, 20),\n                new PartTimeEmployee(\"小刚\", \"E003\", 60, 20)\n        };\n\n        System.out.println(\"第 1 位：\" + staff[0].getName()\n                + \"，工资 \" + staff[0].calcSalary() + \" 元\");\n\n        double total = 0;\n        for (Employee e : staff) {\n            e.showInfo();\n            total += e.calcSalary();\n        }\n        System.out.println(\"工资合计：\" + total + \" 元\");\n        System.out.println(\"平均工资：\" + total / staff.length + \" 元\");\n    }\n}"
+   },
+   {
+    "name": "Employee.java",
+    "code": "public abstract class Employee {\n    protected String name;\n    protected String id;\n\n    public Employee(String name, String id) {\n        this.name = name;\n        this.id = id;\n    }\n\n    // 抽象方法：父类只定规矩，没有方法体\n    public abstract double calcSalary();\n\n    public void showInfo() {\n        System.out.println(\"姓名：\" + name + \"，工号：\" + id);\n    }\n\n    public String getName() {\n        return name;\n    }\n}"
+   },
+   {
+    "name": "FullTimeEmployee.java",
+    "code": "public class FullTimeEmployee extends Employee {\n    private double monthlySalary;\n\n    public FullTimeEmployee(String name, String id, double monthlySalary) {\n        super(name, id);\n        this.monthlySalary = monthlySalary;\n    }\n\n    @Override\n    public double calcSalary() {\n        return monthlySalary;\n    }\n}"
+   },
+   {
+    "name": "PartTimeEmployee.java",
+    "code": "public class PartTimeEmployee extends Employee {\n    private double hourlyPay;\n    private int hours;\n\n    public PartTimeEmployee(String name, String id, double hourlyPay, int hours) {\n        super(name, id);\n        this.hourlyPay = hourlyPay;\n        this.hours = hours;\n    }\n\n    @Override\n    public double calcSalary() {\n        return hourlyPay * hours;\n    }\n}"
+   }
+  ],
+  "web": "/* ===== 网页检测版 Main.java（仅用于通过网页检测）=====\n   网页检测器不会真的遍历集合、调用各类员工的方法，只认识字符串字面量。\n   学习时请按上面的标准写法在 VS Code 里分文件编写；需要通过网页检测时，\n   把下面这份「样例运行结果」贴进检测框即可。 */\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"第 1 位：小明，工资 8000.0 元\");\n        System.out.println(\"姓名：小明，工号：E001\");\n        System.out.println(\"姓名：小红，工号：E002\");\n        System.out.println(\"姓名：小刚，工号：E003\");\n        System.out.println(\"工资合计：10200.0 元\");\n        System.out.println(\"平均工资：3400.0 元\");\n    }\n}"
+ },
+ "c7s5": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        // 接口引用指向实现类对象\n        Payable p = new FullTimeEmployee(\"小明\", 8000);\n        System.out.println(\"接口引用调用的工资：\" + p.calcSalary() + \" 元\");\n\n        // 接口数组装不同实现类，统一调用\n        Payable[] arr = {\n                p,\n                new Manager(\"老张\", 15000)\n        };\n        for (int i = 0; i < arr.length; i++) {\n            String label = (i == 0) ? \"第一位\" : \"第二位\";\n            System.out.println(label + \"工资：\" + arr[i].calcSalary() + \" 元\");\n        }\n\n        // 同一个 Manager 对象，换 Meeting 接口引用调用另一个行为\n        Meeting m = (Meeting) arr[1];\n        m.meeting();\n    }\n}"
+   },
+   {
+    "name": "Payable.java",
+    "code": "public interface Payable {\n    double calcSalary();   // 接口方法只有声明，没有方法体\n}"
+   },
+   {
+    "name": "Meeting.java",
+    "code": "public interface Meeting {\n    void meeting();\n}"
+   },
+   {
+    "name": "FullTimeEmployee.java",
+    "code": "public class FullTimeEmployee implements Payable {\n    protected String name;\n    protected double monthlySalary;\n\n    public FullTimeEmployee(String name, double monthlySalary) {\n        this.name = name;\n        this.monthlySalary = monthlySalary;\n    }\n\n    @Override\n    public double calcSalary() {\n        return monthlySalary;\n    }\n}"
+   },
+   {
+    "name": "Manager.java",
+    "code": "// 一个类可以同时实现多个接口，用逗号隔开\npublic class Manager implements Payable, Meeting {\n    private String name;\n    private double monthlySalary;\n\n    public Manager(String name, double monthlySalary) {\n        this.name = name;\n        this.monthlySalary = monthlySalary;\n    }\n\n    @Override\n    public double calcSalary() {\n        return monthlySalary;\n    }\n\n    @Override\n    public void meeting() {\n        System.out.println(name + \" 通知：下午 3 点开部门会议\");\n    }\n}"
+   }
+  ],
+  "web": "/* ===== 网页检测版 Main.java（仅用于通过网页检测）=====\n   网页检测器不会真的执行接口回调和多态，只认识字符串字面量。\n   学习时请按上面的标准写法在 VS Code 里分文件编写；需要通过网页检测时，\n   把下面这份「样例运行结果」贴进检测框即可。 */\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"接口引用调用的工资：8000.0 元\");\n        System.out.println(\"第一位工资：8000.0 元\");\n        System.out.println(\"第二位工资：15000.0 元\");\n        System.out.println(\"老张 通知：下午 3 点开部门会议\");\n    }\n}"
+ },
+ "c8s1": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        String s = \" Hello Java World \";\n        System.out.println(\"原字符串：[\" + s + \"] 长度：\" + s.length());\n\n        s = s.trim();      // trim 去掉首尾空格，要重新赋值才生效\n        System.out.println(\"trim 后：[\" + s + \"] 长度：\" + s.length());\n\n        int idx = s.indexOf(\"Java\");\n        String part = s.substring(6, 10);   // substring 含头不含尾\n        System.out.println(\"截取出：\" + part);\n\n        String line = \"小明,18,广州\";\n        String[] parts = line.split(\",\");\n        System.out.println(\"拆分得到 \" + parts.length + \" 段，第一段：\" + parts[0]);\n\n        int age = Integer.parseInt(parts[1].trim());\n        System.out.println(\"age + 1 = \" + (age + 1));\n        // 比较字符串内容必须用 equals，不能用 ==\n    }\n}"
+   }
+  ],
+  "web": "/* ===== 网页检测版 Main.java（仅用于通过网页检测）=====\n   网页检测器不会真的执行 length()、trim()、substring()，只认识字符串字面量。\n   学习时请按上面的标准写法；检测时贴下面这份样例运行结果。 */\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"原字符串：[ Hello Java World ] 长度：18\");\n        System.out.println(\"trim 后：[Hello Java World] 长度：16\");\n        System.out.println(\"截取出：Java\");\n        System.out.println(\"拆分得到 3 段，第一段：小明\");\n        System.out.println(\"age + 1 = 19\");\n    }\n}"
+ },
+ "c8s2": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "import java.util.ArrayList;\n\npublic class Main {\n    public static void main(String[] args) {\n        ArrayList<String> names = new ArrayList<>();\n        names.add(\"小明\");\n        names.add(\"小红\");\n        names.add(\"小刚\");\n        System.out.println(names);             // 集合可以直接打印\n        System.out.println(\"人数：\" + names.size());\n\n        ArrayList<Book> books = new ArrayList<>();\n        books.add(new Book(\"Java入门\", 69.9));\n        books.add(new Book(\"数据结构\", 59.0));\n        System.out.println(\"books.size() = \" + books.size());\n\n        for (Book b : books) {                 // 增强 for 遍历，调用每本书的 showInfo\n            b.showInfo();\n        }\n    }\n}"
+   },
+   {
+    "name": "Book.java",
+    "code": "public class Book {\n    String name;\n    double price;\n\n    public Book(String name, double price) {\n        this.name = name;\n        this.price = price;\n    }\n\n    void showInfo() {\n        System.out.println(\"书名：\" + name + \"  价格：\" + price);\n    }\n}"
+   }
+  ],
+  "web": "/* ===== 网页检测版 Main.java（仅用于通过网页检测）=====\n   网页检测器只检查你贴进来的这一个文件，读不到 Book.java 里的输出，\n   也不会真的执行 ArrayList。学习时请按上面的多文件标准写法；\n   检测时贴下面这份样例运行结果。 */\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"[小明, 小红, 小刚]\");\n        System.out.println(\"人数：3\");\n        System.out.println(\"books.size() = 2\");\n        System.out.println(\"书名：Java入门  价格：69.9\");\n        System.out.println(\"书名：数据结构  价格：59.0\");\n    }\n}"
+ },
+ "c8s3": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "import java.util.ArrayList;\n\npublic class Main {\n    public static void main(String[] args) {\n        ArrayList<String> list = new ArrayList<>();\n        list.add(\"A\");\n        list.add(\"B\");\n        list.add(\"C\");\n        System.out.println(\"初始：\" + list);\n\n        list.add(0, \"插队的\");      // 指定位置插入，原元素整体后移\n        list.set(1, \"新名字\");      // 修改下标 1 的元素\n        System.out.println(\"插入并修改后：\" + list);\n\n        int idx = list.indexOf(\"B\");\n        if (idx == -1) {\n            System.out.println(\"查无此人\");\n        } else {\n            list.remove(idx);       // 删除后后面的元素自动前移\n        }\n        System.out.println(\"删除 B 后：\" + list);\n\n        System.out.println(\"contains(\\\"C\\\") = \" + list.contains(\"C\"));\n    }\n}"
+   }
+  ]
+ },
+ "c8s4": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        // 能靠 if 预防的异常，就先判断再执行\n        int b = 0;\n        if (b != 0) {\n            System.out.println(100 / b);\n        } else {\n            System.out.println(\"除数不能为 0\");\n        }\n\n        int[] arr = new int[3];\n        int index = 5;\n        if (index >= 0 && index < arr.length) {\n            System.out.println(arr[index]);\n        } else {\n            System.out.println(\"下标越界\");\n        }\n    }\n}"
+   }
+  ]
+ },
+ "c8s5": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        int[] arr = new int[3];\n        try {\n            int x = arr[5];\n            System.out.println(x);\n        } catch (ArrayIndexOutOfBoundsException e) {\n            System.out.println(\"下标越界了：\" + e.getMessage());\n        }\n\n        try {\n            int x = 100 / 0;\n            System.out.println(x);\n        } catch (ArithmeticException e) {\n            System.out.println(\"不能输入 0！\");\n        } finally {\n            // finally 无论 try 是否出错都会执行\n            System.out.println(\"finally 一定执行\");\n        }\n    }\n}"
+   }
+  ]
+ },
+ "c8s6": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        while (true) {\n            System.out.println(\"==== 菜单 ====\");\n            System.out.println(\"1 添加  2 查询  3 删除  4 退出\");\n            int choice = InputHelper.inputChoice(sc, 1, 4);\n            if (choice == 1) {\n                System.out.println(\"执行 添加\");\n            } else if (choice == 2) {\n                System.out.println(\"执行 查询\");\n            } else if (choice == 3) {\n                System.out.println(\"执行 删除\");\n            } else {\n                System.out.println(\"再见\");\n                break;\n            }\n        }\n        sc.close();\n    }\n}"
+   },
+   {
+    "name": "InputHelper.java",
+    "code": "import java.util.InputMismatchException;\nimport java.util.Scanner;\n\npublic class InputHelper {\n    public static int inputInt(Scanner sc) {\n        while (true) {\n            try {\n                return sc.nextInt();\n            } catch (InputMismatchException e) {\n                System.out.println(\"输入无效，请输入整数！\");\n                sc.next();   // 必须消费掉缓冲区里的错误输入，否则会死循环\n            }\n        }\n    }\n\n    public static int inputChoice(Scanner sc, int min, int max) {\n        while (true) {\n            int n = inputInt(sc);\n            if (n >= min && n <= max) {\n                return n;\n            }\n            System.out.println(\"没有这个选项，请重新输入\");\n        }\n    }\n}"
+   }
+  ],
+  "runNote": "示例键盘输入依次为：abc 回车（测试非法输入）、9 回车（测试越界选项）、1 回车、4 回车。"
+ },
+ "c9s1": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    // 单层循环：执行次数 = n\n    public static int countLinear(int n) {\n        int count = 0;\n        int sum = 0;\n        for (int i = 1; i <= n; i++) {\n            count++;\n            sum += i;\n        }\n        System.out.println(\"  [线性] 执行 \" + count + \" 次，累加和 sum=\" + sum);\n        return count;\n    }\n\n    // 双层循环：执行次数 = n * n\n    public static int countQuadratic(int n) {\n        int count = 0;\n        for (int i = 1; i <= n; i++) {\n            for (int j = 1; j <= n; j++) {\n                count++;\n            }\n        }\n        return count;\n    }\n\n    public static void main(String[] args) {\n        int[] ns = {5, 10, 20, 30};\n        System.out.println(\"打印表格：\");\n        for (int n : ns) {\n            System.out.println(\"n=\" + n + \" 时 O(n)=\" + countLinear(n)\n                    + \"、O(n²)=\" + countQuadratic(n));\n        }\n        // 规律：最高阶项决定增长速度，常数系数和低阶项都可以扔掉\n        System.out.println(\"n 变 4 倍时 O(n) 变 4 倍、O(n²) 变 16 倍\");\n    }\n}"
+   }
+  ]
+ },
+ "c9s2": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    // 对撞指针：有序数组里一趟找出和为 target 的两个数\n    public static String twoSumSorted(int[] arr, int target) {\n        int left = 0;\n        int right = arr.length - 1;\n        while (left < right) {\n            int sum = arr[left] + arr[right];\n            System.out.println(\"  指针 left=\" + left + \", right=\" + right + \"，和=\" + sum);\n            if (sum == target) {\n                return \"找到：\" + arr[left] + \"+\" + arr[right] + \" = \" + target;\n            } else if (sum < target) {\n                left++;    // 和太小，左指针右移\n            } else {\n                right--;   // 和太大，右指针左移\n            }\n        }\n        return \"没找到\";\n    }\n\n    public static void main(String[] args) {\n        int[] arr = {1, 3, 5, 7, 9, 11};\n        int[] targets = {12, 20, 6, 100};\n        for (int target : targets) {\n            System.out.println(\"目标 \" + target + \" → \" + twoSumSorted(arr, target));\n        }\n        // 对撞指针最多移动 n 趟，时间复杂度 O(n)；前提是数组必须有序\n    }\n}"
+   }
+  ]
+ },
+ "c9s3": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "import java.util.ArrayDeque;\nimport java.util.Deque;\n\npublic class Main {\n    // 用栈判断括号串是否有效\n    public static boolean isValid(String s) {\n        Deque<Character> stack = new ArrayDeque<>();\n        for (int i = 0; i < s.length(); i++) {\n            char c = s.charAt(i);\n            if (c == '(') {\n                stack.push(')');\n            } else if (c == '[') {\n                stack.push(']');\n            } else if (c == '{') {\n                stack.push('}');\n            } else {\n                if (stack.isEmpty() || stack.pop() != c) {\n                    return false;\n                }\n            }\n        }\n        return stack.isEmpty();\n    }\n\n    public static void main(String[] args) {\n        String[] cases = {\"()\", \"([])\", \"{[()]}\", \"([)]\", \"(()\", \")(\"};\n        for (String s : cases) {\n            System.out.println(s + \" => \" + (isValid(s) ? \"有效\" : \"无效\"));\n        }\n\n        // 同一个 ArrayDeque，offer/poll 就是队列：先进先出\n        Deque<String> queue = new ArrayDeque<>();\n        queue.offer(\"小明\");\n        queue.offer(\"小红\");\n        queue.offer(\"小刚\");\n        while (!queue.isEmpty()) {\n            System.out.println(\"服务：\" + queue.poll());\n        }\n    }\n}"
+   }
+  ]
+ },
+ "c9s4": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "import java.util.HashMap;\nimport java.util.Map;\nimport java.util.TreeMap;\n\npublic class Main {\n    // 统计每个字符出现的次数（TreeMap 只是为了让打印顺序稳定）\n    public static void countChars(String s) {\n        TreeMap<Character, Integer> map = new TreeMap<>();\n        for (int i = 0; i < s.length(); i++) {\n            char c = s.charAt(i);\n            map.put(c, map.getOrDefault(c, 0) + 1);\n        }\n        System.out.println(s + \" 频次为 \" + map);\n\n        char best = 0;\n        int max = -1;\n        for (Map.Entry<Character, Integer> e : map.entrySet()) {\n            if (e.getValue() > max) {\n                max = e.getValue();\n                best = e.getKey();\n            }\n        }\n        System.out.println(\"最多的字符是 \" + best + \"，出现 \" + max + \" 次\");\n    }\n\n    // 哈希表一趟解决两数之和，时间 O(n)，代价是多用了空间\n    public static void twoSum(int[] nums, int target) {\n        HashMap<Integer, Integer> seen = new HashMap<>();\n        for (int i = 0; i < nums.length; i++) {\n            int need = target - nums[i];\n            if (seen.containsKey(need)) {\n                System.out.println(\"目标 \" + target + \" 找到 \" + need + \"+\" + nums[i]);\n                return;\n            }\n            seen.put(nums[i], i);\n        }\n        System.out.println(\"目标 \" + target + \" 没找到\");\n    }\n\n    public static void main(String[] args) {\n        countChars(\"banana\");\n        countChars(\"hello java\");\n        twoSum(new int[]{2, 7, 11, 15}, 9);\n        twoSum(new int[]{2, 7, 11, 15}, 100);\n    }\n}"
+   }
+  ]
+ },
+ "c10s1": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "import java.io.BufferedReader;\nimport java.io.FileReader;\nimport java.io.FileWriter;\nimport java.io.IOException;\n\npublic class Main {\n    static final String FILE = \"notes.txt\";\n\n    public static void main(String[] args) {\n        // try-with-resources：括号里的流无论正常还是异常都会自动关闭\n        try (FileWriter fw = new FileWriter(FILE)) {\n            fw.write(\"第一行：今天学了 Java 文件读写\\n\");\n            fw.write(\"第二行：readLine 读到 null 表示读完\\n\");\n            fw.write(\"第三行：try(...) 会自动关流\\n\");\n        } catch (IOException e) {\n            System.out.println(\"写入失败：\" + e.getMessage());\n        }\n\n        readFile();\n        // FileWriter 第二个参数写 true 就是追加模式，再跑一遍行数会翻倍\n    }\n\n    static void readFile() {\n        int lines = 0;\n        int chars = 0;\n        try (BufferedReader br = new BufferedReader(new FileReader(FILE))) {\n            String line;\n            while ((line = br.readLine()) != null) {\n                System.out.println(line);\n                lines++;\n                chars += line.length();\n            }\n        } catch (IOException e) {\n            System.out.println(\"读取失败：\" + e.getMessage());\n        }\n        System.out.println(\"一共 \" + lines + \" 行\");\n        System.out.println(\"总字符数：\" + chars);\n    }\n}"
+   }
+  ]
+ },
+ "c10s2": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        Comment c1 = new Comment(\"小明\", \"这首歌真好听\", 12);\n        Comment c2 = new Comment(\"小红\", \"循环有点难，再练一遍\", 5);\n        // 多个对象用逗号隔开，最后一个后面不加逗号\n        System.out.println(\"[\" + c1.toJson() + \",\" + c2.toJson() + \"]\");\n    }\n}"
+   },
+   {
+    "name": "Comment.java",
+    "code": "public class Comment {\n    String name;\n    String content;\n    int likes;\n\n    public Comment(String name, String content, int likes) {\n        this.name = name;\n        this.content = content;\n        this.likes = likes;\n    }\n\n    // 手工拼 JSON：键和字符串都必须用英文双引号，字符串里的双引号要写 \\\"\n    String toJson() {\n        return \"{\\\"name\\\":\\\"\" + name + \"\\\",\\\"content\\\":\\\"\" + content\n                + \"\\\",\\\"likes\\\":\" + likes + \"}\";\n    }\n}"
+   }
+  ]
+ },
+ "c10s3": {
+  "files": [
+   {
+    "name": "Main.java",
+    "code": "import java.util.ArrayList;\nimport java.util.Comparator;\nimport java.util.HashMap;\n\npublic class Main {\n    public static void main(String[] args) {\n        ArrayList<Comment> list = new ArrayList<>();\n        list.add(new Comment(\"小明\", 12));\n        list.add(new Comment(\"小红\", 5));\n        list.add(new Comment(\"小明\", 3));\n        list.add(new Comment(\"小刚\", 0));\n\n        // 按点赞数降序：compare 返回负数 a 在前，所以 b.likes - a.likes\n        list.sort(new Comparator<Comment>() {\n            @Override\n            public int compare(Comment a, Comment b) {\n                return b.likes - a.likes;\n            }\n        });\n\n        System.out.println(\"===== 热评榜 =====\");\n        for (Comment c : list) {\n            System.out.println(c.name + \" \" + c.likes);\n        }\n        System.out.println(\"今日最热：\" + list.get(0).name\n                + \" \" + list.get(0).likes + \" 赞\");\n\n        // 用 HashMap 汇总每个人的发言条数\n        HashMap<String, Integer> counts = new HashMap<>();\n        for (Comment c : list) {\n            counts.put(c.name, counts.getOrDefault(c.name, 0) + 1);\n        }\n        System.out.println(\"发言条数：小明=\" + counts.get(\"小明\")\n                + \"，小红=\" + counts.get(\"小红\")\n                + \"，小刚=\" + counts.get(\"小刚\"));\n    }\n}"
+   },
+   {
+    "name": "Comment.java",
+    "code": "public class Comment {\n    String name;\n    int likes;\n\n    public Comment(String name, int likes) {\n        this.name = name;\n        this.likes = likes;\n    }\n}"
+   }
+  ]
+ }
+}
+</script>
+<!-- SOLUTIONS-DATA-END -->
 
 <script>
 /* ================= 闯关系统：核心数据 ================= */
@@ -7222,7 +7775,82 @@ function openRefAnswer(id){
   s.viewed=1; saveG();
   syncAnswerGate(id);
   refreshUI();
-  alert('✅ 已标记为"已查看参考答案"。\n\n现在可以继续学习下一个板块了。');
+  var sol=SOLUTIONS[id];
+  if(!sol||!sol.files||!sol.files.length){
+    showLk('<div class="em">📖</div><h3>参考答案</h3>'+
+      '<p>这一节的参考答案正在整理中，先自己动手试一试吧～</p>'+
+      '<div class="ops"><button class="btn btn-primary" onclick="closeLk()">我知道了</button></div>');
+    return;
+  }
+  var p=PRACTICE[id]||{};
+  var tabs=[], panes=[];
+  window.__REF_CODES={};
+  function addTab(idx,label,code,isWeb){
+    var key=id+'_'+(isWeb?'web':idx);
+    window.__REF_CODES[key]=code;
+    tabs.push('<button type="button" class="ref-tab'+(isWeb?' web':'')+(idx===0?' active':'')+'" data-reftab="'+idx+'">'+escH(label)+'</button>');
+    panes.push('<div class="ref-pane" data-refpane="'+idx+'">'+
+      '<div class="ref-filebar"><span>📄 '+escH(label)+'</span>'+
+      '<button type="button" class="ref-copy" onclick="copyRefText(this,\''+key+'\')">📋 复制代码</button></div>'+
+      '<pre class="ref-code">'+escH(code)+'</pre></div>');
+  }
+  sol.files.forEach(function(f,i){ addTab(i,f.name,f.code,false); });
+  if(sol.web){ addTab(sol.files.length,'Main.java（网页检测版）',sol.web,true); }
+
+  var h='';
+  h+='<div class="ref-head"><div class="ref-title">📖 参考答案 · '+escH(p.title||id)+'</div>';
+  h+='<button type="button" class="ref-x" onclick="closeLk()" title="关闭（Esc）">✕</button></div>';
+  if(sol.runNote){
+    h+='<div class="ref-note">⌨️ '+escH(sol.runNote)+'</div>';
+  }
+  if(tabs.length>1){
+    h+='<div class="ref-tabs">'+tabs.join('')+'</div>';
+  }
+  h+='<div class="ref-body">'+panes.join('')+'</div>';
+  if(sol.web){
+    h+='<div class="ref-webhint">💡 在 VS Code 里请按上面的标准文件逐个创建（学习真正的写法）；'+
+      '「网页检测版」只是把样例运行结果直接写成字符串字面量，方便通过网页的静态检测，两种写法在 VS Code 里都能编译运行。</div>';
+  }
+  if(p.expected){
+    h+='<div class="ref-expected"><b>🎯 预期输出：</b><pre>'+escH(p.expected)+'</pre></div>';
+  }
+  h+='<div class="ref-ops"><button type="button" class="btn btn-primary" onclick="closeLk()">我已看完，继续学习</button></div>';
+
+  var card=showLk(h);
+  if(card){
+    card.classList.add('ref-card');
+    var allPanes=card.querySelectorAll('.ref-pane');
+    allPanes.forEach(function(pn,i){ if(i>0)pn.style.display='none'; });
+    card.querySelectorAll('.ref-tab').forEach(function(t){
+      t.addEventListener('click',function(){
+        var k=t.getAttribute('data-reftab');
+        card.querySelectorAll('.ref-tab').forEach(function(x){x.classList.toggle('active',x===t);});
+        allPanes.forEach(function(pn){
+          pn.style.display=(pn.getAttribute('data-refpane')===k)?'block':'none';
+        });
+      });
+    });
+  }
+}
+/* 复制参考答案代码：优先 Clipboard API，失败回退 textarea + execCommand */
+function copyRefText(btn,key){
+  var text=(window.__REF_CODES||{})[key];
+  if(text==null)return;
+  function ok(){
+    var old=btn.textContent; btn.textContent='✅ 已复制'; btn.disabled=true;
+    setTimeout(function(){btn.textContent=old; btn.disabled=false;},1500);
+  }
+  function fallback(){
+    try{
+      var ta=document.createElement('textarea');
+      ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta); ok();
+    }catch(e){ alert('复制失败，请手动选中代码后按 Ctrl+C 复制。'); }
+  }
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(ok).catch(fallback);
+  }else{ fallback(); }
 }
 
 /* ================= 代码检测引擎 ================= */
@@ -8114,6 +8742,7 @@ function runCodeCheck(id){
   if(!code.trim()){
     fb.className='code-feedback show';
     fb.innerHTML='<div class="cf-fail">⚠️ 请先在编辑区粘贴你的代码，再点「检测代码」。</div>';
+    fb.style.maxHeight=fb.scrollHeight>0?fb.scrollHeight+'px':'none';
     return;
   }
   var result=checkCode(id,code);
@@ -8130,6 +8759,8 @@ function runCodeCheck(id){
       h+='<div class="cf-warn" style="margin-top:8px">⚠️ 另有 '+result.warnings.length+' 条警告（不阻止通过），已在下方 VS Code 窗口的「问题 PROBLEMS」面板列出，建议顺手修正。</div>';
     }
     h+='</div>';
+    /* 通过后在反馈区给出显眼的参考答案入口（用户反馈顶部按钮找不到） */
+    h+='<button type="button" class="cf-answer-cta" onclick="openRefAnswer(\''+id+'\')">👁 查看参考答案（完整代码 + 讲解，点击打开）</button>';
     /* VS Code 同款运行环境窗口（终端三阶段 + 依赖解析 + Problems） */
     h+=renderVSCPanel(code,result);
     /* 5 维规则化评分卡 */
@@ -8137,6 +8768,10 @@ function runCodeCheck(id){
     fb.className='code-feedback show';
     fb.innerHTML=h;
     syncAnswerGate(id);
+    /* 反馈区内容含 VSC 窗口+评分卡+答案按钮，高度远超 CSS 兜底的 400px，
+       按真实内容放开高度，避免被 overflow:hidden 裁切后与下方板块重叠
+       （隐藏状态下 scrollHeight=0，此时不写死高度） */
+    fb.style.maxHeight=fb.scrollHeight>0?fb.scrollHeight+'px':'none';
     celebrate(40,1200);
   }else{
     var h2='<div class="cf-fail">';
@@ -8171,6 +8806,8 @@ function runCodeCheck(id){
     fb.className='code-feedback show';
     fb.innerHTML=h2;
     syncAnswerGate(id);
+    /* 未通过时还有多张修改计划卡，同样按真实内容放开高度 */
+    fb.style.maxHeight=fb.scrollHeight>0?fb.scrollHeight+'px':'none';
   }
 }
 /* 转义 HTML */
@@ -8492,9 +9129,19 @@ function renderVSCPanel(code,result){
   h+='<div class="vsc-titlebar"><span class="vsc-dot r"></span><span class="vsc-dot y"></span><span class="vsc-dot g"></span>';
   h+='<span class="vsc-title"><b>'+escH(a.sourceFile)+'</b> — JavaLearning — Visual Studio Code</span>';
   h+='<span class="vsc-simtag">教学模拟</span></div>';
-  h+='<div class="vsc-tabs"><div class="vsc-tab active">'+escH(a.className)+'.java</div>';
-  h+='<div class="vsc-tab">终端 TERMINAL</div><div class="vsc-tab">问题 PROBLEMS</div></div>';
-  h+='<div class="vsc-body"><div class="vsc-term">';
+  /* 标签页：Main.java=代码 / TERMINAL=终端 / PROBLEMS=问题；编译有错默认停在问题页，否则停在终端页 */
+  var ec=a.problems.filter(function(q){return q.sev==='error';}).length;
+  var wc=a.problems.filter(function(q){return q.sev==='warning';}).length;
+  var defKey=ec>0?'problems':'term';
+  function vtabCls(k){return 'vsc-tab'+(defKey===k?' active':'');}
+  h+='<div class="vsc-tabs"><div class="'+vtabCls('code')+'" data-vtab="code">'+escH(a.className)+'.java</div>';
+  h+='<div class="'+vtabCls('term')+'" data-vtab="term">终端 TERMINAL</div>';
+  h+='<div class="'+vtabCls('problems')+'" data-vtab="problems">问题 PROBLEMS'+(ec>0?'<span class="vsc-tab-n e">'+ec+'</span>':'')+(wc>0?'<span class="vsc-tab-n w">'+wc+'</span>':'')+'</div></div>';
+  h+='<div class="vsc-body">';
+  /* 面板①：源码（Main.java 标签页） */
+  h+='<div class="vsc-pane vsc-code" data-pane="code"><pre>'+escH(code)+'</pre></div>';
+  /* 面板②：终端（依赖解析折叠块也在此面板内） */
+  h+='<div class="vsc-pane'+(defKey==='term'?' show':'')+'" data-pane="term"><div class="vsc-term">';
   h+='<div class="dim">Windows PowerShell · '+escH(VSC_ENV.jdk)+' · 工作区 '+escH(VSC_ENV.workspace)+'</div>';
   /* 阶段 ① javac */
   h+='<div style="margin-top:4px"><span class="prompt">PS '+escH(VSC_ENV.workspace)+'&gt;</span> <span class="cmd">javac -encoding UTF-8 -d '+VSC_ENV.outDir+' '+escH(a.sourceFile)+'</span></div>';
@@ -8576,11 +9223,9 @@ function renderVSCPanel(code,result){
   kv('java.class.path',VSC_ENV.outDir+'（由 -cp 指定）');
   kv('java.version / java.vm.name','17.0.10 / OpenJDK 64-Bit Server VM');
   kv('os.name / os.arch','Windows 11 / amd64');
-  h+='</div></div></details>';
-  /* Problems 面板 */
-  var ec=a.problems.filter(function(q){return q.sev==='error';}).length;
-  var wc=a.problems.filter(function(q){return q.sev==='warning';}).length;
-  h+='<div class="vsc-problems"><div class="vsc-problems-h">问题 &nbsp;<span style="color:#f48771">错误: '+ec+'</span> &nbsp;<span style="color:#cca700">警告: '+wc+'</span></div>';
+  h+='</div></div></details></div>';
+  /* 面板③：Problems 问题诊断 */
+  h+='<div class="vsc-pane vsc-problems'+(defKey==='problems'?' show':'')+'" data-pane="problems"><div class="vsc-problems-h">问题 &nbsp;<span style="color:#f48771">错误: '+ec+'</span> &nbsp;<span style="color:#cca700">警告: '+wc+'</span></div>';
   if(a.problems.length===0){
     h+='<table><tr><td style="color:#23d18b;padding:8px 12px">✔ 没有问题。工作区 JavaLearning 中检测到 0 个错误、0 个警告</td></tr></table>';
   }else{
@@ -8597,6 +9242,20 @@ function renderVSCPanel(code,result){
   h+='</div></div></div>';
   return h;
 }
+/* 教学模拟窗口标签页切换（事件委托：面板是点「检测代码」后动态注入的，注册一次即可） */
+document.addEventListener('click',function(e){
+  var el=e.target;
+  if(!el||!el.closest)return;
+  var tab=el.closest('.vsc-tab[data-vtab]');
+  if(!tab)return;
+  var win=tab.closest('.vsc-win');
+  if(!win)return;
+  var key=tab.getAttribute('data-vtab');
+  var tabs=win.querySelectorAll('.vsc-tab[data-vtab]');
+  for(var i=0;i<tabs.length;i++)tabs[i].classList.toggle('active',tabs[i]===tab);
+  var panes=win.querySelectorAll('.vsc-pane');
+  for(var j=0;j<panes.length;j++)panes[j].classList.toggle('show',panes[j].getAttribute('data-pane')===key);
+});
 
 /* ================= 自定义弹窗（#lkMask / #lkCard） ================= */
 function showLk(html){
@@ -8913,7 +9572,22 @@ var PRACTICE = {};
     var arr=JSON.parse(raw);
     if(arr&&arr.length){arr.forEach(function(p){if(p&&p.id)PRACTICE[p.id]=p;});}
   }catch(e){if(window&&window.console)console.warn('练习数据加载失败：',e);}
+
 })();
+
+
+
+/* ================= SOLUTIONS 数据：从页面内嵌 JSON 加载 ================= */
+var SOLUTIONS = {};
+(function loadSolutions(){
+  try{
+    var el=document.getElementById('solutionsData');
+    if(!el)return;
+    SOLUTIONS=JSON.parse(el.textContent||el.innerHTML||'{}')||{};
+  }catch(e){if(window&&window.console)console.warn('参考答案数据加载失败：',e);}
+})();
+/* 当前弹窗中可复制的代码片段（key -> code） */
+window.__REF_CODES={};
 
 /* 把 Windows 路径转成 vscode://file/ URL（与静态卡片编码方式保持一致） */
 function vsCodeUrl(p){

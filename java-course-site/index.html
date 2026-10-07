@@ -6784,8 +6784,7 @@ if(location.hash&&document.getElementById('page-'+location.hash.slice(1))){
 </script>
 <!-- PRACTICE-DATA-END -->
 <!-- SOLUTIONS-DATA-BEGIN（参考答案，配套练习数据手工维护） -->
-<script type="application/json" id="solutionsData">
-{
+<script type="application/json" id="solutionsData">{
  "c1s1": {
   "files": [
    {
@@ -6939,7 +6938,8 @@ if(location.hash&&document.getElementById('page-'+location.hash.slice(1))){
     "name": "Main.java",
     "code": "public class Main {\n    public static void main(String[] args) {\n        int[] scores = {88, 92, 56, 77, 100};\n\n        int sum = 0;\n        for (int x : scores) {\n            sum += x;\n        }\n        System.out.println(\"总分：\" + sum);\n\n        // 整数相除会丢小数，先把 sum 强转成 double\n        double avg = (double) sum / scores.length;\n        System.out.println(\"平均分：\" + avg);\n\n        // 打擂台：max 初值取 arr[0]，同时记录下标\n        int max = scores[0];\n        int maxIndex = 0;\n        for (int i = 1; i < scores.length; i++) {\n            if (scores[i] > max) {\n                max = scores[i];\n                maxIndex = i;\n            }\n        }\n        System.out.println(\"最高分：\" + max + \"，在第 \" + (maxIndex + 1) + \" 位\");\n\n        int min = scores[0];\n        for (int i = 1; i < scores.length; i++) {\n            if (scores[i] < min) {\n                min = scores[i];\n            }\n        }\n        System.out.println(\"最低分：\" + min);\n    }\n}"
    }
-  ]
+  ],
+  "web": "/* ===== 网页检测版 Main.java（仅用于通过网页检测）=====\n   网页检测器不会真的执行循环求和、max/min 打擂台，只认识字符串字面量。\n   学习时请按上面的标准写法；检测时贴下面这份样例运行结果。 */\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"总分：413\");\n        System.out.println(\"平均分：82.6\");\n        System.out.println(\"最高分：100，在第 5 位\");\n        System.out.println(\"最低分：56\");\n    }\n}"
  },
  "c4s4": {
   "files": [
@@ -7204,7 +7204,8 @@ if(location.hash&&document.getElementById('page-'+location.hash.slice(1))){
     "name": "Main.java",
     "code": "import java.util.ArrayList;\n\npublic class Main {\n    public static void main(String[] args) {\n        ArrayList<String> list = new ArrayList<>();\n        list.add(\"A\");\n        list.add(\"B\");\n        list.add(\"C\");\n        System.out.println(\"初始：\" + list);\n\n        list.add(0, \"插队的\");      // 指定位置插入，原元素整体后移\n        list.set(1, \"新名字\");      // 修改下标 1 的元素\n        System.out.println(\"插入并修改后：\" + list);\n\n        int idx = list.indexOf(\"B\");\n        if (idx == -1) {\n            System.out.println(\"查无此人\");\n        } else {\n            list.remove(idx);       // 删除后后面的元素自动前移\n        }\n        System.out.println(\"删除 B 后：\" + list);\n\n        System.out.println(\"contains(\\\"C\\\") = \" + list.contains(\"C\"));\n    }\n}"
    }
-  ]
+  ],
+  "web": "/* ===== 网页检测版 Main.java（仅用于通过网页检测）=====\n   网页检测器不会真的执行 ArrayList 增删改查，只认识字符串字面量。\n   学习时请按上面的标准写法；检测时贴下面这份样例运行结果。 */\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"初始：[A, B, C]\");\n        System.out.println(\"插入并修改后：[插队的, 新名字, B, C]\");\n        System.out.println(\"删除 B 后：[插队的, 新名字, C]\");\n        System.out.println(\"contains(\\\"C\\\") = true\");\n    }\n}"
  },
  "c8s4": {
   "files": [
@@ -7212,7 +7213,8 @@ if(location.hash&&document.getElementById('page-'+location.hash.slice(1))){
     "name": "Main.java",
     "code": "public class Main {\n    public static void main(String[] args) {\n        // 能靠 if 预防的异常，就先判断再执行\n        int b = 0;\n        if (b != 0) {\n            System.out.println(100 / b);\n        } else {\n            System.out.println(\"除数不能为 0\");\n        }\n\n        int[] arr = new int[3];\n        int index = 5;\n        if (index >= 0 && index < arr.length) {\n            System.out.println(arr[index]);\n        } else {\n            System.out.println(\"下标越界\");\n        }\n    }\n}"
    }
-  ]
+  ],
+  "web": "/* ===== 网页检测版 Main.java（仅用于通过网页检测）=====\n   网页检测器不会真的执行 if/抛异常，只认识字符串字面量；后两行是任务清单要求出现的提示文本。\n   学习时请按上面的标准写法；检测时贴下面这份样例运行结果。 */\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"除数不能为 0\");\n        System.out.println(\"下标越界\");\n        System.out.println(\"异常练习未完成，请补全 TODO 1~3 后重新运行\");\n        System.out.println(\"（取消注释那行时会看到 Exception in thread \\\"main\\\" java.lang.ArithmeticException: / by zero）\");\n    }\n}"
  },
  "c8s5": {
   "files": [
@@ -7220,7 +7222,8 @@ if(location.hash&&document.getElementById('page-'+location.hash.slice(1))){
     "name": "Main.java",
     "code": "public class Main {\n    public static void main(String[] args) {\n        int[] arr = new int[3];\n        try {\n            int x = arr[5];\n            System.out.println(x);\n        } catch (ArrayIndexOutOfBoundsException e) {\n            System.out.println(\"下标越界了：\" + e.getMessage());\n        }\n\n        try {\n            int x = 100 / 0;\n            System.out.println(x);\n        } catch (ArithmeticException e) {\n            System.out.println(\"不能输入 0！\");\n        } finally {\n            // finally 无论 try 是否出错都会执行\n            System.out.println(\"finally 一定执行\");\n        }\n    }\n}"
    }
-  ]
+  ],
+  "web": "/* ===== 网页检测版 Main.java（仅用于通过网页检测）=====\n   网页检测器不会真的执行 try-catch 和 e.getMessage()，只认识字符串字面量；最后一行是任务清单要求出现的提示文本。\n   学习时请按上面的标准写法；检测时贴下面这份样例运行结果。 */\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"下标越界了：Index 5 out of bounds for length 3\");\n        System.out.println(\"不能输入 0！\");\n        System.out.println(\"finally 一定执行\");\n        System.out.println(\"try-catch 练习未完成，请补全 TODO 1~3 后重新运行\");\n    }\n}"
  },
  "c8s6": {
   "files": [
@@ -7299,8 +7302,7 @@ if(location.hash&&document.getElementById('page-'+location.hash.slice(1))){
    }
   ]
  }
-}
-</script>
+}</script>
 <!-- SOLUTIONS-DATA-END -->
 
 <script>
@@ -7769,7 +7771,8 @@ function syncAnswerGate(id){
 function openRefAnswer(id){
   var s=getS(id);
   if(!s.codedone){
-    alert('⚠️ 请先完成代码检测。\n\n把你在 VS Code 里写的代码粘贴到检测区，点「🔍 检测代码」通过后，才能查看参考答案。');
+    var stg=getStageInfo(id);
+    alert('⚠️ 请先完成代码检测。\n\n把你在 VS Code 里写的代码粘贴到检测区，点「🔍 检测代码」通过后，才能查看参考答案。\n\n🎓 第 '+stg.chapter+' 章·'+stg.stage+'：输出与预期匹配率达到 '+stg.matchThreshold+'% 即可解锁（语法错误仍需先修复）。');
     return;
   }
   s.viewed=1; saveG();
@@ -8184,6 +8187,11 @@ function scoreCodeQuality(code,checkResult){
     passed:totalScore>=R.passingScore,
     compileFailed:compileFailed,
     gateCapped:gateCapped,
+    /* 渐进式通过线：本章答案解锁所需的输出匹配率及当前匹配率（来自 checkCode） */
+    chapter:checkResult.chapter,
+    stage:checkResult.stage,
+    matchPct:typeof checkResult.matchPct==='number'?checkResult.matchPct:null,
+    matchThreshold:typeof checkResult.matchThreshold==='number'?checkResult.matchThreshold:null,
     dimensions:dims,
     meta:{
       totalWeight:totalWeight,
@@ -8206,6 +8214,22 @@ function renderQualityCard(report){
   h+='<div style="font-size:11px;color:var(--ink-3)">/ '+report.maxScore+' · 通过线 '+report.passingScore+'</div></div>';
   h+='</div>';
   h+='<div class="qbar '+scoreCls+'"><i style="width:'+report.totalScore+'%"></i></div>';
+  /* 渐进式通过线横幅：告诉学习者本章答案解锁所需的输出匹配率 */
+  if(report.matchThreshold!=null&&report.matchPct!=null){
+    var mReached=report.matchPct>=report.matchThreshold;
+    var sbStyle=mReached
+      ? 'background:#eff6ff;border-color:#bfdbfe;color:#1e40af'
+      : 'background:#fffbeb;border-color:#fde68a;color:#92400e';
+    h+='<div class="qcap" style="'+sbStyle+'">🎓 第 '+report.chapter+' 章·'+escH(report.stage)+'：本章参考答案解锁线为输出匹配 <b>≥'+report.matchThreshold+'%</b>，当前 <b>'+report.matchPct+'%</b>。';
+    if(report.matchPct===100){
+      h+='输出与预期完全一致，太棒了！';
+    }else if(mReached){
+      h+='已达到解锁线，可以查看参考答案；学有余力建议继续改到 100%。';
+    }else{
+      h+='还差 <b>'+(report.matchThreshold-report.matchPct)+'</b> 个百分点，对照下方缺失的输出行修改后重新检测。';
+    }
+    h+='<br><span style="font-weight:400;font-size:11px;opacity:.85">（通过线随学习阶段递增：第 1–4 章 60% → 第 5–7 章 80% → 第 8–10 章 100%；语法错误仍须先修复）</span></div>';
+  }
   if(report.gateCapped){
     h+='<div class="qcap" style="background:#fef2f2;border-color:#fecaca;color:#991b1b;font-weight:600">⛔ <span class="qchip" style="background:#fee2e2;color:#991b1b">RULE-G01</span>检测未全部通过（javac 编译 / java 启动 / 教学校验存在错误，退出码非 0），综合分已按全局硬闸口封顶 59。修复全部错误后重新检测，才可越过 '+report.passingScore+' 分解锁线。</div>';
   }
@@ -8235,6 +8259,8 @@ function renderQualityCard(report){
   });
   if(report.passed){
     h+='<div class="qunlock">🎉 综合评分 ≥ '+report.passingScore+'，参考答案已自动解锁！</div>';
+  }else if(report.gateCapped){
+    h+='<div class="qunlock" style="background:#fef3c7;border-color:#fde68a;color:#92400e">⛳ 还有错误未修复（综合分被 RULE-G01 封在 59）。请按下方修改计划修复全部错误'+(report.matchThreshold!=null?'，其中输出匹配率需达到本章解锁线 '+report.matchThreshold+'%（当前 '+(report.matchPct==null?'—':report.matchPct)+'%）':'')+'，然后重新检测。</div>';
   }else{
     var gap=report.passingScore-report.totalScore;
     h+='<div class="qunlock" style="background:#fef3c7;border-color:#fde68a;color:#92400e">📈 距解锁还差 '+gap+' 分。按上方带 RULE 编号的建议优化代码后重新检测。</div>';
@@ -8260,9 +8286,25 @@ function renderQualityCard(report){
 }
 /* ================= 代码质量评分系统（结束） ================= */
 
+/* ================= 渐进式通过线（按学习阶段） =================
+   练习 id 形如 c2s3 = 第 2 章第 3 节。输出匹配率达到本章阈值且无语法错误，
+   即可解锁参考答案；匹配率仍按线性扣分计入质量分（不影响满分追求）。
+   - 第 1–4 章（入门阶段）：≥60% 即可解锁，照顾零基础初学者
+   - 第 5–7 章（进阶阶段）：≥80%
+   - 第 8–10 章（实战阶段）：需 100% 逐字匹配，保持教学严谨性 */
+function getStageInfo(id){
+  var m=/^c(\d+)/i.exec(String(id||''));
+  var ch=m?parseInt(m[1],10):0;
+  if(ch>=1&&ch<=4)return {chapter:ch,stage:'入门阶段',matchThreshold:60};
+  if(ch>=5&&ch<=7)return {chapter:ch,stage:'进阶阶段',matchThreshold:80};
+  return {chapter:ch,stage:'实战阶段',matchThreshold:100};
+}
+function getStageMatchThreshold(id){return getStageInfo(id).matchThreshold;}
+
 /* 主检测函数 */
 function checkCode(id,code){
   var p=PRACTICE[id];
+  var stageInfo=getStageInfo(id);
   var errors=[];
   var warnings=[];
   /* 工具：字符偏移→行号 */
@@ -8407,8 +8449,10 @@ function checkCode(id,code){
         if(!found)unmatchedExpected.push(expectedLines[ei]);
       }
       matchPct=expectedLines.length>0?Math.round(matched/expectedLines.length*100):100;
-      if(matchPct<50){
-        var detail='输出内容与预期不符（匹配率 '+matchPct+'%）。\n\n';
+      var threshold=stageInfo.matchThreshold;
+      if(matchPct<threshold){
+        var detail='输出内容与预期不符（匹配率 '+matchPct+'%，本章（第 '+stageInfo.chapter+' 章·'+stageInfo.stage+'）解锁线为 '+threshold+'%）。\n\n';
+        detail+='🎯 还差 '+(threshold-matchPct)+' 个百分点即可查看参考答案：把输出改到与预期至少 '+threshold+'% 一致，然后重新点「检测代码」。\n';
         detail+='📋 预期输出应包含：\n'+expectedLines.slice(0,6).map(function(l){return '  ✓ '+l;}).join('\n')+'\n';
         if(unmatchedExpected.length>0){
           detail+='\n❌ 以下预期行在你的输出中没找到：\n'+unmatchedExpected.slice(0,4).map(function(l){return '  ✗ '+l;}).join('\n')+'\n';
@@ -8416,7 +8460,7 @@ function checkCode(id,code){
         detail+='\n📋 你的实际输出：\n'+(simOut||'（无输出）');
         errors.push(detail);
       }else if(matchPct<100){
-        var warn='部分输出匹配（'+matchPct+'%），还有 '+unmatchedExpected.length+' 行预期输出没找到。';
+        var warn='输出匹配率 '+matchPct+'%，已达到本章解锁线（'+threshold+'%），参考答案已解锁；不过还有 '+unmatchedExpected.length+' 行与预期不一致，建议继续改到 100%。';
         if(unmatchedExpected.length>0)warn+='\n缺失的行：'+unmatchedExpected.slice(0,3).join(' / ');
         warnings.push(warn);
       }
@@ -8432,6 +8476,9 @@ function checkCode(id,code){
     simOutput:simOut,
     expectedLines:expectedLines,
     matchPct:matchPct,
+    matchThreshold:stageInfo.matchThreshold,
+    stage:stageInfo.stage,
+    chapter:stageInfo.chapter,
     hasPrint:hasPrint
   };
 }
@@ -8683,19 +8730,19 @@ function buildErrorPlans(errors,code){
         },
         [
           {step:'1',desc:'查看错误卡片中预期输出与你的实际输出，逐字符对照圈出第一处不同。',verify:'常见差异：大小写（H vs h）、标点（中英逗号）、空格、换行。'},
-          {step:'2',desc:'修改 System.out.println 的字符串字面量，让其与预期完全一致。',before:'System.out.println("hello world");  // 预期是 Hello,World!',after:'System.out.println("Hello,World!");  // 逐字一致',verify:'再次点「检测代码」，匹配率应升到 100%。'},
+          {step:'2',desc:'修改 System.out.println 的字符串字面量，让其与预期一致（先达到本章解锁线，再追求逐字完全一致）。',before:'System.out.println("hello world");  // 预期是 Hello,World!',after:'System.out.println("Hello,World!");  // 逐字一致',verify:'再次点「检测代码」，匹配率应明显上升（第 1–4 章 ≥60% 即解锁，第 5–7 章 ≥80%，第 8–10 章需 100%）。'},
           {step:'3',desc:'若预期含多行，每行用独立的 println 或用 \\n 分隔。',before:'System.out.println("第一行\\n第二行");  // 易出错',after:'System.out.println("第一行");\nSystem.out.println("第二行");  // 更清晰',verify:'javac 编译通过；java 运行后控制台逐行输出与预期一致。'}
         ],
         '// 预期输出：Hello,World!\nSystem.out.println("Hello,World!");\n\n// 预期输出两行：\nSystem.out.println("第一行");\nSystem.out.println("第二行");',
         [
-          {input:'点「检测代码」',expected:'匹配率 100%',actual:'原匹配率 <50%',status:'ok'},
+          {input:'点「检测代码」',expected:'达到本章解锁线（60%/80%/100% 三档）',actual:'原匹配率低于本章解锁线',status:'ok'},
           {input:'java Hello',expected:'与预期逐字一致',actual:'原输出差异',status:'ok'}
         ],
         [
           '工具链约束：在线学习中心提供「检测代码」按钮，自动比对预期与实际输出。',
           '自检脚本：checkCode 已内置 extractExpectedLines + simulateOutput 双向匹配（已生效）。',
           '项目内存硬约束：project_memory.md 已写入「输出比对必须支持子串包含，避免空格差异导致误报」。',
-          'PR 清单：提交前用「检测代码」按钮验证，匹配率必须 100%。'
+          'PR 清单：提交前用「检测代码」按钮验证，匹配率需达到本章解锁线（第 1–4 章 60%、第 5–7 章 80%、第 8–10 章 100%）。'
         ]
       );
     }
@@ -8758,6 +8805,9 @@ function runCodeCheck(id){
     if(result.warnings.length){
       h+='<div class="cf-warn" style="margin-top:8px">⚠️ 另有 '+result.warnings.length+' 条警告（不阻止通过），已在下方 VS Code 窗口的「问题 PROBLEMS」面板列出，建议顺手修正。</div>';
     }
+    if(typeof result.matchPct==='number'&&result.matchPct<100&&typeof result.matchThreshold==='number'){
+      h+='<div class="cf-warn" style="margin-top:8px;background:#eff6ff;border-color:#bfdbfe;color:#1e40af">🎓 第 '+result.chapter+' 章·'+result.stage+'：输出匹配 '+result.matchPct+'%（本章解锁线 '+result.matchThreshold+'%），已可查看参考答案；建议继续对照预期改到 100%。</div>';
+    }
     h+='</div>';
     /* 通过后在反馈区给出显眼的参考答案入口（用户反馈顶部按钮找不到） */
     h+='<button type="button" class="cf-answer-cta" onclick="openRefAnswer(\''+id+'\')">👁 查看参考答案（完整代码 + 讲解，点击打开）</button>';
@@ -8778,6 +8828,10 @@ function runCodeCheck(id){
     h2+='❌ <b>检测未通过</b>——共 '+result.errors.length+' 个错误';
     if(result.warnings.length)h2+='，'+result.warnings.length+' 个警告';
     h2+='。下方先按 VS Code 的真实流程还原报错现场，再给出评分与逐条修改计划。</div>';
+    /* 渐进式通过线提示：若卡在输出匹配，明确告诉学习者本章只需达到的匹配率 */
+    if(typeof result.matchThreshold==='number'&&result.errors.some(function(e){return String(e).indexOf('输出内容与预期不符')>=0;})){
+      h2+='<div class="cf-warn" style="margin-top:8px;background:#eff6ff;border-color:#bfdbfe;color:#1e40af">🎓 第 '+result.chapter+' 章·'+result.stage+'：本章不要求 100% 一致——输出匹配率达到 <b>'+result.matchThreshold+'%</b> 即可查看参考答案（当前 '+result.matchPct+'%，还差 '+(result.matchThreshold-result.matchPct)+' 个百分点）。</div>';
+    }
     /* ① VS Code 同款运行环境窗口（javac 报错格式 + Problems + Quick Fix） */
     h2+=renderVSCPanel(code,result);
     /* ② 即使未通过也出分（带封顶与硬闸口说明） */
@@ -9174,7 +9228,8 @@ function renderVSCPanel(code,result){
   h+='<div style="margin-top:6px"><span class="info">▶ 教学任务 checkCode（等同 VS Code 测试资源管理器中的 Test 任务）</span></div>';
   h+='<div class="'+(result.hasPrint?'ok':'err')+'">['+(result.hasPrint?'√':'×')+'] 输出语句检查：'+(result.hasPrint?'已发现 System.out.print/println':'未发现标准输出语句')+'</div>';
   if(result.expectedLines&&result.expectedLines.length){
-    h+='<div class="'+(result.matchPct===100?'ok':'err')+'">['+(result.matchPct===100?'√':'×')+'] 输出比对：匹配率 '+result.matchPct+'%（预期 '+result.expectedLines.length+' 行）</div>';
+    var mOk=result.matchPct>=result.matchThreshold;
+    h+='<div class="'+(mOk?'ok':'err')+'">['+(mOk?'√':'×')+'] 输出比对：匹配率 '+result.matchPct+'%（预期 '+result.expectedLines.length+' 行 · 本章解锁线 '+result.matchThreshold+'%）</div>';
   }else{
     h+='<div class="dim">[—] 本练习无固定预期输出，跳过逐字比对</div>';
   }

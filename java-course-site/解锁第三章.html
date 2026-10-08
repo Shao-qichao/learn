@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>本地进度助手 - 标记第二章通过</title>
+<style>
+  body{font-family:"Microsoft YaHei",sans-serif;max-width:640px;margin:60px auto;padding:0 24px;color:#222;line-height:1.7}
+  .card{border:1px solid #e2e2e2;border-radius:12px;padding:28px 32px;box-shadow:0 4px 16px rgba(0,0,0,.06)}
+  h1{font-size:20px;margin-top:0}
+  ul{padding-left:20px}
+  .ok{color:#0a8f4e;font-weight:bold}
+  a.btn{display:inline-block;margin-top:18px;background:#6c5ce7;color:#fff;text-decoration:none;padding:10px 22px;border-radius:8px}
+  .tip{color:#888;font-size:13px;margin-top:14px}
+</style>
+</head>
+<body>
+<div class="card" id="box"><h1>正在写入本地进度…</h1></div>
+<script>
+(function(){
+  var KEY='java-course-gate-v1';
+  var g={sec:{},gate:[1]};
+  try{
+    var raw=localStorage.getItem(KEY);
+    if(raw){var o=JSON.parse(raw);if(o&&typeof o==='object'){g.sec=o.sec||{};g.gate=Array.isArray(o.gate)&&o.gate.length?o.gate:[1];}}
+  }catch(e){}
+
+  /* 1. 标记第二章 6 个板块全部通过（合并式，不影响其他章进度） */
+  for(var i=1;i<=6;i++){
+    var id='c2s'+i, s=g.sec[id]||{};
+    s.r=1;                 /* 已读完 */
+    s.a=1;                 /* 已看参考答案 / 项目已打卡 */
+    if(id!=='c2s6'){s.q=s.q||{};s.q.p=1;}  /* 测验通过（项目板块无测验） */
+    g.sec[id]=s;
+  }
+
+  /* 2. 解锁第三章（口令门直接放行） */
+  if(g.gate.indexOf(3)<0)g.gate.push(3);
+  g.gate.sort(function(a,b){return a-b;});
+  g.gate=g.gate.filter(function(v,idx,arr){return arr.indexOf(v)===idx;});
+
+  localStorage.setItem(KEY,JSON.stringify(g));
+
+  var box=document.getElementById('box');
+  box.innerHTML='<h1><span class="ok">✅ 写入成功（仅本机浏览器生效）</span></h1>'
+    +'<ul>'
+    +'<li>第二章 6 个板块 → <span class="ok">已通过</span>（阅读 + 测验 + 参考答案/打卡 全部标记）</li>'
+    +'<li>第三章 → <span class="ok">已解锁</span>，点击下方按钮开始学习</li>'
+    +'<li>已有进度（如第一章）→ <b>未改动</b></li>'
+    +'</ul>'
+    +'<a class="btn" href="index.html">进入课程，开始第三章 →</a>'
+    +'<p class="tip">说明：进度保存在此浏览器的 localStorage 中，与代码仓库无关；本文件用完可删除，GitHub 仓库未做任何操作。</p>';
+})();
+</script>
+</body>
+</html>

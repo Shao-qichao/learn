@@ -18,9 +18,37 @@
 
 'use strict';
 
+const fs = require('fs');
 const path = require('path');
 const { app, BrowserWindow, ipcMain, dialog, shell, screen } = require('electron');
 const core = require('./updater-core');
+
+/* ---------------- 轻量文件日志（排查「没弹提示」类问题） ----------------
+   写 userData/updater.log；超过 200KB 时裁掉旧行，只保留最近约 400 行。
+   任何 IO 失败都静默，绝不影响更新流程本身。 */
+let _logFile = null;
+function getLogFile() {
+  if (_logFile === null) {
+    try { _logFile = path.join(app.getPath('userData'), 'updater.log'); }
+    catch (_e) { _logFile = ''; }
+  }
+  return _logFile;
+}
+function logLine(msg) {
+  try {
+    const f = getLogFile();
+    if (!f) return;
+    const line = new Date().toISOString() + ' ' + String(msg).replace(/\s*\n\s*/g, ' ').slice(0, 500) + '\n';
+    try {
+      if (fs.statSync(f).size > 200 * 1024) {
+        const kept = fs.readFileSync(f, 'utf8').split('\n').slice(-400).join('\n');
+        fs.writeFileSync(f, kept + (kept.endsWith('\n') ? '' : '\n') + line, 'utf8');
+        return;
+      }
+    } catch (_e) { /* 首次写入时文件不存在，直接 append */ }
+    fs.appendFileSync(f, line);
+  } catch (_e) { /* 日志失败永远静默 */ }
+}
 
 /** 模拟模式：开发态 + SIMULATE_UPDATE=1 */
 function isSimulate() {
@@ -109,13 +137,47 @@ function createUpdateManager(getMainWindow) {
 
   /* ---------------- 提示窗 ---------------- */
 
-  function openNotifier() {
+  /**
+   * 自定义提示窗渲染失败（透明无边框窗在个别显卡/远程桌面下可能不可见）时，
+   * 用系统原生对话框兜底——更新已下载完成，至少要让用户知道可以安装。
+   */
+  function nativeFallbackPrompt() {
+    const parent = getMainWindow();
+    const owner = parent && !parent.isDestroyed() ? parent : undefined;
+    const ver = info && info.version ? 'v' + info.version : '新版本';
+    dialog.showMessageBox(owner, {
+      type: 'info',
+      buttons: ['立即更新', '以后再说'],
+      defaultId: 0,
+      cancelId: 1,
+      title: '发现新版本',
+      message: '新版本 ' + ver + ' 已下载完成',
+      detail: '点击「立即更新」将退出并安装新版本，安装完成后自动重启；也可以稍后通过「帮助 → 检查更新」再装。'
+    }).then((r) => {
+      if (r.response === 0) {
+        actInstall();
+      } else {
+        sessionDismissed = true;
+      }
+    }).catch((e) => logLine('原生兜底对话框异常：' + e));
+  }
+
+  /**
+   * @param {object} [opts]
+   * @param {boolean} [opts.standalone] 不挂父窗口（主窗口最小化时使用，
+   *                   否则子窗口会跟着最小化、用户完全看不到）
+   */
+  function openNotifier(opts) {
+    opts = opts || {};
     if (notifierWin) {
       if (notifierWin.isMinimized()) notifierWin.restore();
       notifierWin.focus();
       return notifierWin;
     }
     const parent = getMainWindow();
+    /* 主窗口最小化时，必须以独立窗口弹出——这是「下载完却没提示」的主要场景 */
+    const standalone = !!opts.standalone ||
+      !!(parent && !parent.isDestroyed() && parent.isMinimized());
     const size = fitSize(parent);
     const win = new BrowserWindow({
       width: size.width,
@@ -129,7 +191,7 @@ function createUpdateManager(getMainWindow) {
       frame: false,
       transparent: true,
       show: false,
-      parent: parent && !parent.isDestroyed() ? parent : undefined,
+      parent: !standalone && parent && !parent.isDestroyed() ? parent : undefined,
       modal: false,                 // 关键：非模态，主窗口仍可正常使用
       alwaysOnTop: true,
       backgroundColor: '#00000000',
@@ -151,6 +213,21 @@ function createUpdateManager(getMainWindow) {
       win.focus();
     });
 
+    /* 兜底：5 秒后窗口仍不可见（ready-to-show 未触发或透明窗渲染失败），
+       放弃自定义窗，改用系统原生对话框，保证用户一定收到更新通知 */
+    const visibleFallback = setTimeout(() => {
+      try {
+        if (notifierWin === win && (!win.isVisible() || win.isMinimized())) {
+          logLine('自定义提示窗 5 秒未显示，回退原生对话框');
+          win.destroy();
+          notifierWin = null;
+          nativeFallbackPrompt();
+        }
+      } catch (e) {
+        logLine('可见性兜底检查异常：' + e);
+      }
+    }, 5000);
+
     // 更新说明里的外链交给系统浏览器
     win.webContents.setWindowOpenHandler(({ url }) => {
       shell.openExternal(url);
@@ -164,16 +241,22 @@ function createUpdateManager(getMainWindow) {
     });
 
     win.on('closed', () => {
+      clearTimeout(visibleFallback);
       if (notifierWin === win) notifierWin = null;
     });
     return win;
   }
 
-  /** 主窗口最小化时等还原后再弹，避免后台偷焦点 */
+  /**
+   * 在当前可用状态下弹出提示：
+   * 主窗口最小化时不再死等 restore（用户若一直不还原、直接退出就永远看不到提示），
+   * 而是以独立置顶窗在主窗口所在显示器弹出。
+   */
   function showWhenUsable() {
     const parent = getMainWindow();
     if (parent && !parent.isDestroyed() && parent.isMinimized()) {
-      parent.once('restore', () => openNotifier());
+      logLine('下载完成时主窗口最小化：以独立置顶窗弹出提示');
+      openNotifier({ standalone: true });
     } else {
       openNotifier();
     }
@@ -216,6 +299,7 @@ function createUpdateManager(getMainWindow) {
 
     installing = true;
     sendState({ phase: 'installing', message: '正在退出并安装新版本，安装完成后将自动重启…' });
+    logLine('用户点击立即更新，执行 quitAndInstall(false, true)');
     try {
       // isSilent=false：Windows 下走安装向导；isForceRunAfter=true：装完自动启动新版本
       autoUpdater.quitAndInstall(false, true);
@@ -255,7 +339,8 @@ function createUpdateManager(getMainWindow) {
     autoUpdater.autoDownload = true;          // 发现后静默下载（默认即 true，显式声明）
     autoUpdater.autoInstallOnAppQuit = true;  // 用户正常退出时顺带安装已下载的包
 
-    autoUpdater.on('update-available', () => {
+    autoUpdater.on('update-available', (ev) => {
+      logLine('发现新版本 ' + (ev && ev.version) + '，开始后台静默下载（mode=' + mode + '）');
       console.log('[updater] 发现新版本，开始后台静默下载');
       if (mode === 'manual') {
         dialog.showMessageBox(getMainWindow(), {
@@ -274,9 +359,16 @@ function createUpdateManager(getMainWindow) {
 
     autoUpdater.on('update-downloaded', (ev) => {
       info = ev || {};
+      const parentNow = getMainWindow();
+      const minimizedNow = !!(parentNow && !parentNow.isDestroyed() && parentNow.isMinimized());
+      const willPrompt = mode === 'manual' ||
+        core.shouldAutoPrompt(info, prefs.all(), sessionDismissed, !!notifierWin);
+      logLine('更新包下载完成：' + info.version +
+        '，mode=' + mode + '，忽略版本=' + (prefs.ignoredVersion || '无') +
+        '，本会话已稍后=' + sessionDismissed + '，主窗口最小化=' + minimizedNow +
+        '，将弹窗=' + willPrompt);
       console.log('[updater] 更新包下载完成：', info.version);
-      if (mode === 'manual' ||
-          core.shouldAutoPrompt(info, prefs.all(), sessionDismissed, !!notifierWin)) {
+      if (willPrompt) {
         showWhenUsable();
       }
       mode = 'auto';
@@ -284,6 +376,7 @@ function createUpdateManager(getMainWindow) {
     });
 
     autoUpdater.on('update-not-available', () => {
+      logLine('当前已是最新版本 v' + app.getVersion());
       console.log('[updater] 当前已是最新版本');
       if (mode === 'manual') {
         dialog.showMessageBox(getMainWindow(), {
@@ -298,6 +391,7 @@ function createUpdateManager(getMainWindow) {
     });
 
     autoUpdater.on('error', (err) => {
+      logLine('更新流程出错（mode=' + mode + '）：' + ((err && err.stack) ? err.stack : err));
       console.warn('[updater] 更新流程出错：', err);
       if (notifierWin && !notifierWin.isDestroyed()) {
         sendState({ phase: 'error', message: friendlyError(err) });
@@ -318,6 +412,9 @@ function createUpdateManager(getMainWindow) {
 
   /** 启动后静默自检（打包环境才真正联网） */
   function start() {
+    logLine('启动更新检查：app.isPackaged=' + app.isPackaged +
+      '，当前版本 v' + app.getVersion() + '，electron-updater=' + (autoUpdater ? '可用' : '不可用') +
+      '，SIMULATE_UPDATE=' + (process.env.SIMULATE_UPDATE || '未设置'));
     if (isSimulate()) {
       console.log('[updater] 模拟模式：1.5 秒后推送一个假的“下载完成”事件');
       setTimeout(() => {
@@ -330,14 +427,19 @@ function createUpdateManager(getMainWindow) {
             '- 可依次测试三个按钮：以后更新 / 忽略此版本 / 立即更新。\n' +
             '- 「忽略此版本」会写入 update-prefs.json，重启后该版本不再自动提示。'
         };
+        logLine('（模拟）更新包下载完成：9.9.9-demo，准备弹窗');
         showWhenUsable();
       }, 1500);
       return;
     }
     if (!app.isPackaged || !autoUpdater) return;
     setTimeout(() => {
-      autoUpdater.checkForUpdates().catch((err) => {
+      logLine('3.5 秒后自动检查开始');
+      autoUpdater.checkForUpdates().then((r) => {
+        logLine('自动检查请求完成：' + (r && r.updateInfo ? r.updateInfo.version : '(无返回)'));
+      }).catch((err) => {
         // 后台自检失败静默处理，绝不能打扰学生上课
+        logLine('启动自动检查失败（已忽略）：' + (err && err.message));
         console.warn('[updater] 启动自动检查失败（已忽略）：', err.message);
       });
     }, 3500);

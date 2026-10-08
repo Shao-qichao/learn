@@ -8458,6 +8458,15 @@ function checkCode(id,code){
           detail+='\n❌ 以下预期行在你的输出中没找到：\n'+unmatchedExpected.slice(0,4).map(function(l){return '  ✗ '+l;}).join('\n')+'\n';
         }
         detail+='\n📋 你的实际输出：\n'+(simOut||'（无输出）');
+        /* 网页检测器无法真正执行的写法：键盘输入 / 循环——标准写法没错，
+           只是要提醒学习者换「样例结果字面量」来过网页检测，避免误以为自己代码错了 */
+        var usesKeyboard=/new\s+Scanner\s*\(|System\.in/.test(code);
+        var usesLoop=/\bfor\s*\(|\bwhile\s*\(/.test(code);
+        if(usesKeyboard){
+          detail+='\n\n⌨️ 特别说明（不是你代码的问题！）：你用了 Scanner 键盘输入，这正是本题要学的标准写法，请继续在 VS Code 里正常编写、正常运行。\n但网页检测器是静态检查：它不会真的停下来等你敲键盘，也不会执行变量运算，所以看不到「18 / 1.75 / 小明」这些只有运行时才出现的结果。\n✅ 过网页检测的方法：把程序真实运行后会打印出的「样例结果」逐行写成固定字符串再检测，例如直接写 System.out.println("你明年 19 岁");（检测通过后，参考答案弹窗里也有「网页检测版」标签页可直接复制）。';
+        }else if(usesLoop){
+          detail+='\n\n🔁 特别说明（不是你代码的问题！）：网页检测器是静态检查，不会真正执行 for/while 循环、数组运算和方法调用，只能识别 System.out.println 里写死的字符串。\n请继续在 VS Code 里用循环写真实代码；过网页检测时，把循环真实运行后会打印出的结果逐行写成固定字符串（例如循环本会打印 5 行，就直接写 5 条 println 字面量）。';
+        }
         errors.push(detail);
       }else if(matchPct<100){
         var warn='输出匹配率 '+matchPct+'%，已达到本章解锁线（'+threshold+'%），参考答案已解锁；不过还有 '+unmatchedExpected.length+' 行与预期不一致，建议继续改到 100%。';

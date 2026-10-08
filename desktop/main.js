@@ -60,6 +60,42 @@ function writeWorkspaceReadme() {
   fs.writeFileSync(f, note, 'utf8');
 }
 
+/**
+ * 首次启动：为 10 个章项目创建初始 .java 骨架文件（仅当文件不存在时）。
+ * 这样 VS Code 点「直接打开 X.java」时文件已存在，不会报「路径不存在」。
+ * 学生已写的代码绝不覆盖。
+ */
+function syncProjects() {
+  ensureDir(projectDir);
+  const salaryDir = path.join(projectDir, 'salary');
+  ensureDir(salaryDir);
+  // 17 个章项目文件：[子目录, 文件名]
+  const files = [
+    ['', 'NameCard.java'], ['', 'Cashier.java'], ['', 'MiniATM.java'],
+    ['', 'ScoreAnalyzer.java'], ['', 'ScoreAnalyzer2.java'], ['', 'Calculator.java'],
+    ['', 'Book.java'], ['', 'LibraryApp.java'],
+    ['', 'Contact.java'], ['', 'ContactApp.java'],
+    ['', 'AlgoPractice.java'], ['', 'CommentAnalyzer.java'],
+    ['salary', 'Employee.java'], ['salary', 'FullTimeEmployee.java'],
+    ['salary', 'PartTimeEmployee.java'], ['salary', 'Manager.java'], ['salary', 'SalaryApp.java']
+  ];
+  for (const [sub, name] of files) {
+    const dir = sub ? path.join(projectDir, sub) : projectDir;
+    if (sub) ensureDir(dir);
+    const f = path.join(dir, name);
+    if (fs.existsSync(f)) continue;   // 已有代码，不覆盖
+    const cls = name.replace(/\.java$/, '');
+    const skeleton =
+      'public class ' + cls + ' {\n' +
+      '    public static void main(String[] args) {\n' +
+      '        // 在这里写你的代码（章项目要求见课程页面）\n' +
+      '        System.out.println("骨架文件，请替换为你的代码");\n' +
+      '    }\n' +
+      '}\n';
+    fs.writeFileSync(f, skeleton, 'utf8');
+  }
+}
+
 /** JSON 字符串里的反斜杠需要转义 */
 function escJson(p) { return p.replace(/\\/g, '\\\\'); }
 
@@ -86,6 +122,10 @@ function buildRuntimeHtml() {
 
   // 3) 课文讲解中出现的示例路径（正斜杠形式）
   html = html.split('c:/Users/13053/JavaLearning').join(projectDir.split('\\').join('/'));
+
+  // 4) UI 显示文本中的反斜杠路径（<code>目标文件</code>、<div class="vs-meta">）
+  //    替换为本机真实路径，避免显示与实际打开路径不一致造成困惑
+  html = html.split('c:\\Users\\13053\\JavaLearning').join(projectDir);
 
   ensureDir(runtimeDir);
   // 复制图标等网页相对引用的资源
@@ -194,18 +234,24 @@ if (!app.requestSingleInstanceLock()) {
     if (process.argv.includes('--selfcheck')) {
       ensureDir(workspace); ensureDir(projectDir);
       syncPractice();
+      syncProjects();
       const page = buildRuntimeHtml();
       const html = fs.readFileSync(page, 'utf8');
       // 注意：本机用户名可能正好就是 13053，所以只比对“旧的硬编码完整串”
       const bad = [
         'vscode://file/c%3A/Users/13053/JavaLearning',
         'D:\\\\java学习中心\\\\javacourse',
-        'c:/Users/13053/JavaLearning'
+        'c:/Users/13053/JavaLearning',
+        'c:\\Users\\13053\\JavaLearning'
       ].filter(s => html.includes(s));
       if (bad.length) { console.error('SELFCHECK FAIL 残留路径:', bad.join(', ')); app.exit(1); }
+      // 校验骨架文件已创建
+      const probe = path.join(projectDir, 'Cashier.java');
+      if (!fs.existsSync(probe)) { console.error('SELFCHECK FAIL 骨架未创建:', probe); app.exit(1); }
       console.log('SELFCHECK OK ->', page);
       console.log('练习目录:', practiceDir);
       console.log('章项目目录:', projectDir);
+      console.log('骨架抽样:', probe, fs.existsSync(probe) ? 'OK' : 'MISSING');
       app.exit(0);
       return;
     }
@@ -213,6 +259,7 @@ if (!app.requestSingleInstanceLock()) {
     ensureDir(workspace);
     ensureDir(projectDir);
     syncPractice();
+    syncProjects();
     writeWorkspaceReadme();
     createWindow();
 

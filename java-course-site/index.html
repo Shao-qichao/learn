@@ -5477,6 +5477,32 @@ if(location.hash&&document.getElementById('page-'+location.hash.slice(1))){
   .cf-answer-cta:hover{filter:brightness(1.06);}
   @keyframes anspulse{0%,100%{box-shadow:0 6px 18px rgba(22,163,74,.35);}50%{box-shadow:0 6px 26px rgba(22,163,74,.6);}}
 
+  /* ====== 荧光笔文本标记 ====== */
+  mark.hl-mark{background:#fff176;color:inherit;padding:0 1px;margin:0;border-radius:3px;-webkit-box-decoration-break:clone;box-decoration-break:clone;cursor:pointer;scroll-margin-top:120px;}
+  mark.hl-y{background:#fff176;}
+  mark.hl-g{background:#a5d6a7;}
+  mark.hl-p{background:#f8bbd0;}
+  mark.hl-b{background:#90caf9;}
+  mark.hl-o{background:#ffcc80;}
+  mark.hl-flash{animation:hlflash 1.1s ease 2;}
+  @keyframes hlflash{0%,100%{outline:3px solid transparent;outline-offset:2px;}50%{outline:3px solid #f59e0b;outline-offset:2px;}}
+  #hlBar{position:fixed;z-index:99999;display:none;align-items:center;gap:7px;background:#1e293b;color:#e2e8f0;padding:7px 10px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.35);font-size:12px;user-select:none;}
+  #hlBar.on{display:flex;}
+  #hlBar .hl-sw{width:21px;height:21px;border-radius:50%;cursor:pointer;border:2px solid rgba(255,255,255,.15);flex:none;transition:transform .12s;}
+  #hlBar .hl-sw:hover{transform:scale(1.18);}
+  #hlBar .hl-sw.cur{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.25);}
+  #hlBar .hl-act{cursor:pointer;padding:3px 8px;border-radius:6px;background:rgba(255,255,255,.1);white-space:nowrap;}
+  #hlBar .hl-act:hover{background:rgba(255,255,255,.22);}
+  #hlBar .hl-hint{color:#94a3b8;font-size:11px;white-space:nowrap;}
+  #hlMgrBtn{position:fixed;right:16px;bottom:16px;z-index:9990;display:none;align-items:center;gap:6px;background:#1e293b;color:#f8fafc;border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:9px 14px;font-size:13px;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.3);}
+  #hlMgrBtn:hover{background:#334155;}
+  #hlMgrBtn.on{display:flex;}
+  #hlMgrBtn .hl-badge{background:#f59e0b;color:#1e293b;border-radius:999px;font-size:11px;font-weight:700;padding:1px 7px;}
+  .hl-mgr-item{display:flex;gap:10px;align-items:flex-start;padding:10px 4px;border-bottom:1px dashed #e2e8f0;font-size:13.5px;}
+  .hl-mgr-item:last-child{border-bottom:none;}
+  .hl-mgr-dot{width:14px;height:14px;border-radius:4px;flex:none;margin-top:3px;border:1px solid rgba(0,0,0,.15);}
+  @media print{#hlBar,#hlMgrBtn{display:none!important;}}
+
   /* 彩带 */
   .confetti{position:fixed;inset:0;pointer-events:none;z-index:200;}
   @keyframes fall{to{transform:translateY(110vh) rotate(360deg);}}
@@ -7612,6 +7638,7 @@ function showPageOnly(id){
   window.scrollTo({top:0});
   history.replaceState(null,'','#'+id);
   curId=id;
+  try{hlApplyPage(id);}catch(err){}
   setTimeout(checkRead,120);
 }
 go=function(id){
@@ -9320,6 +9347,366 @@ document.addEventListener('click',function(e){
   var panes=win.querySelectorAll('.vsc-pane');
   for(var j=0;j<panes.length;j++)panes[j].classList.toggle('show',panes[j].getAttribute('data-pane')===key);
 });
+
+/* ================= 荧光笔文本标记（划词高亮 · 持久化 · 二次编辑 · 管理） ================= */
+var HLKEY='java-course-hl-v1';
+var HL_COLORS=[{id:'y',bg:'#fff176',name:'黄色'},{id:'g',bg:'#a5d6a7',name:'绿色'},{id:'p',bg:'#f8bbd0',name:'粉色'},{id:'b',bg:'#90caf9',name:'蓝色'},{id:'o',bg:'#ffcc80',name:'橙色'}];
+var HL_SNIPPET=80;
+function hlDb(){try{var d=JSON.parse(localStorage.getItem(HLKEY)||'{}');if(!d||typeof d!=='object')d={};if(!d.pages)d.pages={};return d;}catch(e){return{pages:{}};}}
+function hlDbSave(d){try{localStorage.setItem(HLKEY,JSON.stringify(d));}catch(e){}}
+function hlList(id){var d=hlDb();return d.pages[id]||[];}
+function hlSavePage(id,list){
+  if(list&&list.length){
+    /* 去重：同一区间+同一文本的重复条目只保留一条 */
+    var seen={},out=[];
+    list.forEach(function(it){
+      var k=it.s+'|'+it.e+'|'+it.t;
+      if(!seen[k]){seen[k]=1;out.push(it);}
+    });
+    out.sort(function(a,b){return a.s-b.s;});
+    list=out;
+  }
+  var d=hlDb();
+  if(list&&list.length)d.pages[id]=list;else delete d.pages[id];
+  hlDbSave(d);
+  hlMgrRefresh();
+}
+function hlCurPage(){var p=document.querySelector('.page.show');return p?p.id.replace('page-',''):curId;}
+
+/* —— 动态/交互组件内不允许标记（测验、检测器、编辑器等） —— */
+function hlExcluded(node){
+  var el=node.parentElement;if(!el)return true;
+  return !!el.closest('textarea,input,select,button,a,.vsc-win,.code-check,.pq-wrap,.lk-mask,#hlBar,#hlMgrBtn,script,style');
+}
+
+/* —— 文本流：把页面里允许标记的文本节点拼成一条带偏移的流 —— */
+function hlStream(pageEl){
+  var arr=[],pos=0,w=document.createTreeWalker(pageEl,NodeFilter.SHOW_TEXT,null),n;
+  while((n=w.nextNode())){
+    var v=n.nodeValue;
+    if(!v||!v.length)continue;
+    if(hlExcluded(n))continue;
+    arr.push({n:n,s:pos,len:v.length});pos+=v.length;
+  }
+  return arr;
+}
+function hlStreamText(arr){var s='';for(var i=0;i<arr.length;i++)s+=arr[i].n.nodeValue;return s;}
+function hlFindNode(arr,node){for(var i=0;i<arr.length;i++)if(arr[i].n===node)return arr[i];return null;}
+function hlOffset(arr,container,off){
+  if(!arr.length)return null;
+  if(container.nodeType===3){
+    var e=hlFindNode(arr,container);
+    if(e)return e.s+Math.min(Math.max(off,0),e.len);
+    return null;
+  }
+  var probe=document.createRange();
+  try{probe.setStart(container,off);probe.setEnd(container,off);}catch(err){return null;}
+  for(var i=0;i<arr.length;i++){
+    var t=arr[i].n;
+    var rs=document.createRange();rs.selectNodeContents(t);
+    if(probe.compareBoundaryPoints(Range.START_TO_START,rs)<=0)return arr[i].s;
+    var re=document.createRange();re.selectNodeContents(t);
+    if(probe.compareBoundaryPoints(Range.END_TO_END,re)<0)return arr[i].s+Math.min(off,arr[i].len);
+  }
+  var last=arr[arr.length-1];
+  return last.s+last.len;
+}
+
+/* —— 当前选区 → 待标记区间（含内容快照，用于偏移失配时自愈） —— */
+function hlPendingFromSelection(pageEl){
+  var sel=window.getSelection();
+  if(!sel||sel.rangeCount===0||sel.isCollapsed)return null;
+  var r=sel.getRangeAt(0);
+  if(!pageEl.contains(r.commonAncestorContainer))return null;
+  var arr=hlStream(pageEl);
+  var a=hlOffset(arr,r.startContainer,r.startOffset);
+  var b=hlOffset(arr,r.endContainer,r.endOffset);
+  if(a===null||b===null||a===b)return null;
+  var s=Math.min(a,b),e=Math.max(a,b);
+  var txt=hlStreamText(arr).slice(s,e);
+  if(!txt||!txt.trim()||txt.length>2000)return null;
+  return {s:s,e:e,t:txt.slice(0,HL_SNIPPET)};
+}
+function hlOverlaps(list,s,e){
+  for(var i=0;i<list.length;i++){if(s<list[i].e&&list[i].s<e)return true;}
+  return false;
+}
+
+/* —— 渲染：先拆旧标记，再按存储区间重新包裹（自愈失配偏移） —— */
+function hlUnwrap(pageEl){
+  var ms=pageEl.querySelectorAll('mark.hl-mark');
+  for(var i=ms.length-1;i>=0;i--){
+    var m=ms[i],p=m.parentNode;
+    if(!p)continue;
+    while(m.firstChild)p.insertBefore(m.firstChild,m);
+    p.removeChild(m);
+    p.normalize();
+  }
+}
+function hlApplyPage(id){
+  id=id||hlCurPage();
+  if(!id)return;
+  var sec=document.getElementById('page-'+id);
+  if(!sec)return;
+  hlUnwrap(sec);
+  hlMgrRefresh();
+  var list=hlList(id);
+  if(!list.length)return;
+  var arr=hlStream(sec),stream=hlStreamText(arr),dirty=false;
+  list.forEach(function(it){
+    if(it.e>it.s&&stream.slice(it.s,it.e)===it.t)return;
+    var from=Math.max(0,it.s-400),to=Math.min(stream.length,it.e+400);
+    var win=stream.slice(from,to);
+    var r1=win.indexOf(it.t),r2=win.lastIndexOf(it.t),found=-1;
+    if(r1>=0){
+      var c1=from+r1,c2=from+r2;
+      found=(Math.abs(c1-it.s)<=Math.abs(c2-it.s))?c1:c2;
+    }
+    if(found>=0){it.s=found;it.e=found+it.t.length;dirty=true;}
+  });
+  if(dirty)hlSavePage(id,list);
+  var segs=[];
+  list.forEach(function(it,i){if(it.e>it.s&&it.e<=stream.length)segs.push({it:it,i:i});});
+  if(!segs.length)return;
+  segs.sort(function(a,b){return a.it.s-b.it.s;});
+  var cuts=[];
+  segs.forEach(function(x){cuts.push(x.it.s,x.it.e);});
+  cuts.sort(function(a,b){return a-b;});
+  arr.forEach(function(en){
+    var end=en.s+en.len,cur=en.n,base=en.s;
+    for(var k=0;k<cuts.length;k++){
+      var c=cuts[k];
+      if(c>base&&c<end){var rest=cur.splitText(c-base);base=c;cur=rest;}
+      if(c>=end)break;
+    }
+  });
+  var arr2=hlStream(sec);
+  arr2.forEach(function(en){
+    var st=en.s,sl=en.len;
+    for(var k=0;k<segs.length;k++){
+      var it=segs[k].it;
+      if(it.s>=st+sl)break;
+      if(it.s<=st&&st+sl<=it.e){
+        var m=document.createElement('mark');
+        m.className='hl-mark hl-'+it.c;
+        m.dataset.hlIdx=segs[k].i;
+        en.n.parentNode.insertBefore(m,en.n);
+        m.appendChild(en.n);
+        break;
+      }
+    }
+  });
+}
+
+/* —— 颜色条（新建 / 编辑两用） —— */
+var hlPending=null;
+function hlShowBar(x,y,mode,idx){
+  var bar=document.getElementById('hlBar');
+  if(!bar)return;
+  var id=hlCurPage(),list=hlList(id),curC=(mode==='edit'&&list[idx])?list[idx].c:null;
+  var html='<span style="font-size:14px">🖍</span>';
+  HL_COLORS.forEach(function(c,i){
+    html+='<span class="hl-sw'+(curC===c.id?' cur':'')+'" title="'+c.name+'（Ctrl+Alt+'+(i+1)+'）" style="background:'+c.bg+'" data-hlc="'+c.id+'"></span>';
+  });
+  if(mode==='edit')html+='<span class="hl-act" data-hldel="1">移除标记</span>';
+  html+='<span class="hl-hint">'+(mode==='edit'?'点击色块换色':'选择颜色标记')+'</span>';
+  html+='<span class="hl-act" data-hlclose="1">✕</span>';
+  bar.innerHTML=html;
+  bar.classList.add('on');
+  var bw=bar.offsetWidth,bh=bar.offsetHeight;
+  var px=Math.min(Math.max(8,x-bw/2),Math.max(8,window.innerWidth-bw-8));
+  var py=y-bh-10;if(py<8)py=y+18;
+  bar.style.left=px+'px';bar.style.top=py+'px';
+}
+function hlHideBar(){var b=document.getElementById('hlBar');if(b)b.classList.remove('on');hlPending=null;}
+
+/* —— 小提示条 —— */
+var hlToastTimer=null;
+function hlToast(msg){
+  var t=document.getElementById('hlToast');
+  if(!t){
+    t=document.createElement('div');
+    t.id='hlToast';
+    t.style.cssText='position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:100000;background:#1e293b;color:#fff;padding:9px 16px;border-radius:8px;font-size:13px;box-shadow:0 6px 20px rgba(0,0,0,.3);pointer-events:none;transition:opacity .25s;opacity:0';
+    document.body.appendChild(t);
+  }
+  t.textContent=msg;t.style.opacity='1';
+  clearTimeout(hlToastTimer);
+  hlToastTimer=setTimeout(function(){t.style.opacity='0';},2200);
+}
+
+/* —— 鼠标交互：划词 → 新建；单击已有标记 → 编辑 —— */
+(function(){
+  if(!document.getElementById('hlBar')){
+    var b=document.createElement('div');b.id='hlBar';document.body.appendChild(b);
+  }
+  if(!document.getElementById('hlMgrBtn')){
+    var btn=document.createElement('button');
+    btn.id='hlMgrBtn';btn.type='button';
+    btn.innerHTML='🖍 标记 <span class="hl-badge" id="hlMgrCount">0</span>';
+    btn.addEventListener('click',function(){hlOpenMgr();});
+    document.body.appendChild(btn);
+  }
+  var bar=document.getElementById('hlBar');
+  bar.addEventListener('mousedown',function(e){e.preventDefault();});
+  bar.addEventListener('click',function(e){
+    var sw=e.target.closest('.hl-sw'),act=e.target.closest('.hl-act');
+    if(!hlPending)return;
+    var p=hlPending;
+    if(sw&&sw.dataset.hlc){
+      if(p.mode==='new'){
+        var list=hlList(p.page);
+        list.push({s:p.s,e:p.e,c:sw.dataset.hlc,t:p.t});
+        list.sort(function(a,b){return a.s-b.s;});
+        hlSavePage(p.page,list);
+      }else{
+        var l2=hlList(p.page);
+        if(l2[p.idx]){l2[p.idx].c=sw.dataset.hlc;hlSavePage(p.page,l2);}
+      }
+      hlApplyPage(p.page);
+      var sel=window.getSelection();if(sel)sel.removeAllRanges();
+      hlHideBar();
+    }else if(act&&act.dataset.hldel){
+      var l3=hlList(p.page);
+      l3.splice(p.idx,1);
+      hlSavePage(p.page,l3);
+      hlApplyPage(p.page);
+      hlHideBar();
+    }else if(act&&act.dataset.hlclose){
+      hlHideBar();
+    }
+  });
+  document.addEventListener('mouseup',function(ev){
+    if(ev.button!==0)return;
+    if(bar.contains(ev.target))return;
+    var mb=document.getElementById('hlMgrBtn');
+    if(mb&&mb.contains(ev.target))return;
+    var sec=document.querySelector('.page.show');
+    if(!sec){hlHideBar();return;}
+    var pid=sec.id.replace('page-','');
+    var sel=window.getSelection();
+    if(!sel||sel.rangeCount===0||sel.isCollapsed){
+      var m=ev.target&&ev.target.closest?ev.target.closest('mark.hl-mark'):null;
+      if(m&&sec.contains(m)){
+        var idx=parseInt(m.dataset.hlIdx,10);
+        var list=hlList(pid);
+        if(list[idx]){
+          hlPending={mode:'edit',page:pid,idx:idx};
+          var r=m.getBoundingClientRect();
+          hlShowBar(r.left+r.width/2,r.top,'edit',idx);
+        }
+      }else{
+        hlHideBar();
+      }
+      return;
+    }
+    var pend=hlPendingFromSelection(sec);
+    if(!pend){hlHideBar();return;}
+    if(hlOverlaps(hlList(pid),pend.s,pend.e)){
+      hlToast('该区域已有标记，单击标记即可换色或移除');
+      return;
+    }
+    hlPending={mode:'new',page:pid,s:pend.s,e:pend.e,t:pend.t};
+    var rect=sel.getRangeAt(0).getBoundingClientRect();
+    hlShowBar(rect.left+rect.width/2,rect.top,'new');
+  });
+})();
+
+/* —— 快捷键：Ctrl/⌘+Alt+1～5 直接标记；Esc 关闭颜色条 —— */
+document.addEventListener('keydown',function(ev){
+  if(ev.key==='Escape'){hlHideBar();return;}
+  if(!(ev.ctrlKey||ev.metaKey)&&!ev.altKey)return;
+  if(!ev.altKey)return;
+  var m=/^[1-5]$/.test(ev.key)?parseInt(ev.key,10):null;
+  if(!m)return;
+  var sec=document.querySelector('.page.show');
+  if(!sec)return;
+  ev.preventDefault();
+  var col=HL_COLORS[m-1].id;
+  if(hlPending&&hlPending.mode==='edit'){
+    var l=hlList(hlPending.page);
+    if(l[hlPending.idx]){l[hlPending.idx].c=col;hlSavePage(hlPending.page,l);hlApplyPage(hlPending.page);}
+    hlHideBar();return;
+  }
+  var pend=hlPendingFromSelection(sec);
+  if(!pend)return;
+  var pid=sec.id.replace('page-',''),list=hlList(pid);
+  if(hlOverlaps(list,pend.s,pend.e)){hlToast('该区域已有标记，单击标记即可换色或移除');return;}
+  list.push({s:pend.s,e:pend.e,c:col,t:pend.t});
+  list.sort(function(a,b){return a.s-b.s;});
+  hlSavePage(pid,list);
+  hlApplyPage(pid);
+  var sel=window.getSelection();if(sel)sel.removeAllRanges();
+  hlHideBar();
+});
+
+/* —— 标记管理面板 —— */
+function hlOpenMgr(){
+  var id=hlCurPage();
+  if(!id){hlToast('请先进入一个学习板块');return;}
+  var list=hlList(id);
+  var db=hlDb(),total=0;
+  for(var k in db.pages)total+=db.pages[k].length;
+  var h='<div class="em">🖍</div><h3>标记管理 · '+escH(titles[id]||id)+'</h3>';
+  if(!list.length){
+    h+='<p>本页还没有标记。<br>选中文字会出现颜色条（黄 / 绿 / 粉 / 蓝 / 橙），或按 <b>Ctrl+Alt+1～5</b> 快速标记；单击已有标记可换色或移除。</p>';
+    h+='<div class="ops"><button class="btn btn-primary" onclick="closeLk()">知道啦</button></div>';
+  }else{
+    h+='<div style="text-align:left;max-height:52vh;overflow-y:auto">';
+    list.forEach(function(it,i){
+      var col=HL_COLORS.filter(function(c){return c.id===it.c;})[0]||HL_COLORS[0];
+      h+='<div class="hl-mgr-item">'+
+        '<span class="hl-mgr-dot" style="background:'+col.bg+'"></span>'+
+        '<div style="flex:1;min-width:0"><div style="word-break:break-all">'+escH(it.t||'(空)')+'</div>'+
+        '<div class="muted small">第 '+(i+1)+' 处 · '+col.name+'</div></div>'+
+        '<button class="btn btn-ghost" style="padding:4px 10px" onclick="hlJump('+i+')">跳转</button>'+
+        '<button class="btn btn-ghost" style="padding:4px 10px" onclick="hlDel('+i+')">删除</button></div>';
+    });
+    h+='</div>';
+    h+='<p class="muted small" style="margin-top:10px">本页共 '+list.length+' 处标记'+(total>list.length?'，其他页面还有 '+(total-list.length)+' 处':'')+'。标记保存在本机，下次打开自动恢复。</p>';
+    h+='<div class="ops"><button class="btn btn-ghost" onclick="hlClearPage()">清空本页标记</button><button class="btn btn-primary" onclick="closeLk()">完成</button></div>';
+  }
+  showLk(h);
+}
+function hlJump(i){
+  var id=hlCurPage(),sec=document.getElementById('page-'+id);
+  if(!sec)return;
+  closeLk();
+  var m=sec.querySelector('mark.hl-mark[data-hl-idx="'+i+'"]');
+  if(!m){hlApplyPage(id);m=sec.querySelector('mark.hl-mark[data-hl-idx="'+i+'"]');}
+  if(m){
+    m.scrollIntoView({behavior:'smooth',block:'center'});
+    m.classList.add('hl-flash');
+    setTimeout(function(){m.classList.remove('hl-flash');},2300);
+  }
+}
+function hlDel(i){
+  var id=hlCurPage(),l=hlList(id);
+  l.splice(i,1);
+  hlSavePage(id,l);
+  hlApplyPage(id);
+  hlOpenMgr();
+}
+function hlClearPage(){
+  var id=hlCurPage();
+  hlSavePage(id,[]);
+  hlApplyPage(id);
+  hlOpenMgr();
+}
+function hlMgrRefresh(){
+  var btn=document.getElementById('hlMgrBtn');
+  if(!btn)return;
+  var id=hlCurPage(),list=id?hlList(id):[];
+  btn.classList.toggle('on',list.length>0);
+  var c=document.getElementById('hlMgrCount');
+  if(c)c.textContent=list.length;
+}
+
+/* —— 启动时对当前显示页应用已存标记 —— */
+try{
+  var __hlShown=document.querySelector('.page.show');
+  if(__hlShown)hlApplyPage(__hlShown.id.replace('page-',''));
+}catch(e){}
 
 /* ================= 自定义弹窗（#lkMask / #lkCard） ================= */
 function showLk(html){

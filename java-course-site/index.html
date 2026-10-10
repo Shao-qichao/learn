@@ -9763,19 +9763,36 @@ function aiClampScore(v) {
   return Math.max(0, Math.min(100, n));
 }
 
-/* 构造提示词：系统角色 + 项目细则 + 代码，要求只输出 JSON */
-function aiBuildPrompt(pid, ck, code) {
-  var goal = AI_GOAL_CLASS[pid] || '';
+/* 构造提示词：系统角色 + 细则 + 代码，要求只输出 JSON
+ * kind: 'project'=章项目（默认），'practice'=动手练习
+ * ck: project 模式用 PROJECT_CHECKS[pid]，practice 模式用 PRACTICE[pid] */
+function aiBuildPrompt(pid, ck, code, kind) {
+  kind = kind === 'practice' ? 'practice' : 'project';
   var sys = '你是面向 Java 零基础学员的严格而友善的代码评审助教。只输出一个 JSON 对象，不要输出任何其他文字、注释或 Markdown 代码围栏。JSON 结构：'
     + '{"scores":{"正确性":0-100,"规范性":0-100,"结构":0-100,"可读性":0-100,"习惯":0-100},'
     + '"total":0-100,"summary":"不超过120字的总评","suggestions":["改进建议1","改进建议2",最多6条,每条不超过80字]}。'
-    + '评分维度含义：正确性=是否实现项目要求的全部功能点；规范性=命名/缩进/类型选择；结构=方法拆分与逻辑组织；可读性=注释与清晰度；习惯=资源管理/边界处理等编程习惯。'
+    + '评分维度含义：正确性=是否实现要求的全部功能点；规范性=命名/缩进/类型选择；结构=方法拆分与逻辑组织；可读性=注释与清晰度；习惯=资源管理/边界处理等编程习惯。'
     + '背景：学员是 AI 编程零基础初学者，评分鼓励为主但客观，60 分为通过线。';
-  var user = '【项目】第' + pid.replace(/^c(\d+)s(\d+)$/, '$1') + '章章项目：' + (ck.name || pid) + '\n'
-    + '【目标类名】' + goal + (goal ? '（源文件 ' + goal + '.java）' : '') + '\n'
-    + '【客观要求】关键词至少覆盖：' + (ck.keywords || []).join('、') + '；输出语句至少 ' + ck.minPrints + ' 条；有效代码行数建议 ≥ ' + ck.minLines + '；注释建议 ≥ ' + (ck.minComments || 0) + ' 处。\n'
-    + '【主观评分参考】' + (ck.subjective || []).join('；') + '\n'
-    + '【学员代码】\n' + code;
+  var user;
+  if (kind === 'practice') {
+    var steps = (ck.steps || []).map(function (s, i) { return (i + 1) + '. ' + s; }).join('\n');
+    var todos = (ck.todos || []).map(function (t) { return '- ' + t; }).join('\n');
+    user = '【类型】动手练习\n'
+      + '【练习名称】' + (ck.title || pid) + '\n'
+      + '【目标】' + (ck.goal || '') + '\n'
+      + (steps ? '【练习步骤】\n' + steps + '\n' : '')
+      + (todos ? '【完成清单】\n' + todos + '\n' : '')
+      + (ck.expected ? '【预期结果】' + ck.expected + '\n' : '')
+      + (ck.hint ? '【提示】' + ck.hint + '\n' : '')
+      + '【学员代码】\n' + code;
+  } else {
+    var goal = AI_GOAL_CLASS[pid] || '';
+    user = '【项目】第' + pid.replace(/^c(\d+)s(\d+)$/, '$1') + '章章项目：' + (ck.name || pid) + '\n'
+      + '【目标类名】' + goal + (goal ? '（源文件 ' + goal + '.java）' : '') + '\n'
+      + '【客观要求】关键词至少覆盖：' + (ck.keywords || []).join('、') + '；输出语句至少 ' + ck.minPrints + ' 条；有效代码行数建议 ≥ ' + ck.minLines + '；注释建议 ≥ ' + (ck.minComments || 0) + ' 处。\n'
+      + '【主观评分参考】' + (ck.subjective || []).join('；') + '\n'
+      + '【学员代码】\n' + code;
+  }
   return { system: sys, user: user, messages: [{ role: 'system', content: sys }, { role: 'user', content: user }] };
 }
 
@@ -9820,13 +9837,12 @@ function aiParseAIJson(raw) {
   };
 }
 
-/* 模拟评分（未接入真实 AI 时的本地确定性引擎） */
-function aiMockScore(pid, ck, code) {
+/* 模拟评分（未接入真实 AI 时的本地确定性引擎）
+ * kind: 'project'=章项目（默认），'practice'=动手练习 */
+function aiMockScore(pid, ck, code, kind) {
+  kind = kind === 'practice' ? 'practice' : 'project';
   var t = code, lines = t.split('\n').filter(function (l) { return l.trim().length > 0; });
   var noCmt = t.replace(/\/\/[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
-  var kws = ck.keywords || [];
-  var kwHit = kws.filter(function (k) { return t.indexOf(k) >= 0; });
-  var kwRatio = kws.length ? kwHit.length / kws.length : 1;
   var prints = (t.match(/System\.out\.print/g) || []).length;
   var comments = (t.match(/\/\/|\/\*/g) || []).length;
   var opens = (t.match(/\{/g) || []).length, closes = (t.match(/\}/g) || []).length;
@@ -9838,33 +9854,61 @@ function aiMockScore(pid, ck, code) {
   var closedScanner = !hasScanner || /\.close\s*\(\s*\)/.test(t);
   var camel = /\b[a-z]+[A-Z][A-Za-z]*\b/.test(noCmt);
   var indented = lines.length ? lines.filter(function (l) { return /^(\s{2,}|\t)/.test(l); }).length / lines.length : 0;
-  var goal = AI_GOAL_CLASS[pid] || '';
-  var classOK = !goal || new RegExp('class\\s+' + goal + '\\b').test(t);
   var placeholder = /(TODO|此处留空|骨架文件|替换为你的代码)/.test(t);
+
+  /* 根据 kind 准备评分上下文 */
+  var kws, minPrints, minLines, goal, classOK;
+  if (kind === 'practice') {
+    /* practice 模式：从 steps 里抽取关键名词作覆盖检查 */
+    var stepText = (ck.steps || []).join(' ');
+    var todoText = (ck.todos || []).join(' ');
+    var expText = (ck.expected || '') + ' ' + (ck.goal || '');
+    var allText = stepText + ' ' + todoText + ' ' + expText;
+    /* 简单名词抽取：2-4 字的中文名词 + Java 常见英文 API */
+    kws = [];
+    var cnKws = allText.match(/[\u4e00-\u9fff]{2,6}/g) || [];
+    cnKws.forEach(function (w) { if (kws.indexOf(w) < 0) kws.push(w); });
+    var enKws = allText.match(/\b(Scanner|System|out|print|println|main|public|class|int|double|String|if|else|for|while|switch|break|continue|return|new|this|static|void|boolean|char|float|long|byte|short|array|ArrayList|HashMap|List|Map)\b/g) || [];
+    enKws.forEach(function (w) { if (kws.indexOf(w) < 0) kws.push(w); });
+    /* 最多取 8 个关键词作硬检查 */
+    kws = kws.slice(0, 8);
+    minPrints = 2;
+    minLines = 5;
+    goal = ''; classOK = true;
+  } else {
+    kws = ck.keywords || [];
+    minPrints = ck.minPrints || 3;
+    minLines = ck.minLines || 10;
+    goal = AI_GOAL_CLASS[pid] || '';
+    classOK = !goal || new RegExp('class\\s+' + goal + '\\b').test(t);
+  }
+  var kwHit = kws.filter(function (k) { return t.indexOf(k) >= 0; });
+  var kwRatio = kws.length ? kwHit.length / kws.length : 1;
 
   /* 各维度先按内部满分权重打原始分，再归一化为 0-100 百分比；总分按权重加权 */
   var raw = {};
-  raw['正确性'] = kwRatio * 22 + Math.min(1, prints / Math.max(ck.minPrints || 3, 1)) * 8;
+  raw['正确性'] = kwRatio * 22 + Math.min(1, prints / Math.max(minPrints, 1)) * 8;
   raw['规范性'] = (camel ? 7 : 3) + (indented > 0.4 ? 7 : indented > 0.15 ? 4 : 1) + (bracesOK ? 3 : 0) + (quotesOK ? 3 : 0);
   raw['结构'] = (hasMethod ? 8 : 3) + (hasCtrl ? 6 : 2) + (lines.length <= 80 ? 6 : 4);
   raw['可读性'] = Math.min(8, comments * 2) + (camel ? 4 : 2) + (t.split('\n\n').length > 1 || lines.length < 15 ? 3 : 2);
-  raw['习惯'] = (classOK ? 6 : 0) + (closedScanner ? 3 : 0) + (placeholder ? 0 : 3) + (lines.length >= (ck.minLines || 10) ? 3 : 1);
+  raw['习惯'] = (classOK ? 6 : 0) + (closedScanner ? 3 : 0) + (placeholder ? 0 : 3) + (lines.length >= minLines ? 3 : 1);
   var d = {};
   AI_DIMS.forEach(function (k) { d[k] = aiClampScore(Math.round(raw[k] / AI_DIM_MAX[k] * 100)); });
   var total = aiClampScore(Math.round(AI_DIMS.reduce(function (a, k) { return a + d[k] * AI_DIM_MAX[k] / 100; }, 0)));
   var sug = [];
   var missKw = kws.filter(function (k) { return kwHit.indexOf(k) < 0; });
-  if (missKw.length) sug.push('还没有用到这些知识点：' + missKw.join('、') + '，对照项目要求补上');
+  if (missKw.length) sug.push('还没有用到这些知识点：' + missKw.join('、') + '，对照练习要求补上');
   if (!bracesOK) sug.push('大括号 { } 数量不匹配（{ ' + opens + ' 个 / } ' + closes + ' 个），先修正再提交');
   if (!quotesOK) sug.push('双引号数量是奇数，可能有引号没成对闭合');
-  if (prints < (ck.minPrints || 3)) sug.push('输出语句只有 ' + prints + ' 条，项目要求至少 ' + (ck.minPrints || 3) + ' 条');
+  if (prints < minPrints) sug.push('输出语句只有 ' + prints + ' 条，建议至少 ' + minPrints + ' 条');
   if (comments < 2) sug.push('注释偏少，给关键步骤各加一行 // 注释，方便以后回看');
-  if (!classOK && goal) sug.push('类名建议命名为 ' + goal + '（与源文件 ' + goal + '.java 一致，否则编译不过）');
+  if (kind === 'project' && !classOK && goal) sug.push('类名建议命名为 ' + goal + '（与源文件 ' + goal + '.java 一致，否则编译不过）');
   if (!closedScanner) sug.push('用完 Scanner 记得调用 sc.close() 释放资源');
   if (placeholder) sug.push('代码里还有占位符/骨架痕迹，替换成你自己的实现');
-  (ck.subjective || []).slice(0, 6 - sug.length > 0 ? Math.min(2, 6 - sug.length) : 0).forEach(function (s) { sug.push(s); });
-  if (!sug.length) sug.push('整体完成度不错！可以对照主观评分参考进一步打磨细节');
-  var summary = '模拟评分：关键词覆盖 ' + kwHit.length + '/' + kws.length + '，输出 ' + prints + ' 条，代码 ' + lines.length + ' 行。'
+  if (kind === 'project') (ck.subjective || []).slice(0, Math.min(2, Math.max(0, 6 - sug.length))).forEach(function (s) { sug.push(s); });
+  if (!sug.length) sug.push('整体完成度不错！可以对照预期结果进一步打磨细节');
+  var typeTag = kind === 'practice' ? '练习' : '项目';
+  var summary = '模拟评分[' + typeTag + ']：知识点覆盖 ' + kwHit.length + '/' + kws.length + '，输出 ' + prints + ' 条，代码 ' + lines.length + ' 行。'
     + (total >= 60 ? '已达到通过线。' : '还未达到 60 分通过线，先补齐缺失的知识点。');
   return { dims: d, total: total, summary: summary.slice(0, 200), suggestions: sug.slice(0, 6) };
 }
@@ -9947,9 +9991,15 @@ async function aiCallDeepSeek(cfg, messages) {
 }
 
 /* 带重试的完整调用：网络/超时/5xx 重试退避；JSON 不合法追加一次修复请求 */
-async function aiRunScore(pid, code) {
+async function aiRunScore(pid, code, kind) {
+  kind = kind === 'practice' ? 'practice' : 'project';
   var cfg = aiCfg();
-  var ck = (typeof PROJECT_CHECKS !== 'undefined' && PROJECT_CHECKS[pid]) || { name: pid, keywords: [], minPrints: 3, minLines: 10, subjective: [] };
+  var ck;
+  if (kind === 'practice') {
+    ck = (typeof PRACTICE !== 'undefined' && PRACTICE[pid]) || { title: pid, goal: '', steps: [], todos: [], expected: '', hint: '' };
+  } else {
+    ck = (typeof PROJECT_CHECKS !== 'undefined' && PROJECT_CHECKS[pid]) || { name: pid, keywords: [], minPrints: 3, minLines: 10, subjective: [] };
+  }
   var t0 = Date.now();
   var finish = function (data, provider, degraded) {
     data.provider = provider;
@@ -9959,9 +10009,9 @@ async function aiRunScore(pid, code) {
     return data;
   };
   if (cfg.provider !== 'deepseek' || !cfg.apiKey) {
-    return finish(aiMockScore(pid, ck, code), 'mock', false);
+    return finish(aiMockScore(pid, ck, code, kind), 'mock', false);
   }
-  var msgs = aiBuildPrompt(pid, ck, code).messages;
+  var msgs = aiBuildPrompt(pid, ck, code, kind).messages;
   var lastErr = null;
   for (var attempt = 0; attempt <= (cfg.maxRetries || 2); attempt++) {
     try {
@@ -9979,16 +10029,19 @@ async function aiRunScore(pid, code) {
       if (attempt < (cfg.maxRetries || 2)) await aiSleep(1000 * (attempt + 1) * (attempt + 1));
     }
   }
-  var fallback = aiMockScore(pid, ck, code);
+  var fallback = aiMockScore(pid, ck, code, kind);
   fallback.summary = 'AI 调用失败（' + String(lastErr && lastErr.message || lastErr).slice(0, 80) + '），已自动降级为本地模拟评分。';
   return finish(fallback, 'mock', true);
 }
 
 /* 卡片渲染 */
-function aiRenderCard(pid) {
-  var box = document.querySelector('[data-ai-result="' + pid + '"]');
+/* 卡片渲染：kind='project'（默认）或 'practice' */
+function aiRenderCard(pid, kind) {
+  kind = kind === 'practice' ? 'practice' : 'project';
+  var storeKey = pid + ':' + kind;
+  var box = document.querySelector('[data-ai-result="' + storeKey + '"]');
   if (!box) return;
-  var hist = aiRecGet(pid);
+  var hist = aiRecGet(storeKey);
   if (!hist.length) { box.classList.remove('show'); box.innerHTML = ''; return; }
   var r = hist[0];
   var badgeCls = r.provider === 'deepseek' ? '' : (r.degraded ? 'err' : 'mock');
@@ -10004,6 +10057,7 @@ function aiRenderCard(pid) {
       + '（' + escH((r.review.at || '').slice(0, 16).replace('T', ' ')) + '）</div>';
   }
   var sug = (r.suggestions || []).map(function (s) { return '<li>' + escH(s) + '</li>'; }).join('');
+  var typeLabel = kind === 'practice' ? '练习' : '项目';
   box.innerHTML =
     '<div class="ai-card">'
     + '<div class="ai-card-head"><span class="ai-badge ' + badgeCls + '">' + badgeTxt + '</span>'
@@ -10018,31 +10072,36 @@ function aiRenderCard(pid) {
     + revHtml
     + '<div class="ai-ops">'
     + '<button type="button" class="btn btn-ghost" style="padding:5px 12px" onclick="aiOpenCfg()">⚙ 评分设置</button>'
-    + '<button type="button" class="btn btn-ghost" style="padding:5px 12px" onclick="aiOpenReview(\'' + pid + '\')">⚖ 复核校准</button>'
-    + '<button type="button" class="btn btn-ghost" style="padding:5px 12px" onclick="aiOpenHistory(\'' + pid + '\')">🕘 评分历史（' + hist.length + '）</button>'
+    + '<button type="button" class="btn btn-ghost" style="padding:5px 12px" onclick="aiOpenReview(\'' + pid + '\',\'' + kind + '\')">⚖ 复核校准</button>'
+    + '<button type="button" class="btn btn-ghost" style="padding:5px 12px" onclick="aiOpenHistory(\'' + pid + '\',\'' + kind + '\')">🕘 评分历史（' + hist.length + '）</button>'
     + '</div>'
-    + '<div class="ai-trace">追溯：项目 ' + pid + ' · 记录 ' + (hist.length) + '/10 · 代码 ' + (r.codeChars || 0) + ' 字符 · ' + (r.truncated ? '已截断 · ' : '') + '引擎 ' + (r.provider === 'deepseek' ? 'DeepSeek API' : '本地模拟') + '</div>'
+    + '<div class="ai-trace">追溯：' + typeLabel + ' ' + pid + ' · 记录 ' + (hist.length) + '/10 · 代码 ' + (r.codeChars || 0) + ' 字符 · ' + (r.truncated ? '已截断 · ' : '') + '引擎 ' + (r.provider === 'deepseek' ? 'DeepSeek API' : '本地模拟') + '</div>'
     + '</div>';
   box.classList.add('show');
 }
 
-/* 入口：AI 深度评分按钮 */
-async function aiReviewProject(pid, btn) {
-  var ta = document.querySelector('[data-review="' + pid + '"]');
+/* 入口：AI 深度评分按钮
+ * kind: 'project'=章项目，'practice'=动手练习
+ * srcEl: 章项目用 data-review textarea，练习用 codeEditor_{id} textarea */
+async function aiReviewProject(pid, btn, kind, srcEl) {
+  kind = kind === 'practice' ? 'practice' : 'project';
+  var ta = srcEl || document.querySelector('[data-review="' + pid + '"]');
   if (!ta) return;
   var norm = aiNormalizeCode(ta.value);
-  if (norm.chars < 30) { hlToast('请先把章项目代码粘贴到上面的审查框再评分'); return; }
+  var typeLabel = kind === 'practice' ? '练习' : '章项目';
+  if (norm.chars < 30) { hlToast('请先把' + typeLabel + '代码粘贴到上面的输入框再评分'); return; }
   var old = btn.textContent;
   btn.disabled = true;
   btn.textContent = '⏳ AI 评分中…';
   try {
-    var data = await aiRunScore(pid, norm.text);
+    var data = await aiRunScore(pid, norm.text, kind);
     data.codeChars = norm.chars;
     data.truncated = norm.truncated;
     data.at = new Date().toISOString();
     data.pid = pid;
-    aiRecAdd(pid, data);
-    aiRenderCard(pid);
+    var storeKey = pid + ':' + kind;
+    aiRecAdd(storeKey, data);
+    aiRenderCard(pid, kind);
     hlToast(data.degraded ? 'AI 调用失败，已降级为模拟评分' : (data.provider === 'deepseek' ? 'DeepSeek 评分完成' : '模拟评分完成（设置里可接入 DeepSeek）'));
   } catch (e) {
     hlToast('评分异常：' + String(e && e.message || e).slice(0, 80));
@@ -10083,25 +10142,36 @@ function aiSaveCfg() {
   hlToast('评分设置已保存' + (c.provider === 'deepseek' ? '：已启用 DeepSeek' : '：当前为模拟模式'));
 }
 
-/* 复核校准弹窗 */
-function aiOpenReview(pid) {
-  var hist = aiRecGet(pid);
+/* 复核校准弹窗：kind='project' 或 'practice' */
+function aiOpenReview(pid, kind) {
+  kind = kind === 'practice' ? 'practice' : 'project';
+  var storeKey = pid + ':' + kind;
+  var hist = aiRecGet(storeKey);
   if (!hist.length) { hlToast('还没有 AI 评分记录'); return; }
   var r = hist[0];
   var dims = AI_DIMS.map(function (d) {
     var v = (r.review && r.review.dims && r.review.dims[d] !== undefined) ? r.review.dims[d] : r.dims[d];
     return '<div class="ai-form-row"><label>' + d + '（0-100）</label><input type="number" min="0" max="100" id="aiRev_' + d + '" value="' + aiClampScore(v) + '"></div>';
   }).join('');
-  var h = '<div class="em">⚖</div><h3>人工复核校准 · ' + escH((typeof PROJECT_CHECKS !== 'undefined' && PROJECT_CHECKS[pid] && PROJECT_CHECKS[pid].name) || pid) + '</h3>'
+  var name;
+  if (kind === 'practice') {
+    name = (typeof PRACTICE !== 'undefined' && PRACTICE[pid] && PRACTICE[pid].title) || pid;
+  } else {
+    name = (typeof PROJECT_CHECKS !== 'undefined' && PROJECT_CHECKS[pid] && PROJECT_CHECKS[pid].name) || pid;
+  }
+  var typeLabel = kind === 'practice' ? '练习' : '项目';
+  var h = '<div class="em">⚖</div><h3>人工复核校准 · ' + typeLabel + ' ' + escH(name) + '</h3>'
     + '<p class="muted small" style="text-align:left">AI 原评 ' + r.total + ' 分。你可以手动修正各维度与总分并留备注，复核结果会覆盖展示且保留 AI 原评，用于校准评分标准。</p>'
     + '<div style="max-height:44vh;overflow-y:auto;text-align:left">' + dims
     + '<div class="ai-form-row"><label>复核后总分（留空则按维度平均重算）</label><input type="number" min="0" max="100" id="aiRevTotal" value="' + (r.review ? aiClampScore(r.review.total) : r.total) + '"></div>'
     + '<div class="ai-form-row"><label>复核备注（为什么调整）</label><textarea id="aiRevNote" rows="2" placeholder="例：正确性高估，缺少异常处理扣 10 分">' + escH(r.review ? (r.review.note || '') : '') + '</textarea></div></div>'
-    + '<div class="ops"><button class="btn btn-ghost" onclick="closeLk()">取消</button><button class="btn btn-primary" onclick="aiSaveReview(\'' + pid + '\')">保存复核</button></div>';
+    + '<div class="ops"><button class="btn btn-ghost" onclick="closeLk()">取消</button><button class="btn btn-primary" onclick="aiSaveReview(\'' + pid + '\',\'' + kind + '\')">保存复核</button></div>';
   showLk(h);
 }
-function aiSaveReview(pid) {
-  var hist = aiRecGet(pid);
+function aiSaveReview(pid, kind) {
+  kind = kind === 'practice' ? 'practice' : 'project';
+  var storeKey = pid + ':' + kind;
+  var hist = aiRecGet(storeKey);
   if (!hist.length) return;
   var dims = {}, sum = 0;
   AI_DIMS.forEach(function (d) {
@@ -10114,16 +10184,18 @@ function aiSaveReview(pid) {
   var nEl = document.getElementById('aiRevNote');
   hist[0].review = { total: total, dims: dims, note: (nEl ? nEl.value.trim().slice(0, 200) : ''), at: new Date().toISOString() };
   var db = aiRecDb();
-  db.records[pid].history = hist;
+  db.records[storeKey].history = hist;
   aiRecSave(db);
-  aiRenderCard(pid);
+  aiRenderCard(pid, kind);
   closeLk();
   hlToast('复核结果已保存（AI 原评保留可追溯）');
 }
 
-/* 历史弹窗 */
-function aiOpenHistory(pid) {
-  var hist = aiRecGet(pid);
+/* 历史弹窗：kind='project' 或 'practice' */
+function aiOpenHistory(pid, kind) {
+  kind = kind === 'practice' ? 'practice' : 'project';
+  var storeKey = pid + ':' + kind;
+  var hist = aiRecGet(storeKey);
   if (!hist.length) { hlToast('还没有评分记录'); return; }
   var rows = hist.map(function (r, i) {
     var tag = r.provider === 'deepseek' ? 'DeepSeek' : (r.degraded ? '降级模拟' : '模拟');
@@ -10131,14 +10203,22 @@ function aiOpenHistory(pid) {
     return '<div class="ai-hist-item"><span class="ai-badge ' + (r.provider === 'deepseek' ? '' : 'mock') + '">' + tag + '</span>'
       + '<b>' + r.total + ' 分' + rev + '</b><span class="muted small" style="flex:1;text-align:right">' + escH((r.at || '').slice(0, 19).replace('T', ' ')) + '</span></div>';
   }).join('');
-  showLk('<div class="em">🕘</div><h3>评分历史 · ' + escH((typeof PROJECT_CHECKS !== 'undefined' && PROJECT_CHECKS[pid] && PROJECT_CHECKS[pid].name) || pid) + '</h3>'
+  var name;
+  if (kind === 'practice') {
+    name = (typeof PRACTICE !== 'undefined' && PRACTICE[pid] && PRACTICE[pid].title) || pid;
+  } else {
+    name = (typeof PROJECT_CHECKS !== 'undefined' && PROJECT_CHECKS[pid] && PROJECT_CHECKS[pid].name) || pid;
+  }
+  var typeLabel = kind === 'practice' ? '练习' : '项目';
+  showLk('<div class="em">🕘</div><h3>评分历史 · ' + typeLabel + ' ' + escH(name) + '</h3>'
     + '<div class="ai-hist">' + rows + '</div>'
     + '<p class="muted small" style="margin-top:10px">最多保留最近 10 条，含 AI 原评与人工复核结果，可追溯每次评分。</p>'
     + '<div class="ops"><button class="btn btn-primary" onclick="closeLk()">关闭</button></div>');
 }
 
-/* 把 AI 评分按钮注入全部章项目审查区 */
+/* 把 AI 评分按钮注入：①章项目审查区 ②动手练习代码检测区 */
 function aiInjectButtons() {
+  /* —— ① 章项目 —— */
   var boxes = document.querySelectorAll('.proj-review');
   for (var i = 0; i < boxes.length; i++) {
     var box = boxes[i];
@@ -10152,14 +10232,43 @@ function aiInjectButtons() {
       b.type = 'button';
       b.className = 'btn btn-ghost ai-review-btn';
       b.textContent = '🤖 AI 深度评分';
-      b.onclick = (function (p) { return function () { aiReviewProject(p, this); }; })(pid);
+      b.onclick = (function (p) { return function () { aiReviewProject(p, this, 'project'); }; })(pid);
       btn.parentNode.insertBefore(b, btn.nextSibling);
     }
-    if (!box.querySelector('[data-ai-result]')) {
+    var storeKey = pid + ':project';
+    if (!box.querySelector('[data-ai-result="' + storeKey + '"]')) {
       var d = document.createElement('div');
       d.className = 'ai-review-result';
-      d.setAttribute('data-ai-result', pid);
+      d.setAttribute('data-ai-result', storeKey);
       box.appendChild(d);
+    }
+  }
+  /* —— ② 动手练习 —— */
+  var pCards = document.querySelectorAll('.vs-card[data-practice]');
+  for (var j = 0; j < pCards.length; j++) {
+    var card = pCards[j];
+    var pid = card.getAttribute('data-practice');
+    if (!pid) continue;
+    var ops = card.querySelector('.code-check-ops');
+    var ta = card.querySelector('.code-editor');
+    if (!ops || !ta) continue;
+    if (!ops.querySelector('.ai-review-btn')) {
+      var pb = document.createElement('button');
+      pb.type = 'button';
+      pb.className = 'btn btn-ghost ai-review-btn';
+      pb.textContent = '🤖 AI 深度评分';
+      pb.onclick = (function (p, t) {
+        return function () { aiReviewProject(p, this, 'practice', t); };
+      })(pid, ta);
+      ops.appendChild(pb);
+    }
+    var pKey = pid + ':practice';
+    var codeBox = card.querySelector('.code-check');
+    if (codeBox && !card.querySelector('[data-ai-result="' + pKey + '"]')) {
+      var pd = document.createElement('div');
+      pd.className = 'ai-review-result';
+      pd.setAttribute('data-ai-result', pKey);
+      codeBox.parentNode.insertBefore(pd, codeBox.nextSibling);
     }
   }
 }

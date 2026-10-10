@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -5503,6 +5503,31 @@ if(location.hash&&document.getElementById('page-'+location.hash.slice(1))){
   .hl-mgr-dot{width:14px;height:14px;border-radius:4px;flex:none;margin-top:3px;border:1px solid rgba(0,0,0,.15);}
   @media print{#hlBar,#hlMgrBtn{display:none!important;}}
 
+  /* ====== AI 深度评分 ====== */
+  .ai-review-result{display:none;margin-top:12px;}
+  .ai-review-result.show{display:block;}
+  .ai-card{border:1px solid #dbeafe;background:linear-gradient(180deg,#f0f7ff,#fff);border-radius:12px;padding:14px 16px;}
+  .ai-card-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;}
+  .ai-badge{font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;background:#dbeafe;color:#1d4ed8;white-space:nowrap;}
+  .ai-badge.mock{background:#fef3c7;color:#92400e;}
+  .ai-badge.err{background:#fee2e2;color:#b91c1c;}
+  .ai-total{font-size:30px;font-weight:800;line-height:1;}
+  .ai-total small{font-size:12px;font-weight:400;color:var(--ink-2);}
+  .ai-dim{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:12.5px;}
+  .ai-dim .lab{width:52px;flex:none;color:var(--ink-2);}
+  .ai-dim .bar{flex:1;height:8px;border-radius:99px;background:#e5e7eb;overflow:hidden;}
+  .ai-dim .bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#60a5fa,#3b82f6);}
+  .ai-sug{margin:8px 0 0;padding-left:18px;font-size:13px;}
+  .ai-sug li{margin:3px 0;}
+  .ai-trace{margin-top:10px;font-size:11.5px;color:var(--ink-2);word-break:break-all;}
+  .ai-ops{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;}
+  .ai-rev{margin-top:8px;padding:8px 10px;background:#f0fdf4;border:1px dashed #86efac;border-radius:8px;font-size:12.5px;}
+  .ai-form-row{margin:10px 0;text-align:left;}
+  .ai-form-row label{display:block;font-size:12.5px;margin-bottom:4px;color:var(--ink-2);}
+  .ai-form-row input,.ai-form-row select,.ai-form-row textarea{width:100%;box-sizing:border-box;padding:7px 9px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;font-family:inherit;}
+  .ai-hist{max-height:46vh;overflow-y:auto;text-align:left;}
+  .ai-hist-item{padding:8px 4px;border-bottom:1px dashed #e2e8f0;font-size:13px;display:flex;gap:8px;align-items:center;}
+
   /* 彩带 */
   .confetti{position:fixed;inset:0;pointer-events:none;z-index:200;}
   @keyframes fall{to{transform:translateY(110vh) rotate(360deg);}}
@@ -9708,6 +9733,437 @@ try{
   if(__hlShown)hlApplyPage(__hlShown.id.replace('page-',''));
 }catch(e){}
 
+/* ================= AI 深度评分（章项目 · 引擎） ================= */
+/* ==AI-ENGINE-START== */
+var AI_DIMS = ['正确性', '规范性', '结构', '可读性', '习惯'];
+var AI_DIM_MAX = { '正确性': 30, '规范性': 20, '结构': 20, '可读性': 15, '习惯': 15 };
+var AI_CODE_MAX = 12000;
+var AI_GOAL_CLASS = {
+  c1s6: 'NameCard', c2s6: 'Cashier', c3s6: 'MiniATM', c4s5: 'ScoreAnalyzer',
+  c5s6: 'Calculator', c6s6: 'Book', c7s6: 'SalaryApp', c8s7: 'ContactApp',
+  c9s5: 'AlgoPractice', c10s4: 'CommentAnalyzer'
+};
+
+/* 预处理：去 BOM/零宽字符、统一换行、压缩空行、超长截断 */
+function aiNormalizeCode(code) {
+  var t = String(code || '');
+  t = t.replace(/^\uFEFF/, '').replace(/[\u200B-\u200D\uFEFF]/g, '');
+  t = t.replace(/\r\n?/g, '\n');
+  t = t.replace(/\n{3,}/g, '\n\n');
+  var truncated = false;
+  if (t.length > AI_CODE_MAX) {
+    t = t.slice(0, AI_CODE_MAX) + '\n/* …（超过 ' + AI_CODE_MAX + ' 字符，已截断）*/';
+    truncated = true;
+  }
+  return { text: t, truncated: truncated, chars: t.length };
+}
+function aiClampScore(v) {
+  var n = Math.round(Number(v));
+  if (!isFinite(n)) n = 0;
+  return Math.max(0, Math.min(100, n));
+}
+
+/* 构造提示词：系统角色 + 项目细则 + 代码，要求只输出 JSON */
+function aiBuildPrompt(pid, ck, code) {
+  var goal = AI_GOAL_CLASS[pid] || '';
+  var sys = '你是面向 Java 零基础学员的严格而友善的代码评审助教。只输出一个 JSON 对象，不要输出任何其他文字、注释或 Markdown 代码围栏。JSON 结构：'
+    + '{"scores":{"正确性":0-100,"规范性":0-100,"结构":0-100,"可读性":0-100,"习惯":0-100},'
+    + '"total":0-100,"summary":"不超过120字的总评","suggestions":["改进建议1","改进建议2",最多6条,每条不超过80字]}。'
+    + '评分维度含义：正确性=是否实现项目要求的全部功能点；规范性=命名/缩进/类型选择；结构=方法拆分与逻辑组织；可读性=注释与清晰度；习惯=资源管理/边界处理等编程习惯。'
+    + '背景：学员是 AI 编程零基础初学者，评分鼓励为主但客观，60 分为通过线。';
+  var user = '【项目】第' + pid.replace(/^c(\d+)s(\d+)$/, '$1') + '章章项目：' + (ck.name || pid) + '\n'
+    + '【目标类名】' + goal + (goal ? '（源文件 ' + goal + '.java）' : '') + '\n'
+    + '【客观要求】关键词至少覆盖：' + (ck.keywords || []).join('、') + '；输出语句至少 ' + ck.minPrints + ' 条；有效代码行数建议 ≥ ' + ck.minLines + '；注释建议 ≥ ' + (ck.minComments || 0) + ' 处。\n'
+    + '【主观评分参考】' + (ck.subjective || []).join('；') + '\n'
+    + '【学员代码】\n' + code;
+  return { system: sys, user: user, messages: [{ role: 'system', content: sys }, { role: 'user', content: user }] };
+}
+
+/* 解析与校验 AI 返回：剥围栏、抽 JSON、逐维校验钳制、总分兜底重算 */
+function aiParseAIJson(raw) {
+  var err;
+  if (raw === null || raw === undefined) return { ok: false, error: 'AI 返回为空' };
+  var s = String(raw).replace(/^\s*```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '');
+  var m = s.match(/\{[\s\S]*\}/);
+  if (!m) return { ok: false, error: 'AI 返回中找不到 JSON 对象' };
+  var obj;
+  try { obj = JSON.parse(m[0]); }
+  catch (e) { return { ok: false, error: 'JSON 解析失败：' + e.message }; }
+  if (!obj || typeof obj !== 'object') return { ok: false, error: 'JSON 不是对象' };
+  var sc = obj.scores && typeof obj.scores === 'object' ? obj.scores : obj;
+  var dims = {}, missing = [];
+  AI_DIMS.forEach(function (d) {
+    var v = sc[d];
+    if (v === undefined || v === null || isNaN(Number(v))) { missing.push(d); }
+    else dims[d] = aiClampScore(v);
+  });
+  if (missing.length) return { ok: false, error: '缺少维度评分：' + missing.join('、') };
+  var total = (obj.total !== undefined && obj.total !== null && !isNaN(Number(obj.total)))
+    ? aiClampScore(obj.total)
+    : Math.round(AI_DIMS.reduce(function (a, d) { return a + dims[d]; }, 0) / AI_DIMS.length);
+  var sug = [];
+  if (Array.isArray(obj.suggestions)) {
+    obj.suggestions.forEach(function (x) {
+      var t = String(x == null ? '' : x).trim();
+      if (t) sug.push(t.slice(0, 120));
+    });
+  }
+  sug = sug.slice(0, 6);
+  return {
+    ok: true,
+    data: {
+      dims: dims,
+      total: total,
+      summary: String(obj.summary || '').slice(0, 200),
+      suggestions: sug
+    }
+  };
+}
+
+/* 模拟评分（未接入真实 AI 时的本地确定性引擎） */
+function aiMockScore(pid, ck, code) {
+  var t = code, lines = t.split('\n').filter(function (l) { return l.trim().length > 0; });
+  var noCmt = t.replace(/\/\/[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+  var kws = ck.keywords || [];
+  var kwHit = kws.filter(function (k) { return t.indexOf(k) >= 0; });
+  var kwRatio = kws.length ? kwHit.length / kws.length : 1;
+  var prints = (t.match(/System\.out\.print/g) || []).length;
+  var comments = (t.match(/\/\/|\/\*/g) || []).length;
+  var opens = (t.match(/\{/g) || []).length, closes = (t.match(/\}/g) || []).length;
+  var bracesOK = opens === closes && opens > 0;
+  var quotesOK = (t.match(/"/g) || []).length % 2 === 0;
+  var hasMethod = /(static|void|public|private)\s+\w[\w<>\[\]]*\s+\w+\s*\(/.test(noCmt);
+  var hasCtrl = /\b(if|for|while|switch)\b/.test(noCmt);
+  var hasScanner = /new\s+Scanner/.test(t);
+  var closedScanner = !hasScanner || /\.close\s*\(\s*\)/.test(t);
+  var camel = /\b[a-z]+[A-Z][A-Za-z]*\b/.test(noCmt);
+  var indented = lines.length ? lines.filter(function (l) { return /^(\s{2,}|\t)/.test(l); }).length / lines.length : 0;
+  var goal = AI_GOAL_CLASS[pid] || '';
+  var classOK = !goal || new RegExp('class\\s+' + goal + '\\b').test(t);
+  var placeholder = /(TODO|此处留空|骨架文件|替换为你的代码)/.test(t);
+
+  /* 各维度先按内部满分权重打原始分，再归一化为 0-100 百分比；总分按权重加权 */
+  var raw = {};
+  raw['正确性'] = kwRatio * 22 + Math.min(1, prints / Math.max(ck.minPrints || 3, 1)) * 8;
+  raw['规范性'] = (camel ? 7 : 3) + (indented > 0.4 ? 7 : indented > 0.15 ? 4 : 1) + (bracesOK ? 3 : 0) + (quotesOK ? 3 : 0);
+  raw['结构'] = (hasMethod ? 8 : 3) + (hasCtrl ? 6 : 2) + (lines.length <= 80 ? 6 : 4);
+  raw['可读性'] = Math.min(8, comments * 2) + (camel ? 4 : 2) + (t.split('\n\n').length > 1 || lines.length < 15 ? 3 : 2);
+  raw['习惯'] = (classOK ? 6 : 0) + (closedScanner ? 3 : 0) + (placeholder ? 0 : 3) + (lines.length >= (ck.minLines || 10) ? 3 : 1);
+  var d = {};
+  AI_DIMS.forEach(function (k) { d[k] = aiClampScore(Math.round(raw[k] / AI_DIM_MAX[k] * 100)); });
+  var total = aiClampScore(Math.round(AI_DIMS.reduce(function (a, k) { return a + d[k] * AI_DIM_MAX[k] / 100; }, 0)));
+  var sug = [];
+  var missKw = kws.filter(function (k) { return kwHit.indexOf(k) < 0; });
+  if (missKw.length) sug.push('还没有用到这些知识点：' + missKw.join('、') + '，对照项目要求补上');
+  if (!bracesOK) sug.push('大括号 { } 数量不匹配（{ ' + opens + ' 个 / } ' + closes + ' 个），先修正再提交');
+  if (!quotesOK) sug.push('双引号数量是奇数，可能有引号没成对闭合');
+  if (prints < (ck.minPrints || 3)) sug.push('输出语句只有 ' + prints + ' 条，项目要求至少 ' + (ck.minPrints || 3) + ' 条');
+  if (comments < 2) sug.push('注释偏少，给关键步骤各加一行 // 注释，方便以后回看');
+  if (!classOK && goal) sug.push('类名建议命名为 ' + goal + '（与源文件 ' + goal + '.java 一致，否则编译不过）');
+  if (!closedScanner) sug.push('用完 Scanner 记得调用 sc.close() 释放资源');
+  if (placeholder) sug.push('代码里还有占位符/骨架痕迹，替换成你自己的实现');
+  (ck.subjective || []).slice(0, 6 - sug.length > 0 ? Math.min(2, 6 - sug.length) : 0).forEach(function (s) { sug.push(s); });
+  if (!sug.length) sug.push('整体完成度不错！可以对照主观评分参考进一步打磨细节');
+  var summary = '模拟评分：关键词覆盖 ' + kwHit.length + '/' + kws.length + '，输出 ' + prints + ' 条，代码 ' + lines.length + ' 行。'
+    + (total >= 60 ? '已达到通过线。' : '还未达到 60 分通过线，先补齐缺失的知识点。');
+  return { dims: d, total: total, summary: summary.slice(0, 200), suggestions: sug.slice(0, 6) };
+}
+/* ==AI-ENGINE-END== */
+
+/* ================= AI 深度评分（配置 / 存储 / 调用 / UI） ================= */
+var AI_CFG_KEY = 'java-course-ai-cfg-v1';
+var AI_REC_KEY = 'java-course-ai-v1';
+function aiCfg() {
+  try {
+    var c = JSON.parse(localStorage.getItem(AI_CFG_KEY) || '{}');
+    if (!c || typeof c !== 'object') c = {};
+    return {
+      provider: c.provider === 'deepseek' ? 'deepseek' : 'mock',
+      apiKey: String(c.apiKey || ''),
+      baseUrl: String(c.baseUrl || 'https://api.deepseek.com'),
+      model: String(c.model || 'deepseek-chat'),
+      timeout: Number(c.timeout) > 3000 ? Number(c.timeout) : 30000
+    };
+  } catch (e) {
+    return { provider: 'mock', apiKey: '', baseUrl: 'https://api.deepseek.com', model: 'deepseek-chat', timeout: 30000 };
+  }
+}
+function aiCfgSave(c) { try { localStorage.setItem(AI_CFG_KEY, JSON.stringify(c)); } catch (e) {} }
+function aiRecDb() {
+  try {
+    var d = JSON.parse(localStorage.getItem(AI_REC_KEY) || '{}');
+    if (!d || typeof d !== 'object' || !d.records) d = { records: {} };
+    return d;
+  } catch (e) { return { records: {} }; }
+}
+function aiRecSave(db) { try { localStorage.setItem(AI_REC_KEY, JSON.stringify(db)); } catch (e) {} }
+function aiRecAdd(pid, rec) {
+  var db = aiRecDb();
+  if (!db.records[pid]) db.records[pid] = { history: [] };
+  db.records[pid].history.unshift(rec);
+  if (db.records[pid].history.length > 10) db.records[pid].history.length = 10;
+  aiRecSave(db);
+}
+function aiRecGet(pid) { var db = aiRecDb(); return (db.records[pid] && db.records[pid].history) || []; }
+
+function aiSleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+/* DeepSeek（OpenAI 兼容）调用：优先走 Electron 主进程桥（无跨域），否则 fetch */
+async function aiCallDeepSeek(cfg, messages) {
+  var body = {
+    model: cfg.model || 'deepseek-chat',
+    messages: messages,
+    temperature: 0.2,
+    max_tokens: 1200,
+    response_format: { type: 'json_object' }
+  };
+  if (typeof window !== 'undefined' && window.electronAI && window.electronAI.aiCall) {
+    return window.electronAI.aiCall({
+      url: cfg.baseUrl.replace(/\/+$/, '') + '/chat/completions',
+      apiKey: cfg.apiKey,
+      body: body,
+      timeout: cfg.timeout
+    });
+  }
+  var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  var tm = ctrl ? setTimeout(function () { ctrl.abort(); }, cfg.timeout || 30000) : null;
+  try {
+    var r = await fetch(cfg.baseUrl.replace(/\/+$/, '') + '/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.apiKey },
+      body: JSON.stringify(body),
+      signal: ctrl ? ctrl.signal : undefined
+    });
+    if (!r.ok) {
+      var txt = '';
+      try { txt = await r.text(); } catch (e) {}
+      throw new Error('HTTP ' + r.status + (txt ? ' ' + txt.slice(0, 120) : ''));
+    }
+    var j = await r.json();
+    var c = j && j.choices && j.choices[0] && j.choices[0].message;
+    if (!c || !c.content) throw new Error('响应缺少 choices[0].message.content');
+    return c.content;
+  } finally { if (tm) clearTimeout(tm); }
+}
+
+/* 带重试的完整调用：网络/超时/5xx 重试退避；JSON 不合法追加一次修复请求 */
+async function aiRunScore(pid, code) {
+  var cfg = aiCfg();
+  var ck = (typeof PROJECT_CHECKS !== 'undefined' && PROJECT_CHECKS[pid]) || { name: pid, keywords: [], minPrints: 3, minLines: 10, subjective: [] };
+  var t0 = Date.now();
+  var finish = function (data, provider, degraded) {
+    data.provider = provider;
+    data.degraded = !!degraded;
+    data.ms = Date.now() - t0;
+    data.model = provider === 'deepseek' ? cfg.model : 'local-mock';
+    return data;
+  };
+  if (cfg.provider !== 'deepseek' || !cfg.apiKey) {
+    return finish(aiMockScore(pid, ck, code), 'mock', false);
+  }
+  var msgs = aiBuildPrompt(pid, ck, code).messages;
+  var lastErr = null;
+  for (var attempt = 0; attempt <= (cfg.maxRetries || 2); attempt++) {
+    try {
+      var raw = await aiCallDeepSeek(cfg, msgs);
+      var parsed = aiParseAIJson(raw);
+      if (parsed.ok) return finish(parsed.data, 'deepseek', false);
+      lastErr = new Error(parsed.error);
+      if (attempt < (cfg.maxRetries || 2)) {
+        msgs = msgs.concat([{ role: 'assistant', content: String(raw).slice(0, 800) },
+          { role: 'user', content: '你的上一次输出不符合要求的 JSON 结构（' + parsed.error + '）。请重新只输出符合 schema 的 JSON 对象，不要任何多余文字。' }]);
+        await aiSleep(1000);
+      }
+    } catch (e) {
+      lastErr = e;
+      if (attempt < (cfg.maxRetries || 2)) await aiSleep(1000 * (attempt + 1) * (attempt + 1));
+    }
+  }
+  var fallback = aiMockScore(pid, ck, code);
+  fallback.summary = 'AI 调用失败（' + String(lastErr && lastErr.message || lastErr).slice(0, 80) + '），已自动降级为本地模拟评分。';
+  return finish(fallback, 'mock', true);
+}
+
+/* 卡片渲染 */
+function aiRenderCard(pid) {
+  var box = document.querySelector('[data-ai-result="' + pid + '"]');
+  if (!box) return;
+  var hist = aiRecGet(pid);
+  if (!hist.length) { box.classList.remove('show'); box.innerHTML = ''; return; }
+  var r = hist[0];
+  var badgeCls = r.provider === 'deepseek' ? '' : (r.degraded ? 'err' : 'mock');
+  var badgeTxt = r.provider === 'deepseek' ? ('DeepSeek · ' + (r.model || 'deepseek-chat')) : (r.degraded ? '已降级为模拟评分' : '模拟评分（未接入真实 AI）');
+  var bars = AI_DIMS.map(function (d) {
+    var v = (r.review && r.review.dims && r.review.dims[d] !== undefined) ? r.review.dims[d] : (r.dims[d] || 0);
+    return '<div class="ai-dim"><span class="lab">' + d + '</span><span class="bar"><i style="width:' + v + '%"></i></span><b>' + v + '</b></div>';
+  }).join('');
+  var revHtml = '';
+  if (r.review) {
+    revHtml = '<div class="ai-rev">⚖ <b>人工复核</b>：复核后总分 <b>' + aiClampScore(r.review.total) + '</b> 分'
+      + (r.review.note ? '，备注：' + escH(String(r.review.note).slice(0, 100)) : '')
+      + '（' + escH((r.review.at || '').slice(0, 16).replace('T', ' ')) + '）</div>';
+  }
+  var sug = (r.suggestions || []).map(function (s) { return '<li>' + escH(s) + '</li>'; }).join('');
+  box.innerHTML =
+    '<div class="ai-card">'
+    + '<div class="ai-card-head"><span class="ai-badge ' + badgeCls + '">' + badgeTxt + '</span>'
+    + '<span class="muted small">' + escH((r.at || '').slice(0, 19).replace('T', ' ')) + ' · 耗时 ' + (r.ms || 0) + 'ms</span></div>'
+    + '<div style="display:flex;align-items:baseline;gap:10px;margin-top:8px;">'
+    + '<span class="ai-total">' + ((r.review && r.review.total !== undefined) ? aiClampScore(r.review.total) : r.total) + '<small> / 100</small></span>'
+    + (r.review && r.review.total !== undefined ? '<span class="muted small">（AI 原评 ' + r.total + '）</span>' : '')
+    + '<span class="muted small">' + (r.total >= 60 ? '✅ 达到 60 分通过线' : '❌ 未达 60 分通过线') + '</span></div>'
+    + bars
+    + (r.summary ? '<p class="small" style="margin:8px 0 0;">' + escH(r.summary) + '</p>' : '')
+    + (sug ? '<ul class="ai-sug">' + sug + '</ul>' : '')
+    + revHtml
+    + '<div class="ai-ops">'
+    + '<button type="button" class="btn btn-ghost" style="padding:5px 12px" onclick="aiOpenCfg()">⚙ 评分设置</button>'
+    + '<button type="button" class="btn btn-ghost" style="padding:5px 12px" onclick="aiOpenReview(\'' + pid + '\')">⚖ 复核校准</button>'
+    + '<button type="button" class="btn btn-ghost" style="padding:5px 12px" onclick="aiOpenHistory(\'' + pid + '\')">🕘 评分历史（' + hist.length + '）</button>'
+    + '</div>'
+    + '<div class="ai-trace">追溯：项目 ' + pid + ' · 记录 ' + (hist.length) + '/10 · 代码 ' + (r.codeChars || 0) + ' 字符 · ' + (r.truncated ? '已截断 · ' : '') + '引擎 ' + (r.provider === 'deepseek' ? 'DeepSeek API' : '本地模拟') + '</div>'
+    + '</div>';
+  box.classList.add('show');
+}
+
+/* 入口：AI 深度评分按钮 */
+async function aiReviewProject(pid, btn) {
+  var ta = document.querySelector('[data-review="' + pid + '"]');
+  if (!ta) return;
+  var norm = aiNormalizeCode(ta.value);
+  if (norm.chars < 30) { hlToast('请先把章项目代码粘贴到上面的审查框再评分'); return; }
+  var old = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ AI 评分中…';
+  try {
+    var data = await aiRunScore(pid, norm.text);
+    data.codeChars = norm.chars;
+    data.truncated = norm.truncated;
+    data.at = new Date().toISOString();
+    data.pid = pid;
+    aiRecAdd(pid, data);
+    aiRenderCard(pid);
+    hlToast(data.degraded ? 'AI 调用失败，已降级为模拟评分' : (data.provider === 'deepseek' ? 'DeepSeek 评分完成' : '模拟评分完成（设置里可接入 DeepSeek）'));
+  } catch (e) {
+    hlToast('评分异常：' + String(e && e.message || e).slice(0, 80));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = old;
+  }
+}
+
+/* 设置弹窗 */
+function aiOpenCfg() {
+  var c = aiCfg();
+  var h = '<div class="em">⚙</div><h3>AI 评分设置</h3>'
+    + '<div class="ai-form-row"><label>评分引擎</label><select id="aiCfgProvider">'
+    + '<option value="mock"' + (c.provider === 'mock' ? ' selected' : '') + '>本地模拟（默认，无需联网）</option>'
+    + '<option value="deepseek"' + (c.provider === 'deepseek' ? ' selected' : '') + '>DeepSeek 真实 AI</option></select></div>'
+    + '<div class="ai-form-row"><label>API Key（DeepSeek 平台 api.deepseek.com 申请，仅保存在本机）</label>'
+    + '<input id="aiCfgKey" type="password" value="' + escH(c.apiKey) + '" placeholder="sk-..." autocomplete="off"></div>'
+    + '<div class="ai-form-row"><label>模型</label><input id="aiCfgModel" type="text" value="' + escH(c.model) + '" placeholder="deepseek-chat"></div>'
+    + '<div class="ai-form-row"><label>接口地址（OpenAI 兼容，可换其他服务商）</label><input id="aiCfgUrl" type="text" value="' + escH(c.baseUrl) + '"></div>'
+    + '<div class="ai-form-row"><label>超时毫秒（超时自动重试 2 次）</label><input id="aiCfgTimeout" type="number" min="5000" step="1000" value="' + c.timeout + '"></div>'
+    + '<p class="muted small" style="text-align:left">说明：模拟模式用本地规则引擎打分并给建议，格式与真实 AI 完全一致；填入 DeepSeek Key 后切到「DeepSeek 真实 AI」即生效。桌面版调用走主进程转发，无浏览器跨域问题。</p>'
+    + '<div class="ops"><button class="btn btn-ghost" onclick="closeLk()">取消</button><button class="btn btn-primary" onclick="aiSaveCfg()">保存</button></div>';
+  showLk(h);
+}
+function aiSaveCfg() {
+  var g = function (id) { var el = document.getElementById(id); return el ? el.value : ''; };
+  var c = {
+    provider: g('aiCfgProvider') === 'deepseek' ? 'deepseek' : 'mock',
+    apiKey: g('aiCfgKey').trim(),
+    model: g('aiCfgModel').trim() || 'deepseek-chat',
+    baseUrl: g('aiCfgUrl').trim() || 'https://api.deepseek.com',
+    timeout: Number(g('aiCfgTimeout')) > 3000 ? Number(g('aiCfgTimeout')) : 30000
+  };
+  if (c.provider === 'deepseek' && !c.apiKey) { hlToast('DeepSeek 模式需要先填 API Key'); return; }
+  aiCfgSave(c);
+  closeLk();
+  hlToast('评分设置已保存' + (c.provider === 'deepseek' ? '：已启用 DeepSeek' : '：当前为模拟模式'));
+}
+
+/* 复核校准弹窗 */
+function aiOpenReview(pid) {
+  var hist = aiRecGet(pid);
+  if (!hist.length) { hlToast('还没有 AI 评分记录'); return; }
+  var r = hist[0];
+  var dims = AI_DIMS.map(function (d) {
+    var v = (r.review && r.review.dims && r.review.dims[d] !== undefined) ? r.review.dims[d] : r.dims[d];
+    return '<div class="ai-form-row"><label>' + d + '（0-100）</label><input type="number" min="0" max="100" id="aiRev_' + d + '" value="' + aiClampScore(v) + '"></div>';
+  }).join('');
+  var h = '<div class="em">⚖</div><h3>人工复核校准 · ' + escH((typeof PROJECT_CHECKS !== 'undefined' && PROJECT_CHECKS[pid] && PROJECT_CHECKS[pid].name) || pid) + '</h3>'
+    + '<p class="muted small" style="text-align:left">AI 原评 ' + r.total + ' 分。你可以手动修正各维度与总分并留备注，复核结果会覆盖展示且保留 AI 原评，用于校准评分标准。</p>'
+    + '<div style="max-height:44vh;overflow-y:auto;text-align:left">' + dims
+    + '<div class="ai-form-row"><label>复核后总分（留空则按维度平均重算）</label><input type="number" min="0" max="100" id="aiRevTotal" value="' + (r.review ? aiClampScore(r.review.total) : r.total) + '"></div>'
+    + '<div class="ai-form-row"><label>复核备注（为什么调整）</label><textarea id="aiRevNote" rows="2" placeholder="例：正确性高估，缺少异常处理扣 10 分">' + escH(r.review ? (r.review.note || '') : '') + '</textarea></div></div>'
+    + '<div class="ops"><button class="btn btn-ghost" onclick="closeLk()">取消</button><button class="btn btn-primary" onclick="aiSaveReview(\'' + pid + '\')">保存复核</button></div>';
+  showLk(h);
+}
+function aiSaveReview(pid) {
+  var hist = aiRecGet(pid);
+  if (!hist.length) return;
+  var dims = {}, sum = 0;
+  AI_DIMS.forEach(function (d) {
+    var el = document.getElementById('aiRev_' + d);
+    var v = aiClampScore(el && el.value !== '' ? el.value : 0);
+    dims[d] = v; sum += v;
+  });
+  var tEl = document.getElementById('aiRevTotal');
+  var total = (tEl && tEl.value !== '' && !isNaN(Number(tEl.value))) ? aiClampScore(tEl.value) : Math.round(sum / AI_DIMS.length);
+  var nEl = document.getElementById('aiRevNote');
+  hist[0].review = { total: total, dims: dims, note: (nEl ? nEl.value.trim().slice(0, 200) : ''), at: new Date().toISOString() };
+  var db = aiRecDb();
+  db.records[pid].history = hist;
+  aiRecSave(db);
+  aiRenderCard(pid);
+  closeLk();
+  hlToast('复核结果已保存（AI 原评保留可追溯）');
+}
+
+/* 历史弹窗 */
+function aiOpenHistory(pid) {
+  var hist = aiRecGet(pid);
+  if (!hist.length) { hlToast('还没有评分记录'); return; }
+  var rows = hist.map(function (r, i) {
+    var tag = r.provider === 'deepseek' ? 'DeepSeek' : (r.degraded ? '降级模拟' : '模拟');
+    var rev = r.review ? ' → 复核 ' + aiClampScore(r.review.total) : '';
+    return '<div class="ai-hist-item"><span class="ai-badge ' + (r.provider === 'deepseek' ? '' : 'mock') + '">' + tag + '</span>'
+      + '<b>' + r.total + ' 分' + rev + '</b><span class="muted small" style="flex:1;text-align:right">' + escH((r.at || '').slice(0, 19).replace('T', ' ')) + '</span></div>';
+  }).join('');
+  showLk('<div class="em">🕘</div><h3>评分历史 · ' + escH((typeof PROJECT_CHECKS !== 'undefined' && PROJECT_CHECKS[pid] && PROJECT_CHECKS[pid].name) || pid) + '</h3>'
+    + '<div class="ai-hist">' + rows + '</div>'
+    + '<p class="muted small" style="margin-top:10px">最多保留最近 10 条，含 AI 原评与人工复核结果，可追溯每次评分。</p>'
+    + '<div class="ops"><button class="btn btn-primary" onclick="closeLk()">关闭</button></div>');
+}
+
+/* 把 AI 评分按钮注入全部章项目审查区 */
+function aiInjectButtons() {
+  var boxes = document.querySelectorAll('.proj-review');
+  for (var i = 0; i < boxes.length; i++) {
+    var box = boxes[i];
+    var src = box.querySelector('[data-review]');
+    if (!src) continue;
+    var pid = src.getAttribute('data-review');
+    if (typeof PROJECT_CHECKS === 'undefined' || !PROJECT_CHECKS[pid]) continue;
+    var btn = box.querySelector('.proj-review-btn');
+    if (btn && !box.querySelector('.ai-review-btn')) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'btn btn-ghost ai-review-btn';
+      b.textContent = '🤖 AI 深度评分';
+      b.onclick = (function (p) { return function () { aiReviewProject(p, this); }; })(pid);
+      btn.parentNode.insertBefore(b, btn.nextSibling);
+    }
+    if (!box.querySelector('[data-ai-result]')) {
+      var d = document.createElement('div');
+      d.className = 'ai-review-result';
+      d.setAttribute('data-ai-result', pid);
+      box.appendChild(d);
+    }
+  }
+}
+
 /* ================= 自定义弹窗（#lkMask / #lkCard） ================= */
 function showLk(html){
   var mask=document.getElementById('lkMask'), card=document.getElementById('lkCard');
@@ -10152,6 +10608,7 @@ window.addEventListener('DOMContentLoaded',function(){
   try{
     renderPracticeCards();
     injectProjectAttest();
+    aiInjectButtons();
     renderGateBars();
     bindReset();
     refreshUI();

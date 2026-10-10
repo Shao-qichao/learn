@@ -8,10 +8,56 @@
  *  4. vscode:// 与 http(s) 链接交给系统外部程序打开
  */
 
-const { app, BrowserWindow, Menu, shell, dialog, session } = require('electron');
+const { app, BrowserWindow, Menu, shell, dialog, session, ipcMain } = require('electron');
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
 const { createUpdateManager } = require('./updater');
+
+/**
+ * AI 评分代理：渲染进程选 DeepSeek 等 OpenAI 兼容服务时，由主进程转发 HTTPS 请求。
+ * 好处：①规避渲染进程浏览器跨域限制 ②超时/状态码集中处理。
+ * 页面侧已有重试退避与降级逻辑（aiRunScore），这里只做单次可靠请求。
+ */
+ipcMain.handle('ai-score-call', async (event, payload) => {
+  if (!payload || !payload.url || !payload.apiKey) throw new Error('AI 调用参数缺失');
+  const timeout = Math.max(3000, Number(payload.timeout) || 30000);
+  return await new Promise((resolve, reject) => {
+    let u;
+    try { u = new URL(payload.url); } catch (e) { return reject(new Error('URL 无效')); }
+    if (u.protocol !== 'https:') return reject(new Error('仅支持 https 接口'));
+    const data = Buffer.from(JSON.stringify(payload.body || {}), 'utf8');
+    const req = https.request({
+      hostname: u.hostname,
+      port: u.port || 443,
+      path: u.pathname + u.search,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': data.length,
+        'Authorization': 'Bearer ' + payload.apiKey
+      },
+      timeout
+    }, (res) => {
+      const chunks = [];
+      res.on('data', (c) => chunks.push(c));
+      res.on('end', () => {
+        const text = Buffer.concat(chunks).toString('utf8');
+        if (res.statusCode >= 400) return reject(new Error('HTTP ' + res.statusCode + ' ' + text.slice(0, 120)));
+        try {
+          const j = JSON.parse(text);
+          const c = j && j.choices && j.choices[0] && j.choices[0].message;
+          if (!c || !c.content) return reject(new Error('响应缺少 choices[0].message.content'));
+          resolve(c.content);
+        } catch (e) { reject(new Error('响应 JSON 解析失败')); }
+      });
+    });
+    req.on('timeout', () => { req.destroy(new Error('请求超时(' + timeout + 'ms)')); });
+    req.on('error', (e) => reject(e));
+    req.write(data);
+    req.end();
+  });
+});
 
 const APP_NAME = 'Java学习中心';
 const isDev = !app.isPackaged;
@@ -150,7 +196,7 @@ function createWindow() {
     backgroundColor: '#f5f3ff',
     title: APP_NAME,
     icon: path.join(__dirname, 'build', process.platform === 'win32' ? 'icon.ico' : 'icon.png'),
-    webPreferences: { contextIsolation: true, nodeIntegration: false }
+    webPreferences: { contextIsolation: true, nodeIntegration: false, preload: path.join(__dirname, 'preload.js') }
   });
 
   mainWindow.loadFile(page);

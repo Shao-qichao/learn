@@ -7008,7 +7008,8 @@ if(location.hash&&document.getElementById('page-'+location.hash.slice(1))){
     "name": "Main.java",
     "code": "public class Main {\n    // 方法定义在类里面、main 外面，与 main 平级；现阶段都加 static\n    public static void printWelcome() {\n        System.out.println(\"欢迎光临！\");\n        System.out.println(\"今天也要加油哦\");\n    }\n\n    public static void printLine() {\n        System.out.println(\"----------\");\n    }\n\n    public static void main(String[] args) {\n        printWelcome();   // 同一段逻辑反复调用，不用复制代码\n        printLine();\n        printWelcome();\n        printLine();\n    }\n}"
    }
-  ]
+  ],
+  "web": "/* ===== 网页检测版 Main.java（仅用于通过网页检测）=====\n   网页检测器不会执行方法调用，只认识字符串字面量。\n   学习时请按上面的标准写法在 VS Code 里定义方法并调用；检测时贴下面这份样例结果。 */\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"欢迎光临！\");\n        System.out.println(\"今天也要加油哦\");\n        System.out.println(\"----------\");\n        System.out.println(\"欢迎光临！\");\n        System.out.println(\"今天也要加油哦\");\n        System.out.println(\"----------\");\n    }\n}"
  },
  "c5s2": {
   "files": [
@@ -7033,7 +7034,8 @@ if(location.hash&&document.getElementById('page-'+location.hash.slice(1))){
     "name": "Tools.java",
     "code": "public class Tools {\n    public static void printWelcome(String name) {\n        System.out.println(\"欢迎你，\" + name);\n    }\n\n    public static int add(int a, int b) {\n        return a + b;\n    }\n\n    public static boolean isAdult(int age) {\n        return age >= 18;\n    }\n}"
    }
-  ]
+  ],
+  "web": "/* ===== 网页检测版 Main.java（仅用于通过网页检测）=====\n   网页检测器不会执行方法调用和参数传递，只认识字符串字面量。\n   学习时请按上面的标准写法在 VS Code 里分文件编写；检测时贴下面这份样例结果。 */\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"欢迎你，小明\");\n        System.out.println(\"欢迎你，小明\");\n        System.out.println(\"欢迎你，小明\");\n        System.out.println(\"欢迎你，小红\");\n        System.out.println(\"8\");\n        System.out.println(\"可以进入\");\n    }\n}"
  },
  "c5s4": {
   "files": [
@@ -7045,7 +7047,8 @@ if(location.hash&&document.getElementById('page-'+location.hash.slice(1))){
     "name": "Tools.java",
     "code": "public class Tools {\n    // 方法名相同、参数列表不同，就是方法重载\n    public static int add(int a, int b) {\n        return a + b;\n    }\n\n    public static double add(double a, double b) {\n        return a + b;\n    }\n\n    public static int add(int a, int b, int c) {\n        return a + b + c;\n    }\n}"
    }
-  ]
+  ],
+  "web": "/* ===== 网页检测版 Main.java（仅用于通过网页检测）=====\n   网页检测器不会执行方法重载和返回值，只认识字符串字面量。\n   学习时请按上面的标准写法在 VS Code 里分文件编写；检测时贴下面这份样例结果。 */\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"3\");\n        System.out.println(\"4.0\");\n        System.out.println(\"6\");\n    }\n}"
  },
  "c5s5": {
   "files": [
@@ -7070,7 +7073,8 @@ if(location.hash&&document.getElementById('page-'+location.hash.slice(1))){
     "name": "Student.java",
     "code": "public class Student {\n    // 成员变量：每个对象各存一份\n    String name;\n    int age;\n\n    // 成员方法不写 static，可以直接使用本对象的成员变量\n    void study() {\n        System.out.println(name + \" 正在学习\");\n    }\n\n    void introduce() {\n        System.out.println(\"我叫 \" + name + \"，今年 \" + age + \" 岁\");\n    }\n}"
    }
-  ]
+  ],
+  "web": "/* ===== 网页检测版 Main.java（仅用于通过网页检测）=====\n   网页检测器不会执行对象方法调用，只认识字符串字面量。\n   学习时请按上面的标准写法在 VS Code 里分文件编写；检测时贴下面这份样例结果。 */\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"===== 类与对象练习 =====\");\n        System.out.println(\"小明 正在学习\");\n        System.out.println(\"小红 正在学习\");\n        System.out.println(\"我叫 小明，今年 18 岁\");\n        System.out.println(\"我叫 小红，今年 17 岁\");\n    }\n}"
  },
  "c6s2": {
   "files": [
@@ -7108,7 +7112,8 @@ if(location.hash&&document.getElementById('page-'+location.hash.slice(1))){
     "name": "Student.java",
     "code": "public class Student {\n    private String name;\n    private int age;\n\n    // 无参构造：用 this(...) 复用全参构造\n    public Student() {\n        this(\"未命名\", 0);\n    }\n\n    // 单参构造：默认年龄 18\n    public Student(String name) {\n        this(name, 18);\n    }\n\n    // 全参构造：构造方法名与类名相同、没有返回类型\n    public Student(String name, int age) {\n        this.name = name;   // this.name 是成员变量，name 是参数\n        this.age = age;\n    }\n\n    public String getName() {\n        return name;\n    }\n\n    public void setName(String name) {\n        this.name = name;\n    }\n\n    public int getAge() {\n        return age;\n    }\n\n    public void setAge(int age) {\n        this.age = age;\n    }\n}"
    }
-  ]
+  ],
+  "web": "/* ===== 网页检测版 Main.java（仅用于通过网页检测）=====\n   网页检测器不会执行构造方法和 getter/setter，只认识字符串字面量。\n   学习时请按上面的标准写法在 VS Code 里分文件编写；检测时贴下面这份样例结果。 */\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"===== 构造方法与 this 练习 =====\");\n        System.out.println(\"无参构造 -> 未命名，0 岁\");\n        System.out.println(\"单参构造 -> 小红，18 岁\");\n        System.out.println(\"全参构造 -> 小刚，20 岁\");\n        System.out.println(\"修改后 -> 小美，19 岁\");\n    }\n}"
  },
  "c6s5": {
   "files": [
@@ -8520,6 +8525,13 @@ function checkCode(id,code){
         }else if(usesLoop){
           detail+='\n\n🔁 特别说明（不是你代码的问题！）：网页检测器是静态检查，不会真正执行 for/while 循环、数组运算和方法调用，只能识别 System.out.println 里写死的字符串。\n请继续在 VS Code 里用循环写真实代码；过网页检测时，把循环真实运行后会打印出的结果逐行写成固定字符串（例如循环本会打印 5 行，就直接写 5 条 println 字面量）。';
         }
+        /* 如果该练习有「网页检测版」答案，直接展示在错误信息里，打破"过不了看不到→看不到过不了"的死循环 */
+        try{
+          var sol=SOLUTIONS[id];
+          if(sol&&sol.web){
+            detail+='\n\n📋📋 网页检测版代码（复制粘贴后点「检测代码」即可通过）：\n\n'+sol.web;
+          }
+        }catch(e){}
         errors.push(detail);
       }else if(matchPct<100){
         var warn='输出匹配率 '+matchPct+'%，已达到本章解锁线（'+threshold+'%），参考答案已解锁；不过还有 '+unmatchedExpected.length+' 行与预期不一致，建议继续改到 100%。';

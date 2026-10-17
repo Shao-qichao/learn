@@ -7830,7 +7830,7 @@ function openRefAnswer(id){
   var s=getS(id);
   if(!s.codedone){
     var stg=getStageInfo(id);
-    alert('⚠️ 请先完成代码检测。\n\n把你在 VS Code 里写的代码粘贴到检测区，点「🔍 检测代码」通过后，才能查看参考答案。\n\n🎓 第 '+stg.chapter+' 章·'+stg.stage+'：输出与预期匹配率达到 '+stg.matchThreshold+'% 即可解锁（语法错误仍需先修复）。');
+    alert('⚠️ 请先完成代码检测。\n\n把你在 VS Code 里写的代码粘贴到检测区，点「🔍 检测代码」——程序完整执行且输出与预期完全一致后，即可查看参考答案。\n\n🎓 第 '+stg.chapter+' 章·'+stg.stage+'（评分规则 v3.0：无其他维度检查）。');
     return;
   }
   s.viewed=1; saveG();
@@ -7958,403 +7958,110 @@ function evalJavaStringExpr(expr){
   }
   return parts.join('');
 }
-/* 从 expected 字段提取关键输出行（忽略描述性文字，只取示例输出行） */
+/* 从 expected 字段提取「标准输出行」用于逐字精确比对（评分规则 v3.0）：
+   - 若含「例如：」只取其后内容；
+   - 丢弃描述性行：含句号/分号/箭头/省略号等叙述符号的行、以全角冒号结尾的引导行、整行括号说明；
+     （字符类用 Unicode 码点书写：。U+3002 ；U+FF1B → U+2192 ↓ U+2193 … U+2026 ：U+FF1A （U+FF09）
+   - 判定标准：提取出的每一行都必须在程序输出中逐字出现（trim 后完全相等）；
+   - 全部被过滤（描述性预期，无法静态比对）时返回 []，此时只要求程序完整执行。 */
 function extractExpectedLines(expected){
   var raw=String(expected||'');
-  /* 如果有"例如："，取其后的部分 */
-  var afterEg=raw;
   var egIdx=raw.indexOf('例如：');
-  if(egIdx>=0)afterEg=raw.substring(egIdx+3);
-  /* 去掉描述性前缀（如"运行后屏幕上出现..."） */
-  afterEg=afterEg.replace(/^[^：]*：?\s*/,'');
-  var lines=afterEg.split('\n').map(function(l){return l.trim();}).filter(function(l){return l.length>0;});
-  return lines;
+  if(egIdx>=0)raw=raw.substring(egIdx+3);
+  return raw.split('\n')
+    .map(function(l){return l.trim();})
+    .filter(function(l){return l && !/^\uFF08.*\uFF09$/.test(l);})   /* whole-line paren note first */
+    .map(function(l){return l.replace(/^[\uFF08(]+/,'').replace(/[\uFF09)]+$/,'').trim();})
+    .filter(function(l){
+      if(!l)return false;
+      if(new RegExp('[\u3002\uFF1B\u2192\u2193\u2026]').test(l))return false;
+      if(/\uFF1A\s*$/.test(l))return false;
+      return true;
+    });
 }
-/* ================= 代码质量评分系统 v2 =================
-   对标 VS Code + Java 扩展（JDT.LS）的静态分析标准：
-   1. 无论检测是否通过都生成评分；编译失败时对「运行相关」维度做封顶（仍出分，不跳过）；
-   2. 5 个维度，权重合计 100：规范性 25 / 逻辑完整性 30 / 错误处理 20 / 性能 15 / 可读性 10；
-   3. 每条规则有固定 RULE-ID 与固定分值，纯确定性计算 → 同一份代码任意次评分结果相同；
-   4. report.trail 记录每一次扣分，report.meta.fingerprint 为评分指纹，过程可复现、结果可解释。 */
-var CODE_QUALITY_RUBRIC = {
-  rubricVersion:'2.0',
-  passingScore: 60,    /* 综合评分 ≥60 才解锁答案 */
-  dimensions: [
-    { id:'specification', name:'代码规范性', weight:25, rules:[
-      {id:'RULE-S01',points:4,desc:'类名遵循 PascalCase（首字母大写）'},
-      {id:'RULE-S02',points:5,desc:'语法类编译错误（括号/引号/非法字符），每条扣分，本规则封顶 -15'},
-      {id:'RULE-S03',points:4,desc:'符号类编译错误（System/main 等大小写拼写），每条扣分，封顶 -12'},
-      {id:'RULE-S04',points:2,desc:'缩进混用 Tab 与空格'},
-      {id:'RULE-S05',points:1,desc:'行尾分号警告，每条扣分，封顶 -4'},
-      {id:'RULE-S06',points:2,desc:'缺少 import 导入，每条扣分，封顶 -4'}
-    ]},
-    { id:'logic', name:'逻辑完整性', weight:30, rules:[
-      {id:'RULE-L01',points:10,desc:'main 入口签名完整（public static void main(String[] args)）'},
-      {id:'RULE-L02',points:4,desc:'class 结构声明存在'},
-      {id:'RULE-L03',points:6,desc:'包含标准输出语句 System.out.print/println'},
-      {id:'RULE-L04',points:18,desc:'输出与练习预期逐字匹配，按匹配率线性扣分'},
-      {id:'CAP-LOGIC',points:0,desc:'编译失败时本维度封顶 50%：代码无法运行，逻辑不可验证'},
-      {id:'RULE-G01',points:0,desc:'【全局硬闸口】只要存在错误（javac 编译错误、java 启动错误或教学校验未通过，退出码≠0），综合分一律封顶 59，修复全部错误后才可越过 60 解锁线'}
-    ]},
-    { id:'errorHandling', name:'错误处理能力', weight:20, rules:[
-      {id:'RULE-E01',points:6,desc:'数值输入先用 hasNextInt/hasNextDouble 校验类型'},
-      {id:'RULE-E02',points:6,desc:'除法运算前检查除数不为 0'},
-      {id:'RULE-E03',points:4,desc:'整数除法精度丢失意识（5/2=2，需要小数写 5.0/2）'},
-      {id:'RULE-E04',points:4,desc:'Scanner/IO 等外部资源用 try-catch 或 throws 处理异常'},
-      {id:'RULE-E05',points:2,desc:'Scanner 使用后 close() 释放资源'},
-      {id:'RULE-E06',points:3,desc:'敏感信息（密码/令牌）不硬编码在源码中'},
-      {id:'CAP-EH',points:0,desc:'编译失败时本维度封顶 70%'}
-    ]},
-    { id:'performance', name:'性能效率', weight:15, rules:[
-      {id:'RULE-P01',points:6,desc:'不在循环体内重复 new 对象'},
-      {id:'RULE-P02',points:4,desc:'循环内大量字符串拼接改用 StringBuilder'},
-      {id:'RULE-P03',points:2,desc:'System.out.print 调用 >5 次，建议合并组织'},
-      {id:'CAP-PERF',points:0,desc:'编译失败时本维度封顶 60%'}
-    ]},
-    { id:'readability', name:'可读性', weight:10, rules:[
-      {id:'RULE-R01',points:2,desc:'变量名有语义（单字母仅限 i/j/k/n），每条扣分，封顶 -4'},
-      {id:'RULE-R02',points:1,desc:'单行超过 100 字符，每条扣分，封顶 -3'},
-      {id:'RULE-R03',points:2,desc:'有效代码 >10 行时包含必要注释'}
-    ]}
-  ]
-};
-/* 配置接口：运行时调整权重（参数如 {specification:25, logic:30, ...}） */
-function setRubricWeights(weights){
-  if(!weights||typeof weights!=='object')return false;
-  var ok=true;
-  CODE_QUALITY_RUBRIC.dimensions.forEach(function(d){
-    if(typeof weights[d.id]==='number'&&weights[d.id]>=0){
-      d.weight=weights[d.id];
-    }else{ok=false;}
-  });
-  try{localStorage.setItem('java-rubric-v2',JSON.stringify({version:CODE_QUALITY_RUBRIC.rubricVersion,passingScore:CODE_QUALITY_RUBRIC.passingScore,dimensions:CODE_QUALITY_RUBRIC.dimensions.map(function(d){return {id:d.id,weight:d.weight};})}));}catch(e){}
-  return ok;
-}
-/* 启动时加载已保存的配置（v2 存储键；旧 v1 权重仅迁移同名维度） */
-(function(){
-  try{
-    var saved=JSON.parse(localStorage.getItem('java-rubric-v2')||localStorage.getItem('java-rubric-v1')||'null');
-    if(saved&&saved.dimensions){
-      saved.dimensions.forEach(function(sd){
-        var d=CODE_QUALITY_RUBRIC.dimensions.find(function(x){return x.id===sd.id;});
-        if(d&&typeof sd.weight==='number')d.weight=sd.weight;
-      });
-      if(typeof saved.passingScore==='number')CODE_QUALITY_RUBRIC.passingScore=saved.passingScore;
-    }
-  }catch(e){}
-})();
+/* ================= 代码检测判定系统 v3 =================
+   评分规则 v3.0：
+   ① 唯一前置条件：代码能完整执行结束 —— 无编译错误、无启动错误，
+     即视为「运行完成，不超时、不崩溃、无异常中断」。
+   ② 通过（100 分）当且仅当：完整执行 且 程序最终输出与系统预设的标准结果完全一致
+     （预期每一行都必须在输出中逐字出现）。
+   ③ 不再包含任何实现方式、编码规范、代码结构、算法复杂度等维度的检查或限制。
+   ④ 预期为描述性文字（无法静态比对输出）的练习，只要求完整执行即判定通过，
+     最终效果以 VS Code 实际运行结果为准。 */
 
-/* 评分主函数 v2 - 输入 code + checkCode 结果，无论通过与否都输出评分报告
-   每个扣分点带固定 RULE-ID；trail 与 fingerprint 保证过程可复现、结果可解释。 */
+/* 评分主函数 v3 —— 输入 code + checkCode 结果，输出判定报告 */
 function scoreCodeQuality(code,checkResult){
-  var R=CODE_QUALITY_RUBRIC;
-  var totalWeight=0;
-  R.dimensions.forEach(function(d){totalWeight+=d.weight;});
-  if(totalWeight<=0)totalWeight=100;
-  var errors=checkResult.errors||[];
-  var warnings=checkResult.warnings||[];
-  function errCount(s){return errors.filter(function(e){return String(e).indexOf(s)>=0;}).length;}
-  function warnCount(s){return warnings.filter(function(w){return String(w).indexOf(s)>=0;}).length;}
-
-  var dims=R.dimensions.map(function(d){
-    var max=Math.round(d.weight/totalWeight*100);
-    return {
-      id:d.id,name:d.name,weight:d.weight,rules:d.rules,
-      maxScore:max,score:max,deductions:[],suggestions:[],caps:[]
-    };
-  });
-  function dim(id){return dims.find(function(d){return d.id===id;});}
-  /* 扣分：clamp 保证维度不出现负分；封顶由 cap() 单独处理 */
-  function deduct(id,ruleId,points,reason,suggestion){
-    var d=dim(id);if(!d||points<=0)return;
-    var before=d.score;
-    d.score=Math.max(0,d.score-points);
-    var applied=before-d.score;
-    d.deductions.push({ruleId:ruleId,points:applied,reason:reason});
-    if(suggestion)d.suggestions.push(suggestion);
-  }
-  /* 封顶（编译失败时对运行相关维度使用） */
-  function cap(id,ruleId,ratio,reason){
-    var d=dim(id);if(!d)return;
-    var ceil=Math.round(d.maxScore*ratio);
-    if(d.score>ceil){
-      d.score=ceil;
-      d.caps.push({ruleId:ruleId,ceil:ceil,reason:reason});
-    }
-  }
-
-  /* ============ 1. 代码规范性（25） ============ */
-  var classMatch=code.match(/\bclass\s+([A-Za-z_]\w*)/);
-  if(classMatch&&classMatch[1].charAt(0)!==classMatch[1].charAt(0).toUpperCase()){
-    deduct('specification','RULE-S01',4,'类名「'+classMatch[1]+'」首字母未大写','💡 Java 类名遵循 PascalCase：class Hello { ... }');
-  }
-  /* 语法类错误：中文标点 / 括号 / 引号闭合，每条 -5，封顶 -15（过滤器互不相交，一条错误只计一次） */
-  var syntaxErrs=errors.filter(function(e){
-    var t=String(e);return t.indexOf('中文')>=0||t.indexOf('括号')>=0||t.indexOf('闭合')>=0||t.indexOf('引号')>=0||t.indexOf('多余的')>=0;
-  }).length;
-  if(syntaxErrs>0){
-    deduct('specification','RULE-S02',Math.min(15,syntaxErrs*5),'语法类编译错误 '+syntaxErrs+' 个（括号/引号/非法字符），javac 无法编译','💡 先按错误卡片中的行号逐一修复语法错误');
-  }
-  /* 符号类错误：System/main 大小写，每条 -4，封顶 -12 */
-  var symbolErrs=errors.filter(function(e){
-    var t=String(e);return t.indexOf('大写')>=0||t.indexOf('不是 system')>=0||t.indexOf('不是 SYSTEM')>=0;
-  }).length;
-  if(symbolErrs>0){
-    deduct('specification','RULE-S03',Math.min(12,symbolErrs*4),'符号拼写/大小写错误 '+symbolErrs+' 个（Java 严格区分大小写）','💡 System 首字母大写，main、out、println 全小写');
-  }
-  if(/\t/.test(code)&&/\n    /.test(code)){
-    deduct('specification','RULE-S04',2,'缩进混用 Tab 和空格','💡 VS Code 右下角可切换缩进，统一用 4 个空格');
-  }
-  var missSemi=warnings.filter(function(w){return String(w).indexOf('分号')>=0;}).length;
-  if(missSemi>0){
-    deduct('specification','RULE-S05',Math.min(4,missSemi),'分号警告 '+missSemi+' 处','💡 Java 每条可执行语句末尾必须加 ;');
-  }
-  var missImport=warnings.filter(function(w){var t=String(w);return t.indexOf('导入')>=0||t.indexOf('import')>=0;}).length;
-  if(missImport>0){
-    deduct('specification','RULE-S06',Math.min(4,missImport*2),'缺少 import 导入 '+missImport+' 处','💡 在 class 前补 import java.util.Scanner;（VS Code 可用 Ctrl+Shift+O 自动整理导入）');
-  }
-
-  /* ============ 2. 逻辑完整性（30） ============ */
-  var hasMain=/public\s+static\s+void\s+main\s*\(\s*(String\s*\[\]\s+\w+|String\s+\w+\s*\[\])/.test(code);
-  var hasClass=/\bclass\s+\w+/.test(code);
-  var hasPrint=/System\.out\.print/.test(code);
-  if(!hasMain){
-    if(/static\s+void\s+main\s*\(/.test(code)&&!/public\s+static/.test(code)){
-      deduct('logic','RULE-L01',3,'main 方法缺少 public 修饰符','💡 标准签名：public static void main(String[] args)');
-    }else{
-      deduct('logic','RULE-L01',10,'main 入口方法缺失或签名不完整','💡 入口必须是 public static void main(String[] args) { ... }');
-    }
-  }
-  if(!hasClass){
-    deduct('logic','RULE-L02',4,'未找到 class 声明','💡 Java 代码必须写在 class 体内');
-  }
-  if(!hasPrint){
-    deduct('logic','RULE-L03',6,'没有 System.out.print/println 输出语句','💡 程序需要输出语句才能看到运行结果');
-  }
-  /* 输出匹配率：优先取 checkResult.matchPct；没有则从错误文本解析；无相关问题视为 100 */
-  var matchPct=100;
-  if(typeof checkResult.matchPct==='number'){
-    matchPct=checkResult.matchPct;
-  }else{
-    var allText=errors.join('\n')+'\n'+warnings.join('\n');
-    var pm=allText.match(/匹配率\s*(\d+)\s*%/);
-    if(pm)matchPct=parseInt(pm[1],10);
-  }
-  if(hasPrint){
-    var lost=Math.round(18*(1-matchPct/100));
-    if(lost>0){
-      deduct('logic','RULE-L04',lost,'输出与预期匹配率 '+matchPct+'%（-'+lost+'/18）','💡 逐字符对照预期输出，检查大小写、标点、空格与换行');
-    }
-  }else{
-    deduct('logic','RULE-L04',18,'无输出语句，输出匹配率按 0% 计','💡 先用 System.out.println 输出题目要求的内容');
-  }
-
-  /* ============ 3. 错误处理能力（20，仅在使用相关特性时触发） ============ */
-  if(/\.next(?:Int|Double|Long|Float)\s*\(/.test(code)&&!/hasNext/.test(code)){
-    deduct('errorHandling','RULE-E01',6,'数值输入未做 hasNextXxx 类型校验','💡 先 if(sc.hasNextInt()) 再 sc.nextInt()，避免 InputMismatchException');
-  }
-  var divs=code.match(/\b[A-Za-z_]\w*\s*\/\s*[A-Za-z_]\w*/g)||[];
-  if(divs.length>0&&!/!=\s*0|==\s*0|>\s*0|>=\s*0/.test(code)){
-    deduct('errorHandling','RULE-E02',6,'检测到变量除法 '+divs.length+' 处，未发现除零判断','💡 除法前确认除数不为 0，例如 if(b != 0){ int c = a / b; }');
-  }
-  if(/\b\d+\s*\/\s*\d+/.test(code)&&!/double|float/.test(code)){
-    deduct('errorHandling','RULE-E03',4,'存在整数除法，小数部分会被截断','💡 5/2 结果是 2；需要 2.5 请写 5.0/2 或强转 (double)');
-  }
-  if(/new\s+(Scanner|File|FileReader|BufferedReader|FileWriter|InputStreamReader)\b/.test(code)&&!/try\s*\{/.test(code)&&!/\bthrows\b/.test(code)){
-    deduct('errorHandling','RULE-E04',4,'使用了外部资源但没有 try-catch / throws','💡 IO 与 Scanner 可能抛异常，建议 try-catch 包裹或在 main 上声明 throws Exception');
-  }
-  if(/new\s+Scanner/.test(code)&&!/\.close\s*\(\s*\)/.test(code)){
-    deduct('errorHandling','RULE-E05',2,'Scanner 未调用 close()','💡 用完后 sc.close(); 释放底层资源');
-  }
-  if(/\b(?:password|passwd|pwd|secret|token)\s*=\s*"/i.test(code)){
-    deduct('errorHandling','RULE-E06',3,'检测到硬编码的密码/令牌','💡 敏感信息不要写死在源码里，应从配置或环境变量读取');
-  }
-
-  /* ============ 4. 性能效率（15） ============ */
-  if(/for\s*\([^)]*\)\s*\{[^}]*new\s+\w/.test(code)||/while\s*\([^)]*\)\s*\{[^}]*new\s+\w/.test(code)){
-    deduct('performance','RULE-P01',6,'循环体内创建对象，每次迭代都重新分配内存','💡 把对象创建提到循环外，循环内只复用');
-  }
-  if(/for\s*\([^)]*\)\s*\{[^}]*\+/.test(code)){
-    deduct('performance','RULE-P02',4,'循环体内用 + 拼接字符串，会产生大量临时对象','💡 循环外创建 StringBuilder，循环内 append');
-  }
-  var printCalls=code.match(/System\.out\.print(?:ln)?\s*\(/g)||[];
-  if(printCalls.length>5){
-    deduct('performance','RULE-P03',2,'System.out.print 调用 '+printCalls.length+' 次（>5）','💡 可先拼接到变量再一次性输出，减少 IO 次数');
-  }
-
-  /* ============ 5. 可读性（10） ============ */
-  var varDecl=code.match(/\b(?:int|double|float|long|String|char|boolean)\s+([A-Za-z_]\w*)\s*[=;]/g)||[];
-  var shortNames={};
-  varDecl.forEach(function(d){
-    var name=(d.match(/([A-Za-z_]\w*)\s*[=;]/)||[])[1]||'';
-    if(name.length===1&&'ijkn'.indexOf(name)<0)shortNames[name]=1;
-  });
-  var shortCount=Object.keys(shortNames).length;
-  if(shortCount>0){
-    deduct('readability','RULE-R01',Math.min(4,shortCount*2),'语义不明的单字母变量：'+Object.keys(shortNames).join('、'),'💡 用有意义的名字：int age; 而非 int a;（循环变量 i/j/k/n 除外）');
-  }
-  var lines=code.split('\n');
-  var longLines=0;
-  lines.forEach(function(l){if(l.trim().length>100)longLines++;});
-  if(longLines>0){
-    deduct('readability','RULE-R02',Math.min(3,longLines),'有 '+longLines+' 行超过 100 字符','💡 长表达式可拆行或提取为变量');
-  }
-  var codeLineCount=lines.filter(function(l){
-    var t=l.trim();return t&&t.indexOf('//')!==0&&t.indexOf('/*')!==0&&t.indexOf('*')!==0;
-  }).length;
-  if(codeLineCount>10&&!/\/\/|\/\*/.test(code)){
-    deduct('readability','RULE-R03',2,'有效代码 '+codeLineCount+' 行但没有任何注释','💡 在关键变量或复杂逻辑处加 // 说明意图');
-  }
-
-  /* ============ 编译失败封顶（仍出分，但运行相关维度不可证） ============ */
-  var compileFailed=errors.length>0;
-  if(compileFailed){
-    cap('logic','CAP-LOGIC',0.5,'存在编译错误，程序无法运行，逻辑完整性按可验证部分封顶 50%');
-    cap('errorHandling','CAP-EH',0.7,'存在编译错误，错误处理能力封顶 70%');
-    cap('performance','CAP-PERF',0.6,'存在编译错误，性能效率封顶 60%');
-  }
-
-  /* ============ 汇总（按权重归一化到 0-100） ============ */
-  var rawSum=0,maxSum=0;
-  dims.forEach(function(d){rawSum+=d.score;maxSum+=d.maxScore;});
-  var totalScore=maxSum>0?Math.round(rawSum/maxSum*100):0;
-  /* 全局硬闸口 RULE-G01：编译失败一律 ≤59，javac 退出码非 0 的代码不予通过 */
-  var gateCapped=false;
-  if(compileFailed&&totalScore>=R.passingScore){
-    totalScore=R.passingScore-1;
-    gateCapped=true;
-  }
-
-  /* 评分指纹：把「命中的规则+次数」与代码长度做确定性哈希，同一份代码必出同一指纹与分数 */
-  var hits={};
-  dims.forEach(function(d){
-    d.deductions.forEach(function(x){hits[x.ruleId]=(hits[x.ruleId]||0)+1;});
-    d.caps.forEach(function(c){hits[c.ruleId]=(hits[c.ruleId]||0)+1;});
-  });
-  if(gateCapped)hits['RULE-G01']=1;
-  var basis='v='+R.rubricVersion+';len='+code.length+';hits='+Object.keys(hits).sort().map(function(k){return k+'x'+hits[k];}).join(',');
-  var hash=5381;
-  for(var hi=0;hi<basis.length;hi++){hash=((hash<<5)+hash+basis.charCodeAt(hi))>>>0;}
-  var fingerprint=R.rubricVersion+'-'+hash.toString(16).toUpperCase();
-
+  /* fatalCount：阻断完整执行的致命错误数（输出不一致不计入——程序本身能跑完） */
+  var fatal=typeof checkResult.fatalCount==='number'?checkResult.fatalCount:(checkResult.errors||[]).length;
+  var runOk=fatal===0;
+  var matchPct=typeof checkResult.matchPct==='number'?checkResult.matchPct:null;
+  var passed=runOk&&(matchPct===null||matchPct>=100);
+  var totalScore=!runOk?0:(matchPct===null?100:matchPct);
   return {
-    rubricVersion:R.rubricVersion,
+    rubricVersion:'3.0',
     totalScore:totalScore,
     maxScore:100,
-    passingScore:R.passingScore,
-    passed:totalScore>=R.passingScore,
-    compileFailed:compileFailed,
-    gateCapped:gateCapped,
-    /* 渐进式通过线：本章答案解锁所需的输出匹配率及当前匹配率（来自 checkCode） */
+    passingScore:100,
+    passed:passed,
+    runOk:runOk,
+    errorCount:fatal,
+    compileFailed:!runOk,
+    gateCapped:false,
+    expectedCount:checkResult.expectedCount||0,
     chapter:checkResult.chapter,
     stage:checkResult.stage,
-    matchPct:typeof checkResult.matchPct==='number'?checkResult.matchPct:null,
+    matchPct:matchPct,
     matchThreshold:typeof checkResult.matchThreshold==='number'?checkResult.matchThreshold:null,
-    dimensions:dims,
-    meta:{
-      totalWeight:totalWeight,
-      fingerprint:fingerprint,
-      basis:basis,
-      formula:'总分 = Σ(各维度实得分) ÷ Σ(各维度满分='+maxSum+') × 100；通过线 '+R.passingScore+' 分。规则分值固定、无随机项，结果可复现。'
-    }
+    dimensions:[],
+    meta:{formula:'v3.0 规则：① 完整执行（唯一前置条件）② 输出与预期完全一致（唯一通过条件）。'}
   };
 }
 
-/* 渲染质量评分卡片 HTML v2（带规则 ID、封顶说明、评分细则、评分指纹） */
+/* 渲染判定卡片 v3 */
 function renderQualityCard(report){
   if(!report)return '';
-  var cls=report.passed?'pass':(report.totalScore>=report.passingScore?'fail':'urgent');
-  var scoreCls=report.passed?'pass':(report.totalScore>=report.passingScore?'mid':'low');
-  var h='<div class="qcard '+cls+'">';
+  var h='<div class="qcard '+(report.passed?'pass':'fail')+'">';
   h+='<div class="qhead">';
-  h+='<div><b>📊 代码质量评分</b><br><span style="font-size:11px;color:var(--ink-3)">对标 VS Code/JDT 静态分析 · 5 维规则化评分 v'+escH(report.rubricVersion||'2.0')+(report.compileFailed?' · <span style="color:#b91c1c">编译失败仍出分</span>':'')+'</span></div>';
-  h+='<div style="text-align:right"><div class="qscore '+scoreCls+'">'+report.totalScore+'</div>';
-  h+='<div style="font-size:11px;color:var(--ink-3)">/ '+report.maxScore+' · 通过线 '+report.passingScore+'</div></div>';
+  h+='<div><b>📊 代码检测判定</b><br><span style="font-size:11px;color:var(--ink-3)">评分规则 v'+escH(report.rubricVersion||'3.0')+' · 完整执行 + 输出完全一致（无其他维度检查）</span></div>';
+  h+='<div style="text-align:right"><div class="qscore '+(report.passed?'pass':'low')+'">'+report.totalScore+'</div>';
+  h+='<div style="font-size:11px;color:var(--ink-3)">/ '+report.maxScore+'</div></div>';
   h+='</div>';
-  h+='<div class="qbar '+scoreCls+'"><i style="width:'+report.totalScore+'%"></i></div>';
-  /* 渐进式通过线横幅：告诉学习者本章答案解锁所需的输出匹配率 */
-  if(report.matchThreshold!=null&&report.matchPct!=null){
-    var mReached=report.matchPct>=report.matchThreshold;
-    var sbStyle=mReached
-      ? 'background:#eff6ff;border-color:#bfdbfe;color:#1e40af'
-      : 'background:#fffbeb;border-color:#fde68a;color:#92400e';
-    h+='<div class="qcap" style="'+sbStyle+'">🎓 第 '+report.chapter+' 章·'+escH(report.stage)+'：本章参考答案解锁线为输出匹配 <b>≥'+report.matchThreshold+'%</b>，当前 <b>'+report.matchPct+'%</b>。';
-    if(report.matchPct===100){
-      h+='输出与预期完全一致，太棒了！';
-    }else if(mReached){
-      h+='已达到解锁线，可以查看参考答案；学有余力建议继续改到 100%。';
-    }else{
-      h+='还差 <b>'+(report.matchThreshold-report.matchPct)+'</b> 个百分点，对照下方缺失的输出行修改后重新检测。';
-    }
-    h+='<br><span style="font-weight:400;font-size:11px;opacity:.85">（通过线随学习阶段递增：第 1–4 章 60% → 第 5–7 章 80% → 第 8–10 章 100%；语法错误仍须先修复）</span></div>';
-  }
-  if(report.gateCapped){
-    h+='<div class="qcap" style="background:#fef2f2;border-color:#fecaca;color:#991b1b;font-weight:600">⛔ <span class="qchip" style="background:#fee2e2;color:#991b1b">RULE-G01</span>检测未全部通过（javac 编译 / java 启动 / 教学校验存在错误，退出码非 0），综合分已按全局硬闸口封顶 59。修复全部错误后重新检测，才可越过 '+report.passingScore+' 分解锁线。</div>';
-  }
-  report.dimensions.forEach(function(d){
-    var pct=Math.round(d.score/(d.maxScore||1)*100);
-    h+='<div class="qdim">';
-    h+='<div class="qdim-h"><span><b>'+d.name+'</b> <span style="color:var(--ink-3);font-size:11px">(权重 '+d.weight+'%)</span></span>';
-    h+='<span><b>'+d.score+'</b>/'+d.maxScore+' 分</span></div>';
-    h+='<div class="qdim-bar"><i style="width:'+pct+'%"></i></div>';
-    if(d.caps&&d.caps.length){
-      d.caps.forEach(function(c){
-        h+='<div class="qcap">⛔ <span class="qchip">'+c.ruleId+'</span>'+escH(c.reason)+'（本维度最多 '+c.ceil+'/'+d.maxScore+' 分）</div>';
-      });
-    }
-    if(d.deductions.length){
-      d.deductions.forEach(function(dd){
-        h+='<div class="qdeduct"><span class="qchip">'+escH(dd.ruleId||'')+'</span>⚠ -'+dd.points+' 分：'+escH(dd.reason)+'</div>';
-      });
-    }
-    if(d.suggestions.length){
-      d.suggestions.forEach(function(s){h+='<div class="qsugg">'+escH(s)+'</div>';});
-    }
-    if(d.deductions.length===0&&(!d.caps||!d.caps.length)&&d.suggestions.length===0){
-      h+='<div style="font-size:11px;color:#15803d">✓ 本维度满分，未命中任何扣分规则</div>';
-    }
-    h+='</div>';
-  });
-  if(report.passed){
-    h+='<div class="qunlock">🎉 综合评分 ≥ '+report.passingScore+'，参考答案已自动解锁！</div>';
-  }else if(report.gateCapped){
-    h+='<div class="qunlock" style="background:#fef3c7;border-color:#fde68a;color:#92400e">⛳ 还有错误未修复（综合分被 RULE-G01 封在 59）。请按下方修改计划修复全部错误'+(report.matchThreshold!=null?'，其中输出匹配率需达到本章解锁线 '+report.matchThreshold+'%（当前 '+(report.matchPct==null?'—':report.matchPct)+'%）':'')+'，然后重新检测。</div>';
+  /* ① 完整执行检查 */
+  h+='<div class="qdim"><div class="qdim-h"><span><b>① 完整执行检查</b><span style="color:var(--ink-3);font-size:11px">（唯一前置条件）</span></span>';
+  h+='<span>'+(report.runOk?'✅ 通过':'❌ 未通过')+'</span></div>';
+  h+=report.runOk
+    ?'<div style="font-size:12px;color:#15803d">✓ 程序可完整执行结束：无编译错误、无启动错误，不超时、不崩溃。</div>'
+    :'<div style="font-size:12px;color:#b91c1c">✗ 存在 '+report.errorCount+' 个致命错误，程序无法完整执行。请先按下方修改计划修复全部错误。</div>';
+  h+='</div>';
+  /* ② 输出一致性检查 */
+  h+='<div class="qdim"><div class="qdim-h"><span><b>② 输出一致性检查</b><span style="color:var(--ink-3);font-size:11px">（唯一通过条件）</span></span>';
+  h+='<span>'+(report.matchPct==null?'—':(report.matchPct+'%'))+'</span></div>';
+  if(report.matchPct==null){
+    h+='<div style="font-size:12px;color:var(--ink-3)">ℹ️ 本题预期为过程描述，网页检测器无法静态比对输出 —— 程序完整执行即判定通过（最终效果以 VS Code 实际运行结果为准）。</div>';
   }else{
-    var gap=report.passingScore-report.totalScore;
-    h+='<div class="qunlock" style="background:#fef3c7;border-color:#fde68a;color:#92400e">📈 距解锁还差 '+gap+' 分。按上方带 RULE 编号的建议优化代码后重新检测。</div>';
+    h+='<div class="qbar '+(report.matchPct===100?'pass':'low')+'"><i style="width:'+report.matchPct+'%"></i></div>';
+    h+=report.matchPct===100
+      ?'<div style="font-size:12px;color:#15803d">✓ 输出与预期完全一致：预期共 '+report.expectedCount+' 行，全部逐字命中。</div>'
+      :'<div style="font-size:12px;color:#92400e">判定标准：输出与预期完全一致（预期每一行都逐字出现）。当前命中 '+report.matchPct+'%。</div>';
   }
-  /* 评分细则（可折叠）：固定规则表 + 计算公式 + 评分指纹，保证可解释/可复现 */
-  h+='<div class="qmeta">';
-  h+='<details><summary>📐 评分细则、权重与复现信息（点击展开）</summary>';
-  h+='<table class="qrule-tbl"><tr><th>维度（权重）</th><th>规则 ID</th><th>分值</th><th>判定标准</th></tr>';
-  report.dimensions.forEach(function(d){
-    (d.rules||[]).forEach(function(r,ri){
-      h+='<tr><td>'+(ri===0?escH(d.name)+'（'+d.weight+'%）':'')+'</td>';
-      h+='<td><code>'+escH(r.id)+'</code></td><td>'+(r.points>0?'-'+r.points:'封顶')+'</td><td>'+escH(r.desc)+'</td></tr>';
-    });
-  });
-  h+='</table>';
-  h+='<div>🧮 <b>计算公式：</b>'+escH(report.meta.formula)+'</div>';
-  h+='<div>🔁 <b>可复现性：</b>全部规则为确定性静态分析，无随机项、无时间因子；同一份代码无论何时检测、检测几次，分数与指纹完全一致。</div>';
-  h+='<div>🔑 <b>评分指纹：</b><code>'+escH(report.meta.fingerprint)+'</code>（由规则命中清单确定性生成）<br><span style="color:#9ca3af">指纹基串：'+escH(report.meta.basis)+'</span></div>';
-  h+='<div style="margin-top:6px">📖 <b>完整规则文档：</b>每条规则的触发条件、扣分值、正反例与回归基准见 <a href="代码质量评分规则-v2.0.md" target="_blank" style="color:#2563eb">《代码质量评分规则-v2.0.md》</a></div>';
-  h+='</details></div>';
+  h+='</div>';
+  h+=report.passed
+    ?'<div class="qunlock">🎉 判定通过！程序完整执行、输出与预期完全一致，参考答案已解锁。</div>'
+    :'<div class="qunlock" style="background:#fef3c7;border-color:#fde68a;color:#92400e">⛳ 尚未通过：'+(!report.runOk?'先修复全部致命错误，让程序能完整执行。':'让输出与预期完全一致 —— 可直接复制下方错误信息中的「网页检测版」代码。')+'</div>';
   h+='</div>';
   return h;
 }
-/* ================= 代码质量评分系统（结束） ================= */
+/* ================= 代码检测判定系统（结束） ================= */
 
-/* ================= 渐进式通过线（按学习阶段） =================
-   练习 id 形如 c2s3 = 第 2 章第 3 节。输出匹配率达到本章阈值且无语法错误，
-   即可解锁参考答案；匹配率仍按线性扣分计入质量分（不影响满分追求）。
-   - 第 1–4 章（入门阶段）：≥60% 即可解锁，照顾零基础初学者
-   - 第 5–7 章（进阶阶段）：≥80%
-   - 第 8–10 章（实战阶段）：需 100% 逐字匹配，保持教学严谨性 */
+/* ================= 通过线（评分规则 v3.0） =================
+   练习 id 形如 c2s3 = 第 2 章第 3 节。
+   v3.0 起不再分阶段设置差异化阈值：所有章节统一要求
+   「程序完整执行 + 输出与预期完全一致（100%）」才判定通过、解锁参考答案。 */
 function getStageInfo(id){
   var m=/^c(\d+)/i.exec(String(id||''));
   var ch=m?parseInt(m[1],10):0;
-  if(ch>=1&&ch<=4)return {chapter:ch,stage:'入门阶段',matchThreshold:60};
-  if(ch>=5&&ch<=7)return {chapter:ch,stage:'进阶阶段',matchThreshold:80};
+  if(ch>=1&&ch<=4)return {chapter:ch,stage:'入门阶段',matchThreshold:100};
+  if(ch>=5&&ch<=7)return {chapter:ch,stage:'进阶阶段',matchThreshold:100};
   return {chapter:ch,stage:'实战阶段',matchThreshold:100};
 }
 function getStageMatchThreshold(id){return getStageInfo(id).matchThreshold;}
@@ -8474,46 +8181,39 @@ function checkCode(id,code){
     warnings.push('使用了 Scanner 但没有导入。在 class 前面加一行：\nimport java.util.Scanner;');
   }
 
-  /* ===== 2. 输出语句检查 ===== */
-  var hasPrint=/System\.out\.print/.test(code);
-  if(!hasPrint){
-    if(/print\s*\(/.test(code)&&!/System\.out/.test(code)){
-      errors.push('检测到 print() 但缺少 System.out 前缀。\n💡 正确写法：System.out.println("内容");');
-    }else if(/System\.out/.test(code)&&!/print/.test(code)){
-      errors.push('写了 System.out 但没有调用 print 或 println 方法。\n💡 正确写法：System.out.println("内容");');
-    }else{
-      errors.push('代码中没有 System.out.println 或 System.out.print 输出语句。\n💡 程序需要输出内容才能看到运行结果，例如：\nSystem.out.println("Hello,World!");');
-    }
-  }
-
-  /* ===== 3. 输出内容比对 ===== */
+  /* ===== 2. 运行与输出判定（评分规则 v3.0） =====
+     唯一判定标准：
+     ① 完整执行：上方语法/入口等致命检查全部通过（errors 为空）即视为可完整运行，
+       不超时、不崩溃、无异常中断；
+     ② 输出完全一致：预期每一行都必须在程序输出中逐字出现（trim 后完全相等）。
+     不做任何实现方式、编码规范、代码结构、算法复杂度检查。 */
+  var fatalCount=errors.length;   /* 致命错误数（输出不一致在之后才可能追加，不计入） */
   var simOut='';
   var expectedLines=[];
   var unmatchedExpected=[];
-  var matchPct=100;   /* 提升到函数作用域，供评分系统 v2 使用 */
-  if(hasPrint&&errors.length===0&&p){
+  var matchPct=100;
+  var matchable=false;   /* 预期是否可静态比对（描述性预期只要求完整执行） */
+  if(errors.length===0&&p){
     simOut=simulateOutput(code);
     expectedLines=extractExpectedLines(p.expected);
-    if(expectedLines.length>0){
-      var simLines=simOut.split('\n').map(function(l){return l.trim();});
+    matchable=expectedLines.length>0;
+    if(matchable){
+      var simLines=simOut.split('\n').map(function(l){return l.trim();}).filter(function(l){return l.length>0;});
       var matched=0;
       for(var ei=0;ei<expectedLines.length;ei++){
         var found=false;
         for(var si=0;si<simLines.length;si++){
-          if(simLines[si]===expectedLines[ei]||simLines[si].indexOf(expectedLines[ei])>=0||expectedLines[ei].indexOf(simLines[si])>=0){
-            found=true;matched++;break;
-          }
+          if(simLines[si]===expectedLines[ei]){found=true;matched++;break;}
         }
         if(!found)unmatchedExpected.push(expectedLines[ei]);
       }
-      matchPct=expectedLines.length>0?Math.round(matched/expectedLines.length*100):100;
-      var threshold=stageInfo.matchThreshold;
-      if(matchPct<threshold){
-        var detail='输出内容与预期不符（匹配率 '+matchPct+'%，本章（第 '+stageInfo.chapter+' 章·'+stageInfo.stage+'）解锁线为 '+threshold+'%）。\n\n';
-        detail+='🎯 还差 '+(threshold-matchPct)+' 个百分点即可查看参考答案：把输出改到与预期至少 '+threshold+'% 一致，然后重新点「检测代码」。\n';
-        detail+='📋 预期输出应包含：\n'+expectedLines.slice(0,6).map(function(l){return '  ✓ '+l;}).join('\n')+'\n';
+      matchPct=Math.round(matched/expectedLines.length*100);
+      if(matchPct<100){
+        var detail='输出内容与预期不符（判定标准：与标准结果完全一致，当前逐字命中 '+matchPct+'%）。\n\n';
+        detail+='🎯 通过条件只有一条：输出与预期完全一致——预期每一行都要逐字出现。\n';
+        detail+='📋 预期输出共 '+expectedLines.length+' 行：\n'+expectedLines.slice(0,8).map(function(l){return '  ✓ '+l;}).join('\n')+'\n';
         if(unmatchedExpected.length>0){
-          detail+='\n❌ 以下预期行在你的输出中没找到：\n'+unmatchedExpected.slice(0,4).map(function(l){return '  ✗ '+l;}).join('\n')+'\n';
+          detail+='\n❌ 以下预期行在你的输出中未逐字出现：\n'+unmatchedExpected.slice(0,6).map(function(l){return '  ✗ '+l;}).join('\n')+'\n';
         }
         detail+='\n📋 你的实际输出：\n'+(simOut||'（无输出）');
         /* 网页检测器无法真正执行的写法：键盘输入 / 循环——标准写法没错，
@@ -8521,7 +8221,7 @@ function checkCode(id,code){
         var usesKeyboard=/new\s+Scanner\s*\(|System\.in/.test(code);
         var usesLoop=/\bfor\s*\(|\bwhile\s*\(/.test(code);
         if(usesKeyboard){
-          detail+='\n\n⌨️ 特别说明（不是你代码的问题！）：你用了 Scanner 键盘输入，这正是本题要学的标准写法，请继续在 VS Code 里正常编写、正常运行。\n但网页检测器是静态检查：它不会真的停下来等你敲键盘，也不会执行变量运算，所以看不到「18 / 1.75 / 小明」这些只有运行时才出现的结果。\n✅ 过网页检测的方法：把程序真实运行后会打印出的「样例结果」逐行写成固定字符串再检测，例如直接写 System.out.println("你明年 19 岁");（检测通过后，参考答案弹窗里也有「网页检测版」标签页可直接复制）。';
+          detail+='\n\n⌨️ 特别说明（不是你代码的问题！）：你用了 Scanner 键盘输入，这正是本题要学的标准写法，请继续在 VS Code 里正常编写、正常运行。\n但网页检测器是静态检查：它不会真的停下来等你敲键盘，也不会执行变量运算，所以看不到「18 / 1.75 / 小明」这些只有运行时才出现的结果。\n✅ 过网页检测的方法：把程序真实运行后会打印出的「样例结果」逐行写成固定字符串再检测，例如直接写 System.out.println("你明年 19 岁");（下方已给出可复制的网页检测版代码）。';
         }else if(usesLoop){
           detail+='\n\n🔁 特别说明（不是你代码的问题！）：网页检测器是静态检查，不会真正执行 for/while 循环、数组运算和方法调用，只能识别 System.out.println 里写死的字符串。\n请继续在 VS Code 里用循环写真实代码；过网页检测时，把循环真实运行后会打印出的结果逐行写成固定字符串（例如循环本会打印 5 行，就直接写 5 条 println 字面量）。';
         }
@@ -8533,10 +8233,6 @@ function checkCode(id,code){
           }
         }catch(e){}
         errors.push(detail);
-      }else if(matchPct<100){
-        var warn='输出匹配率 '+matchPct+'%，已达到本章解锁线（'+threshold+'%），参考答案已解锁；不过还有 '+unmatchedExpected.length+' 行与预期不一致，建议继续改到 100%。';
-        if(unmatchedExpected.length>0)warn+='\n缺失的行：'+unmatchedExpected.slice(0,3).join(' / ');
-        warnings.push(warn);
       }
     }
   }
@@ -8549,11 +8245,14 @@ function checkCode(id,code){
     warnings:warnings,
     simOutput:simOut,
     expectedLines:expectedLines,
-    matchPct:matchPct,
+    matchPct:matchable?matchPct:null,
     matchThreshold:stageInfo.matchThreshold,
     stage:stageInfo.stage,
     chapter:stageInfo.chapter,
-    hasPrint:hasPrint
+    matchable:matchable,
+    expectedCount:expectedLines.length,
+    fatalCount:fatalCount,
+    hasPrint:/System\.out\.print/.test(code)
   };
 }
 /* ================= 5 要素标准化错误修改计划生成器 =================
@@ -8868,19 +8567,16 @@ function runCodeCheck(id){
   }
   var result=checkCode(id,code);
   var s=getS(id);
-  /* 无论编译/校验是否通过，都生成 5 维评分（编译失败内部做封顶 + RULE-G01 硬闸口） */
+  /* 评分规则 v3.0：判定 = 完整执行（唯一前置条件）+ 输出与预期完全一致（唯一通过条件） */
   var qualityReport=scoreCodeQuality(code,result);
   /* 评分 ≥ 通过线才解锁参考答案（与质量卡 passed 完全一致） */
   s.codedone=qualityReport.passed?1:0; saveG();
 
   if(result.passed){
     var h='<div class="cf-pass">';
-    h+='✅ <b>检测通过！</b>javac 编译成功、java 正常退出（0）、教学校验全部通过。';
+    h+='✅ <b>判定通过！</b>程序完整执行结束，输出与预期完全一致（评分规则 v3.0：无其他维度检查）。';
     if(result.warnings.length){
       h+='<div class="cf-warn" style="margin-top:8px">⚠️ 另有 '+result.warnings.length+' 条警告（不阻止通过），已在下方 VS Code 窗口的「问题 PROBLEMS」面板列出，建议顺手修正。</div>';
-    }
-    if(typeof result.matchPct==='number'&&result.matchPct<100&&typeof result.matchThreshold==='number'){
-      h+='<div class="cf-warn" style="margin-top:8px;background:#eff6ff;border-color:#bfdbfe;color:#1e40af">🎓 第 '+result.chapter+' 章·'+result.stage+'：输出匹配 '+result.matchPct+'%（本章解锁线 '+result.matchThreshold+'%），已可查看参考答案；建议继续对照预期改到 100%。</div>';
     }
     h+='</div>';
     /* 通过后在反馈区给出显眼的参考答案入口（用户反馈顶部按钮找不到） */
@@ -8899,16 +8595,16 @@ function runCodeCheck(id){
     celebrate(40,1200);
   }else{
     var h2='<div class="cf-fail">';
-    h2+='❌ <b>检测未通过</b>——共 '+result.errors.length+' 个错误';
-    if(result.warnings.length)h2+='，'+result.warnings.length+' 个警告';
-    h2+='。下方先按 VS Code 的真实流程还原报错现场，再给出评分与逐条修改计划。</div>';
-    /* 渐进式通过线提示：若卡在输出匹配，明确告诉学习者本章只需达到的匹配率 */
-    if(typeof result.matchThreshold==='number'&&result.errors.some(function(e){return String(e).indexOf('输出内容与预期不符')>=0;})){
-      h2+='<div class="cf-warn" style="margin-top:8px;background:#eff6ff;border-color:#bfdbfe;color:#1e40af">🎓 第 '+result.chapter+' 章·'+result.stage+'：本章不要求 100% 一致——输出匹配率达到 <b>'+result.matchThreshold+'%</b> 即可查看参考答案（当前 '+result.matchPct+'%，还差 '+(result.matchThreshold-result.matchPct)+' 个百分点）。</div>';
+    h2+='❌ <b>判定未通过</b>——共 '+result.errors.length+' 个问题';
+    if(result.warnings.length)h2+='，'+result.warnings.length+' 个警告（警告不阻止通过）';
+    h2+='。评分规则 v3.0 只有两条：① 程序完整执行（唯一前置条件）② 输出与预期完全一致（唯一通过条件）。逐条修复后重新点「检测代码」。</div>';
+    /* 输出不一致时：给出明确的通过路径（可复制网页检测版） */
+    if(typeof result.matchPct==='number'&&result.matchPct<100){
+      h2+='<div class="cf-warn" style="margin-top:8px;background:#eff6ff;border-color:#bfdbfe;color:#1e40af">🎯 唯一通过条件：输出与预期<b>完全一致</b>（当前逐字命中 '+result.matchPct+'%，预期共 '+result.expectedCount+' 行）。下方错误信息中已附「📋📋 网页检测版代码」，复制粘贴后重新检测即可通过。</div>';
     }
     /* ① VS Code 同款运行环境窗口（javac 报错格式 + Problems + Quick Fix） */
     h2+=renderVSCPanel(code,result);
-    /* ② 即使未通过也出分（带封顶与硬闸口说明） */
+    /* ② 判定结果卡（v3.0：完整执行 + 输出完全一致） */
     h2+=renderQualityCard(qualityReport);
     /* ③ 逐条错误 + 5 要素修改计划（无模板匹配时回退为紧凑原始错误块） */
     h2+='<div style="margin-top:10px"><b style="color:#b91c1c">📝 逐条修复（错误共 '+result.errors.length+' 个）：</b></div>';
@@ -9217,8 +8913,8 @@ function javaVscAnalyze(code,result){
   /* --- 教学校验阶段：输出语句 + 输出匹配（结果取自 checkResult） --- */
   if(result&&!result.hasPrint){
     var pm=/print\s*\(/.exec(code);
-    push({sev:'error',phase:'check',idx:pm?pm.index:0,ruleId:'CHK-PRINT-01',source:'checkCode',
-      title:'缺少标准输出语句',detail:'练习要求运行后在控制台输出内容，但没有 System.out.print/println',
+    push({sev:'warning',phase:'check',idx:pm?pm.index:0,ruleId:'CHK-PRINT-01',source:'checkCode',
+      title:'未发现标准输出语句',detail:'程序没有 System.out.print/println —— 若预期要求输出内容，输出一致性检查将不通过',
       quickFix:'在 main 内补 System.out.println("题目要求的内容");'});
   }
   if(result&&typeof result.matchPct==='number'&&result.matchPct<100){

@@ -129,6 +129,10 @@
   .btn.done-state{background:#dcfce7;color:#15803d;}
   .btn:disabled,.btn.is-disabled{opacity:.5;cursor:not-allowed;pointer-events:none;}
   .foot-nav{display:flex;justify-content:space-between;margin-top:40px;gap:14px;}
+  /* 跳过板块按钮：低调但可识别，跳过后转为恢复入口 */
+  .skip-btn{opacity:.72;font-size:13px;border-style:dashed;}
+  .skip-btn:hover{opacity:1;}
+  .skip-btn.skip-on{opacity:1;border-style:solid;border-color:#f59e0b;color:#b45309;background:#fffbeb;}
 
   /* ===== 总览页动态进度按钮 ===== */
   .prog-btn-wrap{margin-top:30px;}
@@ -7589,10 +7593,12 @@ function isDone(id){return !!(G.sec[id]&&G.sec[id].d);}
 function hasPractice(id){
   try{return !!(typeof PRACTICE!=='undefined'&&PRACTICE&&PRACTICE[id]);}catch(e){return false;}
 }
-/* 是否已查看参考答案（没有练习卡片的板块视为无需查看） */
+/* 是否已查看参考答案（没有练习卡片的板块视为无需查看；跳过的板块放行） */
 function answerViewed(id){
   if(!hasPractice(id))return true;
-  return !!(G.sec[id]&&G.sec[id].viewed);
+  var s=G.sec[id];
+  if(s&&s.skip)return true;
+  return !!(s&&s.viewed);
 }
 function unlocked(id){
   var ch=chOf(id), si=secInCh(id), i=idxOf(id);
@@ -7630,7 +7636,8 @@ function getS(id){return G.sec[id]||(G.sec[id]={});}
 /* ================= 通关判定 ================= */
 function recalc(id){
   var s=G.sec[id]; if(!s)return false;
-  var ok = s.r ? (QUIZ[id] ? !!(s.q&&s.q.p) : !!s.a) : false;
+  /* 跳过的板块直接视为已完成（不要求阅读/测验/练习） */
+  var ok = s.skip ? true : (s.r ? (QUIZ[id] ? !!(s.q&&s.q.p) : !!s.a) : false);
   s.d = ok ? 1 : 0;
   return ok;
 }
@@ -7654,6 +7661,78 @@ function onSectionComplete(id){
       if(ch>=10)openGrad(); else openGate(ch+1);
     },800);
   }
+}
+
+/* ================= 跳过板块 =================
+   一键把当前板块标记为已完成并进入下一板块。
+   跳过后不再要求阅读 / 测验 / 练习 / 查看答案，下一板块立即解锁；
+   跳过状态可随时用「↩ 取消跳过」恢复，恢复后需重新完成本板块。 */
+function skipSection(id){
+  if(!id||typeof G==='undefined'||!G.sec)return;
+  var next=(ORDER.indexOf(id)+1<ORDER.length)?ORDER[ORDER.indexOf(id)+1]:null;
+  showLk('<div class="em">⏭</div><h3>跳过这个板块？</h3>'+
+    '<p class="lk-sub" style="color:var(--ink-2);margin:4px 0 10px">'+escH((titles&&titles[id])||id)+'</p>'+
+    '<p>跳过后，本板块直接标记为<b>已完成</b>，并立即进入下一板块——不再要求阅读、通关测验、动手练习或查看参考答案。</p>'+
+    '<p style="color:var(--ink-3);font-size:13px">跳过的内容不会计入掌握度。你随时可以回到本板块点「↩ 取消跳过」，恢复成需要正常完成的状态。</p>'+
+    '<div class="ops"><button class="btn btn-primary" onclick="doSkipSection(\''+id+'\')">确认跳过'+(next?'并进入下一板块':'')+' →</button>'+
+    '<button class="btn btn-ghost" onclick="closeLk()">取消</button></div>');
+}
+function doSkipSection(id){
+  var i=ORDER.indexOf(id);
+  if(i<0)return;
+  var s=getS(id);
+  s.skip=1; s.r=1;
+  saveG(); recalc(id); saveG();
+  closeLk();
+  mirrorDone(); refreshUI();
+  syncSkipButtons();
+  try{hlToast('⏭ 已跳过：'+((titles&&titles[id])||id));}catch(e){}
+  var next=(i+1<ORDER.length)?ORDER[i+1]:null;
+  setTimeout(function(){ if(next)go(next); else go('home'); },150);
+}
+function unskipSection(id){
+  var s=G.sec&&G.sec[id];
+  if(!s||!s.skip)return;
+  s.skip=0;
+  saveG(); recalc(id); saveG();
+  mirrorDone(); refreshUI(); syncSkipButtons();
+  try{hlToast('↩ 已取消跳过，请重新完成本板块');}catch(e){}
+  if(curId===id)showPageOnly(id);
+}
+/* 在每个板块底部导航注入「跳过本板块」按钮 */
+function injectSkipButtons(){
+  ORDER.forEach(function(id){
+    var sec=document.getElementById('page-'+id);
+    if(!sec)return;
+    var foot=sec.querySelector('.foot-nav');
+    if(!foot||foot.querySelector('.skip-btn'))return;
+    var btn=document.createElement('button');
+    btn.className='btn btn-ghost skip-btn';
+    btn.dataset.skipFor=id;
+    btn.type='button';
+    btn.onclick=function(){skipSection(id);};
+    /* 塞进右侧按钮组的第一位（没有分组就追加到页脚末尾） */
+    var right=foot.querySelector('div');
+    if(right)right.insertBefore(btn,right.firstChild);
+    else foot.appendChild(btn);
+  });
+  syncSkipButtons();
+}
+/* 按钮文案随跳过状态切换：跳过 → 提供「取消跳过」 */
+function syncSkipButtons(){
+  document.querySelectorAll('.skip-btn').forEach(function(b){
+    var id=b.dataset.skipFor;
+    var skipped=!!(G.sec&&G.sec[id]&&G.sec[id].skip);
+    if(skipped){
+      b.textContent='↩ 取消跳过';
+      b.classList.add('skip-on');
+      b.onclick=function(){unskipSection(id);};
+    }else{
+      b.textContent='⏭ 跳过本板块';
+      b.classList.remove('skip-on');
+      b.onclick=function(){skipSection(id);};
+    }
+  });
 }
 
 /* ================= 路由守卫（重写 go） ================= */
@@ -10197,6 +10276,7 @@ function refreshUI(){
   Object.keys(G.sec).forEach(function(id){syncAnswerGate(id);});
   // 同步章项目自评打卡按钮状态
   if(typeof injectProjectAttest==='function')injectProjectAttest();
+  if(typeof syncSkipButtons==='function')syncSkipButtons();
   ORDER.forEach(function(id){if(PROJECT[id])syncAttest(id);});
   // 继续学习按钮
   var cbtn=document.getElementById('continueBtn');
@@ -10415,6 +10495,7 @@ window.addEventListener('DOMContentLoaded',function(){
     renderPracticeCards();
     injectProjectAttest();
     aiInjectButtons();
+    injectSkipButtons();
     renderGateBars();
     bindReset();
     refreshUI();

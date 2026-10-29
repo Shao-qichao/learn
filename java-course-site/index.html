@@ -167,16 +167,15 @@
   .cf-fail{background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:8px;padding:10px 14px;font-size:13px;line-height:1.6;}
   .cf-fail ul{margin:6px 0 0 18px;padding:0;}
   .cf-warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:8px;padding:8px 12px;font-size:12px;margin-top:6px;}
-  /* 代码质量评分卡片 */
+  /* 代码检测结果卡片（通过 / 未通过） */
   .qcard{margin-top:10px;border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.6;border:1px solid #e5e7eb;background:#fff;}
   .qcard.pass{border-color:#86efac;background:#f0fdf4;}
   .qcard.fail{border-color:#fde68a;background:#fffbeb;}
   .qcard.urgent{border-color:#fecaca;background:#fef2f2;}
   .qhead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
-  .qscore{font-size:28px;font-weight:700;line-height:1;}
-  .qscore.pass{color:#16a34a;}
-  .qscore.mid{color:#d97706;}
-  .qscore.low{color:#dc2626;}
+  .qverdict{display:inline-block;padding:5px 16px;border-radius:999px;font-size:14px;font-weight:700;}
+  .qverdict.pass{background:#dcfce7;color:#16a34a;}
+  .qverdict.fail{background:#fee2e2;color:#dc2626;}
   .qbar{height:8px;border-radius:4px;background:#e5e7eb;overflow:hidden;margin:6px 0 10px;}
   .qbar>i{display:block;height:100%;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:4px;}
   .qbar.mid>i{background:linear-gradient(90deg,#f59e0b,#d97706);}
@@ -7830,7 +7829,7 @@ function openRefAnswer(id){
   var s=getS(id);
   if(!s.codedone){
     var stg=getStageInfo(id);
-    alert('⚠️ 请先完成代码检测。\n\n把你在 VS Code 里写的代码粘贴到检测区，点「🔍 检测代码」——程序完整执行且输出与预期完全一致后，即可查看参考答案。\n\n🎓 第 '+stg.chapter+' 章·'+stg.stage+'（评分规则 v3.0：无其他维度检查）。');
+    alert('⚠️ 请先完成代码检测。\n\n把你在 VS Code 里写的代码粘贴到检测区，点「🔍 检测代码」——程序完整执行且结果与预期完全一致后，即可查看参考答案。\n\n🎓 第 '+stg.chapter+' 章·'+stg.stage+'（判定标准：结果与预期完全一致）。');
     return;
   }
   s.viewed=1; saveG();
@@ -7983,80 +7982,69 @@ function extractExpectedLines(expected){
    评分规则 v3.0：
    ① 唯一前置条件：代码能完整执行结束 —— 无编译错误、无启动错误，
      即视为「运行完成，不超时、不崩溃、无异常中断」。
-   ② 通过（100 分）当且仅当：完整执行 且 程序最终输出与系统预设的标准结果完全一致
+   ② 通过当且仅当：完整执行 且 程序最终输出与系统预设的标准结果完全一致
      （预期每一行都必须在输出中逐字出现）。
    ③ 不再包含任何实现方式、编码规范、代码结构、算法复杂度等维度的检查或限制。
    ④ 预期为描述性文字（无法静态比对输出）的练习，只要求完整执行即判定通过，
      最终效果以 VS Code 实际运行结果为准。 */
 
-/* 评分主函数 v3 —— 输入 code + checkCode 结果，输出判定报告 */
-function scoreCodeQuality(code,checkResult){
-  /* fatalCount：阻断完整执行的致命错误数（输出不一致不计入——程序本身能跑完） */
+/* 代码检测判定 —— 只有两种结果：通过 / 未通过。
+   通过的唯一标准：程序完整执行，且最终输出与系统预设的标准结果完全一致。
+   不产生任何分数、等级或维度评价。 */
+function evaluateCode(checkResult){
   var fatal=typeof checkResult.fatalCount==='number'?checkResult.fatalCount:(checkResult.errors||[]).length;
   var runOk=fatal===0;
   var matchPct=typeof checkResult.matchPct==='number'?checkResult.matchPct:null;
   var passed=runOk&&(matchPct===null||matchPct>=100);
-  var totalScore=!runOk?0:(matchPct===null?100:matchPct);
   return {
-    rubricVersion:'3.0',
-    totalScore:totalScore,
-    maxScore:100,
-    passingScore:100,
     passed:passed,
     runOk:runOk,
     errorCount:fatal,
-    compileFailed:!runOk,
-    gateCapped:false,
+    matchPct:matchPct,
     expectedCount:checkResult.expectedCount||0,
     chapter:checkResult.chapter,
-    stage:checkResult.stage,
-    matchPct:matchPct,
-    matchThreshold:typeof checkResult.matchThreshold==='number'?checkResult.matchThreshold:null,
-    dimensions:[],
-    meta:{formula:'v3.0 规则：① 完整执行（唯一前置条件）② 输出与预期完全一致（唯一通过条件）。'}
+    stage:checkResult.stage
   };
 }
 
-/* 渲染判定卡片 v3 */
+/* 渲染判定卡片：只显示「通过 / 未通过」与两条判定依据，不显示任何分数 */
 function renderQualityCard(report){
   if(!report)return '';
   var h='<div class="qcard '+(report.passed?'pass':'fail')+'">';
   h+='<div class="qhead">';
-  h+='<div><b>📊 代码检测判定</b><br><span style="font-size:11px;color:var(--ink-3)">评分规则 v'+escH(report.rubricVersion||'3.0')+' · 完整执行 + 输出完全一致（无其他维度检查）</span></div>';
-  h+='<div style="text-align:right"><div class="qscore '+(report.passed?'pass':'low')+'">'+report.totalScore+'</div>';
-  h+='<div style="font-size:11px;color:var(--ink-3)">/ '+report.maxScore+'</div></div>';
+  h+='<div><b>📊 代码检测结果</b><br><span style="font-size:11px;color:var(--ink-3)">判定标准：程序完整执行 + 结果与预期完全一致</span></div>';
+  h+='<div style="text-align:right"><span class="qverdict '+(report.passed?'pass':'fail')+'">'+(report.passed?'✅ 通过':'❌ 未通过')+'</span></div>';
   h+='</div>';
   /* ① 完整执行检查 */
-  h+='<div class="qdim"><div class="qdim-h"><span><b>① 完整执行检查</b><span style="color:var(--ink-3);font-size:11px">（唯一前置条件）</span></span>';
-  h+='<span>'+(report.runOk?'✅ 通过':'❌ 未通过')+'</span></div>';
+  h+='<div class="qdim"><div class="qdim-h"><span><b>① 程序完整执行</b><span style="color:var(--ink-3);font-size:11px">（前置条件）</span></span>';
+  h+='<span>'+(report.runOk?'✅ 已满足':'❌ 未满足')+'</span></div>';
   h+=report.runOk
-    ?'<div style="font-size:12px;color:#15803d">✓ 程序可完整执行结束：无编译错误、无启动错误，不超时、不崩溃。</div>'
+    ?'<div style="font-size:12px;color:#15803d">✓ 程序可完整执行结束：无编译错误、无启动错误，不超时、不崩溃、无异常中断。</div>'
     :'<div style="font-size:12px;color:#b91c1c">✗ 存在 '+report.errorCount+' 个致命错误，程序无法完整执行。请先按下方修改计划修复全部错误。</div>';
   h+='</div>';
-  /* ② 输出一致性检查 */
-  h+='<div class="qdim"><div class="qdim-h"><span><b>② 输出一致性检查</b><span style="color:var(--ink-3);font-size:11px">（唯一通过条件）</span></span>';
-  h+='<span>'+(report.matchPct==null?'—':(report.matchPct+'%'))+'</span></div>';
+  /* ② 结果一致性检查 */
+  h+='<div class="qdim"><div class="qdim-h"><span><b>② 结果与预期一致</b><span style="color:var(--ink-3);font-size:11px">（通过条件）</span></span>';
+  h+='<span>'+(report.matchPct==null?'—':(report.matchPct===100?'✅ 一致':'❌ 不一致'))+'</span></div>';
   if(report.matchPct==null){
     h+='<div style="font-size:12px;color:var(--ink-3)">ℹ️ 本题预期为过程描述，网页检测器无法静态比对输出 —— 程序完整执行即判定通过（最终效果以 VS Code 实际运行结果为准）。</div>';
+  }else if(report.matchPct===100){
+    h+='<div style="font-size:12px;color:#15803d">✓ 结果与预期完全一致：预期共 '+report.expectedCount+' 行，全部逐字命中。</div>';
   }else{
-    h+='<div class="qbar '+(report.matchPct===100?'pass':'low')+'"><i style="width:'+report.matchPct+'%"></i></div>';
-    h+=report.matchPct===100
-      ?'<div style="font-size:12px;color:#15803d">✓ 输出与预期完全一致：预期共 '+report.expectedCount+' 行，全部逐字命中。</div>'
-      :'<div style="font-size:12px;color:#92400e">判定标准：输出与预期完全一致（预期每一行都逐字出现）。当前命中 '+report.matchPct+'%。</div>';
+    h+='<div style="font-size:12px;color:#92400e">✗ 结果与预期不一致：预期共 '+report.expectedCount+' 行，有预期行未在程序输出中逐字出现。</div>';
   }
   h+='</div>';
   h+=report.passed
-    ?'<div class="qunlock">🎉 判定通过！程序完整执行、输出与预期完全一致，参考答案已解锁。</div>'
-    :'<div class="qunlock" style="background:#fef3c7;border-color:#fde68a;color:#92400e">⛳ 尚未通过：'+(!report.runOk?'先修复全部致命错误，让程序能完整执行。':'让输出与预期完全一致 —— 可直接复制下方错误信息中的「网页检测版」代码。')+'</div>';
+    ?'<div class="qunlock">🎉 判定通过！程序完整执行、结果与预期完全一致，参考答案已解锁。</div>'
+    :'<div class="qunlock" style="background:#fef3c7;border-color:#fde68a;color:#92400e">⛳ 尚未通过：'+(!report.runOk?'先修复全部致命错误，让程序能完整执行。':'让结果与预期完全一致 —— 可直接复制下方错误信息中的「网页检测版」代码。')+'</div>';
   h+='</div>';
   return h;
 }
 /* ================= 代码检测判定系统（结束） ================= */
 
-/* ================= 通过线（评分规则 v3.0） =================
+/* ================= 判定标准（结果与预期一致） =================
    练习 id 形如 c2s3 = 第 2 章第 3 节。
-   v3.0 起不再分阶段设置差异化阈值：所有章节统一要求
-   「程序完整执行 + 输出与预期完全一致（100%）」才判定通过、解锁参考答案。 */
+   所有章节统一要求：程序完整执行 + 结果与预期完全一致，才判定通过、解锁参考答案。
+   不设分数、不设百分比阈值。 */
 function getStageInfo(id){
   var m=/^c(\d+)/i.exec(String(id||''));
   var ch=m?parseInt(m[1],10):0;
@@ -8209,8 +8197,8 @@ function checkCode(id,code){
       }
       matchPct=Math.round(matched/expectedLines.length*100);
       if(matchPct<100){
-        var detail='输出内容与预期不符（判定标准：与标准结果完全一致，当前逐字命中 '+matchPct+'%）。\n\n';
-        detail+='🎯 通过条件只有一条：输出与预期完全一致——预期每一行都要逐字出现。\n';
+        var detail='结果与预期不一致（判定标准：结果必须与预期完全一致）。\n\n';
+        detail+='🎯 通过条件只有一条：结果与预期完全一致——预期每一行都要逐字出现。\n';
         detail+='📋 预期输出共 '+expectedLines.length+' 行：\n'+expectedLines.slice(0,8).map(function(l){return '  ✓ '+l;}).join('\n')+'\n';
         if(unmatchedExpected.length>0){
           detail+='\n❌ 以下预期行在你的输出中未逐字出现：\n'+unmatchedExpected.slice(0,6).map(function(l){return '  ✗ '+l;}).join('\n')+'\n';
@@ -8438,7 +8426,7 @@ function buildErrorPlans(errors,code){
         ]
       );
     }
-    /* 6. 分号缺失（注意：分号缺失当前作为 warnings 推送，但 scoreCodeQuality 仍会扣分；为兼容也可能出现在 errors） */
+    /* 6. 分号缺失（注意：分号缺失当前作为 warnings 推送，不影响判定结果；为兼容也可能出现在 errors） */
     else if(has('缺少分号')||has('分号')){
       p=plan('语句末尾缺少分号',
         {
@@ -8459,7 +8447,7 @@ function buildErrorPlans(errors,code){
         ],
         [
           '工具链约束：VS Code 默认对 Java 文件末尾分号缺失给出红色波浪线提示。',
-          '自检脚本：checkCode 已内置 System.out.print/变量赋值 行尾分号检查（已生效，作为 warning 推送但会扣分）。',
+          '自检脚本：checkCode 已内置 System.out.print/变量赋值 行尾分号检查（已生效，作为 warning 推送，不影响判定结果）。',
           '项目内存硬约束：project_memory.md 已写入「Java 每条可执行语句必须以 ; 结尾」。',
           'PR 清单：提交前通读每行可执行语句，确认 ; 收尾。'
         ]
@@ -8492,9 +8480,9 @@ function buildErrorPlans(errors,code){
         ]
       );
     }
-    /* 8. 输出内容与预期不符 */
-    else if(has('输出内容与预期不符')||has('匹配率')){
-      p=plan('输出内容与预期不符',
+    /* 8. 结果与预期不一致 */
+    else if(has('结果与预期不一致')||has('匹配率')){
+      p=plan('结果与预期不一致',
         {
           phenomenon:'程序能编译运行，但运行结果与练习要求的预期输出文本对不上（如该输出 Hello,World! 实际输出 helloworld）。',
           rootCause:'输出语句中的字符串字面量与预期文本不一致——大小写、标点、空格、换行、特殊字符任一差异都会导致逐字比对失败。',
@@ -8503,7 +8491,7 @@ function buildErrorPlans(errors,code){
         },
         [
           {step:'1',desc:'查看错误卡片中预期输出与你的实际输出，逐字符对照圈出第一处不同。',verify:'常见差异：大小写（H vs h）、标点（中英逗号）、空格、换行。'},
-          {step:'2',desc:'修改 System.out.println 的字符串字面量，让其与预期逐字完全一致（评分规则 v3.0：100% 一致才通过）。',before:'System.out.println("hello world");  // 预期是 Hello,World!',after:'System.out.println("Hello,World!");  // 逐字一致',verify:'再次点「检测代码」，直到逐字命中 100%。'},
+          {step:'2',desc:'修改 System.out.println 的字符串字面量，让其与预期逐字完全一致（结果与预期完全一致才通过）。',before:'System.out.println("hello world");  // 预期是 Hello,World!',after:'System.out.println("Hello,World!");  // 逐字一致',verify:'再次点「检测代码」，直到结果与预期完全一致。'},
           {step:'3',desc:'若预期含多行，每行用独立的 println 或用 \\n 分隔。',before:'System.out.println("第一行\\n第二行");  // 易出错',after:'System.out.println("第一行");\nSystem.out.println("第二行");  // 更清晰',verify:'javac 编译通过；java 运行后控制台逐行输出与预期一致。'}
         ],
         '// 预期输出：Hello,World!\nSystem.out.println("Hello,World!");\n\n// 预期输出两行：\nSystem.out.println("第一行");\nSystem.out.println("第二行");',
@@ -8567,14 +8555,14 @@ function runCodeCheck(id){
   }
   var result=checkCode(id,code);
   var s=getS(id);
-  /* 评分规则 v3.0：判定 = 完整执行（唯一前置条件）+ 输出与预期完全一致（唯一通过条件） */
-  var qualityReport=scoreCodeQuality(code,result);
-  /* 评分 ≥ 通过线才解锁参考答案（与质量卡 passed 完全一致） */
+  /* 判定：程序完整执行 + 结果与预期完全一致（不产生任何分数） */
+  var qualityReport=evaluateCode(result);
+  /* 判定通过才解锁参考答案（与判定卡 passed 完全一致） */
   s.codedone=qualityReport.passed?1:0; saveG();
 
   if(result.passed){
     var h='<div class="cf-pass">';
-    h+='✅ <b>判定通过！</b>程序完整执行结束，输出与预期完全一致（评分规则 v3.0：无其他维度检查）。';
+    h+='✅ <b>判定通过！</b>程序完整执行结束，结果与预期完全一致。';
     if(result.warnings.length){
       h+='<div class="cf-warn" style="margin-top:8px">⚠️ 另有 '+result.warnings.length+' 条警告（不阻止通过），已在下方 VS Code 窗口的「问题 PROBLEMS」面板列出，建议顺手修正。</div>';
     }
@@ -8597,10 +8585,10 @@ function runCodeCheck(id){
     var h2='<div class="cf-fail">';
     h2+='❌ <b>判定未通过</b>——共 '+result.errors.length+' 个问题';
     if(result.warnings.length)h2+='，'+result.warnings.length+' 个警告（警告不阻止通过）';
-    h2+='。评分规则 v3.0 只有两条：① 程序完整执行（唯一前置条件）② 输出与预期完全一致（唯一通过条件）。逐条修复后重新点「检测代码」。</div>';
-    /* 输出不一致时：给出明确的通过路径（可复制网页检测版） */
+    h2+='。判定标准只有一条：程序完整执行，且结果与预期完全一致。逐条修复后重新点「检测代码」。</div>';
+    /* 结果不一致时：给出明确的通过路径（可复制网页检测版） */
     if(typeof result.matchPct==='number'&&result.matchPct<100){
-      h2+='<div class="cf-warn" style="margin-top:8px;background:#eff6ff;border-color:#bfdbfe;color:#1e40af">🎯 唯一通过条件：输出与预期<b>完全一致</b>（当前逐字命中 '+result.matchPct+'%，预期共 '+result.expectedCount+' 行）。下方错误信息中已附「📋📋 网页检测版代码」，复制粘贴后重新检测即可通过。</div>';
+      h2+='<div class="cf-warn" style="margin-top:8px;background:#eff6ff;border-color:#bfdbfe;color:#1e40af">🎯 通过条件：结果必须与预期<b>完全一致</b>（预期共 '+result.expectedCount+' 行）。下方错误信息中已附「📋📋 网页检测版代码」，复制粘贴后重新检测即可通过。</div>';
     }
     /* ① VS Code 同款运行环境窗口（javac 报错格式 + Problems + Quick Fix） */
     h2+=renderVSCPanel(code,result);
@@ -8919,7 +8907,7 @@ function javaVscAnalyze(code,result){
   }
   if(result&&typeof result.matchPct==='number'&&result.matchPct<100){
     push({sev:result.matchPct<50?'error':'warning',phase:'check',line:1,col:1,ruleId:'CHK-OUT-01',source:'checkCode',
-      title:'输出内容与预期不符（匹配率 '+result.matchPct+'%）',
+      title:'结果与预期不一致',
       detail:'预期 '+(result.expectedLines||[]).length+' 行；实际输出：'+(result.simOutput||'（空）'),
       quickFix:'逐字符对照预期，检查大小写、标点、空格与换行'});
   }
@@ -8999,7 +8987,7 @@ function renderVSCPanel(code,result){
   h+='<div class="'+(result.hasPrint?'ok':'err')+'">['+(result.hasPrint?'√':'×')+'] 输出语句检查：'+(result.hasPrint?'已发现 System.out.print/println':'未发现标准输出语句')+'</div>';
   if(result.expectedLines&&result.expectedLines.length){
     var mOk=result.matchPct>=result.matchThreshold;
-    h+='<div class="'+(mOk?'ok':'err')+'">['+(mOk?'√':'×')+'] 输出比对：逐字命中 '+result.matchPct+'%（预期 '+result.expectedLines.length+' 行 · 通过线 100%）</div>';
+    h+='<div class="'+(mOk?'ok':'err')+'">['+(mOk?'√':'×')+'] 结果比对：'+(mOk?'与预期完全一致':'与预期不一致')+'（预期 '+result.expectedLines.length+' 行）</div>';
   }else{
     h+='<div class="dim">[—] 本练习无固定预期输出，跳过逐字比对</div>';
   }
